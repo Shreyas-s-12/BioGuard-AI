@@ -1,0 +1,45 @@
+# NutriGuard AI Configuration
+# Risk scoring weights (must sum to 100%)
+risk_weights:
+  sugar_risk: 30
+  fat_risk: 25
+  sodium_risk: 20
+  chemical_risk: 15
+  processing_risk: 10
+
+# Nutrition thresholds (per 100g serving)
+nutrition_thresholds:
+  sugar:
+    low: 5
+    medium: 15
+    high: 25
+  sodium:
+    low: 120
+    medium: 400
+    high: 600
+  saturated_fat:
+    low: 1.5
+    medium: 5
+    high: 10
+  trans_fat:
+    low: 0
+    medium: 0.5
+    high: 1
+  calories:
+    low: 100
+    medium: 250
+    high: 400
+
+# Chemical risk levels
+chemical_risk_weights:
+  high: 100
+  moderate: 60
+  low: 30
+  minimal: 10
+
+# Processing level weights
+processing_levels:
+  whole_food: 0
+  minimally_processed: 25
+  processed: 50
+  ultra_processed: 100
