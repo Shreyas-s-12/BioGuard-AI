@@ -1,0 +1,14 @@
+{
+  "name": "nutriguard",
+  "version": "1.0.0",
+  "description": "NutriGuard AI - Full Stack Application",
+  "scripts": {
+    "frontend": "cd frontend && npm run dev",
+    "backend": "cd backend && uvicorn main:app --reload",
+    "start": "concurrently \"npm run backend\" \"npm run frontend\"",
+    "install:all": "cd frontend && npm install && cd ../backend && pip install -r requirements.txt"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

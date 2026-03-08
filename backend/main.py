@@ -6,11 +6,58 @@ Smart Food Safety & Nutrition Risk Analysis Platform
 import json
 import re
 import yaml
+import csv
 from pathlib import Path
 from typing import List, Dict, Optional, Any
 from datetime import datetime
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
+
+# Load chemicals data at startup
+CHEMICALS_DATA = []
+CHEMICALS_CSV_PATH = Path(__file__).parent / "data" / "chemicals.csv"
+
+def load_chemicals_csv():
+    """Load chemicals from CSV file."""
+    global CHEMICALS_DATA
+    chemicals = []
+    
+    try:
+        with open(CHEMICALS_CSV_PATH, 'r', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                # Normalize e_number - extract just the E-number part
+                e_number = row.get('e_number', '').strip()
+                # Convert INS XXX to EXXX format for search
+                if e_number.startswith('INS '):
+                    e_number_ins = 'E' + e_number.replace('INS ', '').strip()
+                else:
+                    e_number_ins = e_number
+                
+                # Process aliases
+                aliases = row.get('aliases', '').strip()
+                
+                chemical = {
+                    'chemical_name': row.get('chemical_name', '').strip(),
+                    'e_number': e_number,
+                    'e_number_ins': e_number_ins,  # Store normalized E-number
+                    'category': row.get('category', '').strip(),
+                    'purpose': row.get('purpose', '').strip(),
+                    'risk_level': row.get('risk_level', '').strip(),
+                    'health_concerns': row.get('health_concerns', '').strip(),
+                    'safe_limit': row.get('safe_limit', '').strip(),
+                    'aliases': aliases
+                }
+                chemicals.append(chemical)
+        
+        CHEMICALS_DATA = chemicals
+        print(f"DEBUG: Loaded {len(chemicals)} chemicals from CSV")
+    except Exception as e:
+        print(f"ERROR: Failed to load chemicals CSV: {e}")
+        CHEMICALS_DATA = []
+
+# Load chemicals on module import
+load_chemicals_csv()
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
@@ -503,6 +550,97 @@ async def health_check():
     """Health check endpoint"""
     return {
         "status": "healthy"
+    }
+
+@app.get("/chemicals")
+async def get_chemicals(
+    search: str = Query("", description="Search term for chemical name, E-number, or aliases"),
+    risk_level: str = Query("", description="Filter by risk level (High, Moderate, Low, Minimal)"),
+    category: str = Query("", description="Filter by category"),
+    limit: int = Query(100, description="Maximum number of results to return")
+):
+    """
+    Get chemicals with optional filtering.
+    
+    - search: Case-insensitive partial search on chemical_name, e_number, e_number_ins, and aliases
+    - risk_level: Filter by risk level (exact match, case-insensitive)
+    - category: Filter by category (exact match)
+    - limit: Maximum results to return (default 100)
+    
+    Returns:
+    {
+        "total": 320,
+        "chemicals": [...]
+    }
+    """
+    print(f"\nDEBUG: /chemicals endpoint called")
+    print(f"  search: '{search}', risk_level: '{risk_level}', category: '{category}', limit: {limit}")
+    
+    # Start with all chemicals
+    results = CHEMICALS_DATA.copy()
+    
+    # Apply search filter (case-insensitive partial match)
+    if search:
+        search_lower = search.lower().strip()
+        # Also create a normalized version without spaces for INS XXX format
+        search_normalized = search_lower.replace(' ', '')
+        results = [
+            c for c in results
+            if (
+                search_lower in c.get('chemical_name', '').lower() or
+                search_lower in c.get('e_number', '').lower() or
+                search_lower in c.get('e_number_ins', '').lower() or
+                search_lower in c.get('aliases', '').lower() or
+                # Also check normalized versions
+                search_normalized in c.get('e_number', '').lower().replace(' ', '') or
+                search_normalized in c.get('e_number_ins', '').lower().replace(' ', '') or
+                search_normalized in c.get('aliases', '').lower().replace(' ', '')
+            )
+        ]
+        print(f"  After search filter: {len(results)} results")
+    
+    # Apply risk_level filter (optional - only if provided)
+    if risk_level:
+        risk_level_lower = risk_level.lower().strip()
+        results = [
+            c for c in results
+            if c.get('risk_level', '').lower() == risk_level_lower
+        ]
+        print(f"  After risk_level filter: {len(results)} results")
+    
+    # Apply category filter (optional - only if provided)
+    if category:
+        category_stripped = category.strip()
+        results = [
+            c for c in results
+            if c.get('category', '').strip() == category_stripped
+        ]
+        print(f"  After category filter: {len(results)} results")
+    
+    # Apply limit
+    total = len(results)
+    results = results[:limit]
+    
+    # Remove internal fields before returning
+    results = [
+        {
+            'chemical_name': c['chemical_name'],
+            'e_number': c['e_number'],
+            'category': c['category'],
+            'purpose': c['purpose'],
+            'risk_level': c['risk_level'],
+            'health_concerns': c['health_concerns'],
+            'safe_limit': c['safe_limit'],
+            'aliases': c['aliases']
+        }
+        for c in results
+    ]
+    
+    print(f"  Returning {len(results)} chemicals (total: {total})\n")
+    
+    return {
+        "total": total,
+        "chemicals": results
     }
 
 @app.post("/analyze-nutrition")

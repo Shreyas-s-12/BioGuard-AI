@@ -1,0 +1,31 @@
+CHEMICALS_DB has 291 chemicals
+CHEMICAL_INDEX has 773 keys
+
+Sample keys from index:
+  monosodium glutamate
+  e621
+  ins 621
+  not recommended frequently
+  sodium nitrite
+  e250
+  ins 250
+  nitrite
+  sodium nitrate
+  e251
+  ins 251
+  very limited
+  bha
+  e320
+  ins 320
+  butylated hydroxyanisole
+  bht
+  e321
+  ins 321
+  butylated hydroxytoluene
+
+Testing detect_chemicals_from_text()...
+OCR Text: 'Nutrition Facts\nTotal Fat 0g\nSodium 40mg\nContains: E211 Sodium Benzoate\nArtificial Flavor (INS 621)'
+
+Detected 2 chemicals:
+  - Sodium Benzoate (EINS 211) detected in: E-number E211
+  - Monosodium Glutamate (EINS 621) detected in: INS 621
