@@ -1,106 +1,29 @@
 """
 NutriGuard AI - Backend API
-Smart Food Safety & Chemical Risk Awareness Platform
+Smart Food Safety & Nutrition Risk Analysis Platform
 """
 
-import os
 import json
-import csv
 import re
 import yaml
 from pathlib import Path
 from typing import List, Dict, Optional, Any
-from io import StringIO, BytesIO
+from datetime import datetime
 
-import numpy as np
-from PIL import Image
-import pytesseract
-
-# Configure Tesseract OCR path (Windows)
-# Ensure Tesseract is installed at: C:\Program Files\Tesseract-OCR\tesseract.exe
-pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
-
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-from datetime import datetime
 
 # Load configuration
 CONFIG_PATH = Path(__file__).parent / "config.yaml"
 with open(CONFIG_PATH, 'r') as f:
     CONFIG = yaml.safe_load(f)
 
-# Data paths
-DATA_DIR = Path(__file__).parent / "data"
-CHEMICALS_CSV = DATA_DIR / "chemicals.csv"
-SUGAR_JSON = DATA_DIR / "sugar_aliases.json"
-
-# Load chemicals database
-def load_chemicals() -> List[Dict]:
-    """Load chemicals from CSV file"""
-    chemicals = []
-    with open(CHEMICALS_CSV, 'r', encoding='utf-8') as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            chemicals.append(row)
-    return chemicals
-
-# Load sugar aliases
-def load_sugar_aliases() -> Dict:
-    """Load sugar aliases from JSON file"""
-    with open(SUGAR_JSON, 'r', encoding='utf-8') as f:
-        return json.load(f)
-
-# Initialize data
-CHEMICALS_DB = load_chemicals()
-SUGAR_DATA = load_sugar_aliases()
-
-# Create search index for chemicals
-def create_chemical_index() -> Dict[str, List[Dict]]:
-    """Create searchable index for chemicals by name and aliases"""
-    index = {}
-    for chemical in CHEMICALS_DB:
-        # Index by chemical name
-        name_lower = chemical['chemical_name'].lower()
-        if name_lower not in index:
-            index[name_lower] = []
-        index[name_lower].append(chemical)
-        
-        # Index by E-number
-        e_num = chemical.get('e_number', '').lower()
-        if e_num:
-            if e_num not in index:
-                index[e_num] = []
-            index[e_num].append(chemical)
-        
-        # Index by aliases
-        aliases = chemical.get('aliases', '').split(',')
-        for alias in aliases:
-            alias = alias.strip().lower()
-            if alias and alias not in index:
-                index[alias] = []
-            if chemical not in index.get(alias, []):
-                index[alias].append(chemical)
-    
-    return index
-
-CHEMICAL_INDEX = create_chemical_index()
-
-# Create sugar aliases index
-def create_sugar_index() -> set:
-    """Create searchable index for sugar aliases"""
-    sugar_aliases = set()
-    for alias in SUGAR_DATA['sugar_aliases']:
-        sugar_aliases.add(alias.lower())
-    return sugar_aliases
-
-SUGAR_INDEX = create_sugar_index()
-
 app = FastAPI(
     title="NutriGuard AI API",
-    description="Smart Food Safety & Chemical Risk Awareness Platform",
-    version="1.0.0"
+    description="Smart Food Safety & Nutrition Risk Analysis Platform",
+    version="3.0.0"
 )
 
 # Configure CORS
@@ -113,389 +36,456 @@ app.add_middleware(
 )
 
 # Models
-class AnalysisRequest(BaseModel):
-    ingredients: Optional[str] = None
-    nutrition: Optional[Dict[str, Any]] = None
+class NutritionAnalysisRequest(BaseModel):
+    nutrition_text: str
 
-class ChemicalDetection(BaseModel):
-    chemical_name: str
-    e_number: str
-    category: str
-    purpose: str
-    risk_level: str
-    health_concerns: str
-    safe_limit: str
-    detected_in: str
+class NutritionValues(BaseModel):
+    calories: Optional[float] = None
+    sodium: Optional[float] = None
+    fat: Optional[float] = None
+    sugar: Optional[float] = None
+    protein: Optional[float] = None
 
-class NutritionIssue(BaseModel):
-    nutrient: str
-    value: float
-    unit: str
-    risk_level: str
-    concern: str
-
-class AnalysisReport(BaseModel):
-    timestamp: str
-    ocr_text: Optional[str]
-    detected_chemicals: List[ChemicalDetection]
-    hidden_sugars: List[str]
-    nutrition_issues: List[NutritionIssue]
-    risk_score: int
-    risk_level: str
-    sugar_risk_score: int
-    fat_risk_score: int
-    sodium_risk_score: int
-    chemical_risk_score: int
-    recommendation: str
-    processing_level: str
-
-# OCR Service
-def extract_text_from_image(image_data: bytes) -> str:
-    """Extract text from food label image using Tesseract OCR"""
-    try:
-        image = Image.open(BytesIO(image_data))
-        
-        # Convert to RGB if necessary
-        if image.mode != 'RGB':
-            image = image.convert('RGB')
-        
-        # Preprocess image for better OCR
-        # Apply basic image processing
-        img_array = np.array(image)
-        
-        # Use Tesseract to extract text
-        text = pytesseract.image_to_string(image, lang='eng')
-        
-        return text.strip()
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"OCR processing failed: {str(e)}")
-
-# Ingredient Parser
-def parse_ingredients(text: str) -> List[str]:
-    """Parse ingredients list from OCR text"""
-    # Find ingredients section
-    ingredients_pattern = r'(?:ingredients?|composition)[:\s]*(.+?)(?:nutrition|nutrient|warning|allergen|$)'
-    match = re.search(ingredients_pattern, text, re.IGNORECASE | re.DOTALL)
+# Disease Knowledge Mapping Dictionary
+DISEASE_MAPPING = {
+    # Nutritional Factors
+    "sodium": [
+        "hypertension",
+        "cardiovascular disease",
+        "kidney stress",
+        "fluid retention",
+        "stroke risk"
+    ],
+    "sugar": [
+        "type 2 diabetes",
+        "weight gain",
+        "tooth decay",
+        "heart disease",
+        "fatty liver disease"
+    ],
+    "fat": [
+        "obesity",
+        "heart disease",
+        "high cholesterol",
+        "inflammation"
+    ],
+    "saturated fat": [
+        "heart disease",
+        "high LDL cholesterol",
+        "atherosclerosis"
+    ],
+    "trans fat": [
+        "heart disease",
+        "stroke",
+        "type 2 diabetes",
+        "inflammation"
+    ],
+    "caffeine": [
+        "sleep disorders",
+        "anxiety",
+        "increased heart rate",
+        "high blood pressure",
+        "digestive issues"
+    ],
     
-    if match:
-        ingredients_text = match.group(1)
-    else:
-        # Use entire text as potential ingredients
-        ingredients_text = text
+    # Artificial Sweeteners
+    "aspartame": [
+        "metabolic disorders",
+        "neurological symptoms",
+        "headaches",
+        "phenylketonuria risk"
+    ],
+    "sucralose": [
+        "gut bacteria disruption",
+        "metabolic changes",
+        "possible carcinogenic concerns"
+    ],
+    "saccharin": [
+        "bladder tumors (historical concern)",
+        "metabolic disturbances"
+    ],
+    "acesulfame potassium": [
+        "possible carcinogenic concerns",
+        "metabolic disturbances"
+    ],
+    "stevia": [
+        "generally safe",
+        "low risk"
+    ],
+    "sugar alcohols": [
+        "digestive issues",
+        "gas and bloating",
+        "laxative effects"
+    ],
+    "sorbitol": [
+        "digestive issues",
+        "laxative effect"
+    ],
+    "maltitol": [
+        "digestive issues",
+        "laxative effect",
+        "blood sugar impact"
+    ],
+    "xylitol": [
+        "digestive issues",
+        "hypoglycemia risk"
+    ],
     
-    # Split by common separators
-    ingredients = re.split(r'[,;•\n\r]+', ingredients_text)
+    # Preservatives
+    "sodium benzoate": [
+        "possible carcinogenic interaction with vitamin C",
+        "allergic reactions"
+    ],
+    "potassium benzoate": [
+        "hyperactivity in children",
+        "possible carcinogenic interaction with vitamin C"
+    ],
+    "sodium nitrite": [
+        "cancer risk",
+        "nitrosamine formation"
+    ],
+    "sodium nitrate": [
+        "cancer risk",
+        "kidney damage"
+    ],
+    "BHA": [
+        "possible carcinogen at high doses",
+        "endocrine disruption"
+    ],
+    "BHT": [
+        "controversial health effects",
+        "possible carcinogen"
+    ],
+    "TBHQ": [
+        "stomach tumors in animals",
+        "liver enlargement"
+    ],
+    "sodium metabisulfite": [
+        "allergic reactions",
+        "asthma triggers",
+        "sulfur dioxide sensitivity"
+    ],
+    "sulfur dioxide": [
+        "asthma triggers",
+        "allergic reactions",
+        "respiratory issues"
+    ],
+    "parabens": [
+        "endocrine disruption",
+        "hormonal imbalance",
+        "reproductive issues"
+    ],
     
-    # Clean and filter
-    parsed = []
-    for ing in ingredients:
-        ing = ing.strip().lower()
-        # Remove numbers and special characters at start
-        ing = re.sub(r'^[\d\.\)\(]+\s*', '', ing)
-        if len(ing) > 1:
-            parsed.append(ing)
+    # Food Additives
+    "monosodium glutamate": [
+        "headaches",
+        "nausea in sensitive individuals",
+        "MSG symptom complex"
+    ],
+    "phosphoric acid": [
+        "bone mineral loss",
+        "kidney stress",
+        "dental erosion"
+    ],
+    "carrageenan": [
+        "digestive issues",
+        "gut inflammation",
+        "intestinal damage"
+    ],
+    "artificial colors": [
+        "hyperactivity in children",
+        "allergic reactions",
+        "behavioral issues"
+    ],
+    "allura red": [
+        "hyperactivity in children",
+        "possible carcinogen",
+        "allergic reactions"
+    ],
+    "tartrazine": [
+        "hyperactivity in children",
+        "hives",
+        "asthma triggers"
+    ],
+    "sunset yellow": [
+        "hyperactivity in children",
+        "allergic reactions"
+    ],
+    "caramel color": [
+        "possible carcinogen (4-MEI)",
+        "cancer risk"
+    ],
+    "titanium dioxide": [
+        "DNA damage",
+        "possible carcinogen",
+        "intestinal inflammation"
+    ],
     
-    return parsed
+    # Other Common Factors
+    "high fructose corn syrup": [
+        "fatty liver disease",
+        "insulin resistance",
+        "weight gain",
+        "heart disease"
+    ],
+    "processed food": [
+        "weight gain",
+        "heart disease",
+        "reduced nutrient intake"
+    ],
+    "refined carbohydrates": [
+        "blood sugar spikes",
+        "weight gain",
+        "inflammation"
+    ],
+    "artificial flavor": [
+        "possible neurological effects",
+        "allergic reactions"
+    ],
+    "natural flavor": [
+        "may contain allergens",
+        "hidden ingredients"
+    ],
+    "modified food starch": [
+        "reduced nutritional value",
+        "digestive issues"
+    ],
+    "hydrogenated oil": [
+        "heart disease",
+        "increased cholesterol",
+        "inflammation"
+    ],
+    "palm oil": [
+        "saturated fat concerns",
+        "environmental impact"
+    ],
+}
 
-# Chemical Detection
-def detect_chemicals(ingredients: List[str]) -> List[ChemicalDetection]:
-    """Detect chemicals in ingredients list"""
+# Factor detection patterns
+NUTRITION_PATTERNS = {
+    'calories': re.compile(r'calories\s*[:\s]\s*(\d+)', re.IGNORECASE),
+    'sodium': re.compile(r'sodium\s*[:\s]\s*(\d+)\s*mg', re.IGNORECASE),
+    'fat': re.compile(r'(?:total\s+)?fat\s*[:\s]\s*(\d+)g?', re.IGNORECASE),
+    'sugar': re.compile(r'(?:total\s+)?sugars?\s*[:\s]\s*(\d+)g?', re.IGNORECASE),
+    'protein': re.compile(r'protein\s*[:\s]\s*(\d+)g?', re.IGNORECASE),
+}
+
+# Ingredient detection keywords
+INGREDIENT_KEYWORDS = {
+    # Artificial sweeteners
+    "aspartame": ["aspartame"],
+    "sucralose": ["sucralose"],
+    "saccharin": ["saccharin"],
+    "acesulfame potassium": ["acesulfame potassium", "acesulfame k", "ace-k"],
+    "stevia": ["stevia", "stevia extract", "rebiana", "steviol glycosides"],
+    "sugar alcohols": ["sorbitol", "maltitol", "xylitol", "erythritol", "mannitol", "lactitol", "isomalt"],
+    
+    # Preservatives
+    "sodium benzoate": ["sodium benzoate"],
+    "potassium benzoate": ["potassium benzoate"],
+    "sodium nitrite": ["sodium nitrite"],
+    "sodium nitrate": ["sodium nitrate"],
+    "BHA": ["BHA", "butylated hydroxyanisole"],
+    "BHT": ["BHT", "butylated hydroxytoluene"],
+    "TBHQ": ["TBHQ", "tert-butylhydroquinone"],
+    "sodium metabisulfite": ["sodium metabisulfite"],
+    "sulfur dioxide": ["sulfur dioxide", "sulphur dioxide"],
+    "parabens": ["methylparaben", "ethylparaben", "propylparaben", "butylparaben"],
+    
+    # Food additives
+    "monosodium glutamate": ["monosodium glutamate", "MSG", "glutamate"],
+    "phosphoric acid": ["phosphoric acid"],
+    "carrageenan": ["carrageenan"],
+    "artificial colors": ["allura red", "tartrazine", "sunset yellow", "caramel color", "fd&c red", "fd&c yellow", "fd&c blue"],
+    "titanium dioxide": ["titanium dioxide"],
+    
+    # High-risk ingredients
+    "high fructose corn syrup": ["high fructose corn syrup", "hfcs", "corn syrup"],
+    "hydrogenated oil": ["hydrogenated", "partially hydrogenated"],
+    "artificial flavor": ["artificial flavor", "artificial flavoring"],
+    "modified food starch": ["modified food starch", "modified corn starch", "modified tapioca starch"],
+}
+
+
+def extract_nutrition_values(text: str) -> Dict[str, float]:
+    """Extract numeric values from nutrition facts text using regex."""
+    values = {}
+    
+    for nutrient, pattern in NUTRITION_PATTERNS.items():
+        match = pattern.search(text)
+        if match:
+            values[nutrient] = float(match.group(1))
+        else:
+            values[nutrient] = None
+    
+    return values
+
+
+def detect_factors(nutrition_text: str, ingredient_text: str = "") -> List[str]:
+    """
+    Detect all factors from nutrition text and ingredient list.
+    Returns a list of detected factor names.
+    """
     detected = []
+    combined_text = (nutrition_text + " " + ingredient_text).lower()
     
-    for ingredient in ingredients:
-        ingredient_lower = ingredient.lower()
-        
-        # Search in chemical index
-        for key, chemicals in CHEMICAL_INDEX.items():
-            if key in ingredient_lower or ingredient_lower in key:
-                for chem in chemicals:
-                    # Check if already detected
-                    if not any(d.chemical_name == chem['chemical_name'] for d in detected):
-                        detected.append(ChemicalDetection(
-                            chemical_name=chem['chemical_name'],
-                            e_number=chem['e_number'],
-                            category=chem['category'],
-                            purpose=chem['purpose'],
-                            risk_level=chem['risk_level'],
-                            health_concerns=chem['health_concerns'],
-                            safe_limit=chem['safe_limit'],
-                            detected_in=ingredient
-                        ))
+    # Check for nutrition-based factors
+    nutrition_values = extract_nutrition_values(nutrition_text)
     
-    return detected
-
-# Hidden Sugar Detection
-def detect_hidden_sugars(ingredients: List[str]) -> List[str]:
-    """Detect hidden sugars in ingredients"""
-    detected = []
+    if nutrition_values.get('sodium') is not None and nutrition_values['sodium'] > 0:
+        detected.append("sodium")
     
-    for ingredient in ingredients:
-        ingredient_lower = ingredient.lower()
-        
-        for sugar_alias in SUGAR_INDEX:
-            if sugar_alias in ingredient_lower:
-                if sugar_alias not in detected:
-                    detected.append(sugar_alias)
+    if nutrition_values.get('sugar') is not None and nutrition_values['sugar'] > 0:
+        detected.append("sugar")
+    
+    if nutrition_values.get('fat') is not None and nutrition_values['fat'] > 0:
+        detected.append("fat")
+    
+    # Check for caffeine
+    caffeine_pattern = re.compile(r'caffeine', re.IGNORECASE)
+    if caffeine_pattern.search(combined_text):
+        detected.append("caffeine")
+    
+    # Check ingredient keywords
+    for factor, keywords in INGREDIENT_KEYWORDS.items():
+        for keyword in keywords:
+            if keyword.lower() in combined_text:
+                if factor not in detected:
+                    detected.append(factor)
                 break
     
+    # Check for high-risk patterns
+    if "hydrogenated" in combined_text or "partially hydrogenated" in combined_text:
+        if "hydrogenated oil" not in detected:
+            detected.append("hydrogenated oil")
+    
+    if "artificial color" in combined_text or "artificial colors" in combined_text:
+        if "artificial colors" not in detected:
+            detected.append("artificial colors")
+    
+    if "artificial flavor" in combined_text:
+        if "artificial flavor" not in detected:
+            detected.append("artificial flavor")
+    
+    if "natural flavor" in combined_text:
+        if "natural flavor" not in detected:
+            detected.append("natural flavor")
+    
     return detected
 
-# Nutrition Analysis
-def analyze_nutrition(nutrition_data: Dict[str, Any]) -> List[NutritionIssue]:
-    """Analyze nutrition data for risks"""
-    issues = []
-    
-    thresholds = CONFIG['nutrition_thresholds']
-    
-    # Analyze Sugar
-    if 'sugar' in nutrition_data:
-        sugar = float(nutrition_data['sugar'])
-        if sugar > thresholds['sugar']['high']:
-            issues.append(NutritionIssue(
-                nutrient='sugar',
-                value=sugar,
-                unit='g',
-                risk_level='High',
-                concern=f'Sugar content {sugar}g exceeds high threshold {thresholds["sugar"]["high"]}g'
-            ))
-        elif sugar > thresholds['sugar']['medium']:
-            issues.append(NutritionIssue(
-                nutrient='sugar',
-                value=sugar,
-                unit='g',
-                risk_level='Moderate',
-                concern=f'Sugar content {sugar}g is above moderate threshold {thresholds["sugar"]["medium"]}g'
-            ))
-    
-    # Analyze Sodium
-    if 'sodium' in nutrition_data:
-        sodium = float(nutrition_data['sodium'])
-        if sodium > thresholds['sodium']['high']:
-            issues.append(NutritionIssue(
-                nutrient='sodium',
-                value=sodium,
-                unit='mg',
-                risk_level='High',
-                concern=f'Sodium content {sodium}mg exceeds high threshold {thresholds["sodium"]["high"]}mg'
-            ))
-        elif sodium > thresholds['sodium']['medium']:
-            issues.append(NutritionIssue(
-                nutrient='sodium',
-                value=sodium,
-                unit='mg',
-                risk_level='Moderate',
-                concern=f'Sodium content {sodium}mg is above moderate threshold {thresholds["sodium"]["medium"]}mg'
-            ))
-    
-    # Analyze Saturated Fat
-    if 'saturated_fat' in nutrition_data:
-        sat_fat = float(nutrition_data['saturated_fat'])
-        if sat_fat > thresholds['saturated_fat']['high']:
-            issues.append(NutritionIssue(
-                nutrient='saturated_fat',
-                value=sat_fat,
-                unit='g',
-                risk_level='High',
-                concern=f'Saturated fat {sat_fat}g exceeds high threshold {thresholds["saturated_fat"]["high"]}g'
-            ))
-        elif sat_fat > thresholds['saturated_fat']['medium']:
-            issues.append(NutritionIssue(
-                nutrient='saturated_fat',
-                value=sat_fat,
-                unit='g',
-                risk_level='Moderate',
-                concern=f'Saturated fat {sat_fat}g is above moderate threshold {thresholds["saturated_fat"]["medium"]}g'
-            ))
-    
-    # Analyze Trans Fat
-    if 'trans_fat' in nutrition_data:
-        trans_fat = float(nutrition_data['trans_fat'])
-        if trans_fat > thresholds['trans_fat']['medium']:
-            issues.append(NutritionIssue(
-                nutrient='trans_fat',
-                value=trans_fat,
-                unit='g',
-                risk_level='High',
-                concern=f'Trans fat {trans_fat}g exceeds safe threshold'
-            ))
-        elif trans_fat > thresholds['trans_fat']['low']:
-            issues.append(NutritionIssue(
-                nutrient='trans_fat',
-                value=trans_fat,
-                unit='g',
-                risk_level='Moderate',
-                concern=f'Trans fat {trans_fat}g should be avoided'
-            ))
-    
-    # Analyze Calories
-    if 'calories' in nutrition_data:
-        calories = float(nutrition_data['calories'])
-        if calories > thresholds['calories']['high']:
-            issues.append(NutritionIssue(
-                nutrient='calories',
-                value=calories,
-                unit='kcal',
-                risk_level='Moderate',
-                concern=f'High calorie content {calories}kcal per serving'
-            ))
-    
-    return issues
 
-# Risk Scoring
-def calculate_risk_scores(
-    detected_chemicals: List[ChemicalDetection],
-    hidden_sugars: List[str],
-    nutrition_issues: List[NutritionIssue]
-) -> Dict[str, Any]:
-    """Calculate comprehensive risk scores"""
+def map_factors_to_diseases(factors: List[str]) -> List[str]:
+    """
+    Map detected factors to their associated health risks.
+    Returns a deduplicated list of health effects.
+    """
+    health_effects = set()
     
-    weights = CONFIG['risk_weights']
-    chem_weights = CONFIG['chemical_risk_weights']
-    processing_weights = CONFIG['processing_levels']
+    for factor in factors:
+        if factor in DISEASE_MAPPING:
+            health_effects.update(DISEASE_MAPPING[factor])
     
-    # Sugar risk (0-100)
-    sugar_risk_score = min(100, len(hidden_sugars) * 20)
-    if any(n.nutrient == 'sugar' for n in nutrition_issues):
-        sugar_issue = next((n for n in nutrition_issues if n.nutrient == 'sugar'), None)
-        if sugar_issue:
-            if sugar_issue.risk_level == 'High':
-                sugar_risk_score = 100
-            elif sugar_issue.risk_level == 'Moderate':
-                sugar_risk_score = max(sugar_risk_score, 70)
+    return sorted(list(health_effects))
+
+
+def generate_analysis_summary(detected_factors: List[str], health_effects: List[str]) -> str:
+    """
+    Generate a human-readable analysis summary.
+    """
+    if not detected_factors:
+        return "No significant nutritional concerns detected. This product appears to be a low-risk choice."
     
-    # Fat risk (0-100)
-    fat_risk_score = 0
-    if any(n.nutrient == 'saturated_fat' for n in nutrition_issues):
-        fat_issue = next((n for n in nutrition_issues if n.nutrient == 'saturated_fat'), None)
-        if fat_issue:
-            if fat_issue.risk_level == 'High':
-                fat_risk_score = 100
-            elif fat_issue.risk_level == 'Moderate':
-                fat_risk_score = 70
-    if any(n.nutrient == 'trans_fat' for n in nutrition_issues):
-        fat_risk_score = max(fat_risk_score, 80)
+    # Categorize factors
+    categories = {
+        "additives": [],
+        "sweeteners": [],
+        "preservatives": [],
+        "nutrients": []
+    }
     
-    # Sodium risk (0-100)
-    sodium_risk_score = 0
-    if any(n.nutrient == 'sodium' for n in nutrition_issues):
-        sodium_issue = next((n for n in nutrition_issues if n.nutrient == 'sodium'), None)
-        if sodium_issue:
-            if sodium_issue.risk_level == 'High':
-                sodium_risk_score = 100
-            elif sodium_issue.risk_level == 'Moderate':
-                sodium_risk_score = 70
+    sweetener_factors = ["aspartame", "sucralose", "saccharin", "acesulfame potassium", 
+                        "stevia", "sugar alcohols", "sorbitol", "maltitol", "xylitol", 
+                        "high fructose corn syrup"]
+    preservative_factors = ["sodium benzoate", "potassium benzoate", "sodium nitrite", 
+                           "sodium nitrate", "BHA", "BHT", "TBHQ", "sodium metabisulfite",
+                           "sulfur dioxide", "parabens"]
+    additive_factors = ["monosodium glutamate", "phosphoric acid", "carrageenan", 
+                      "artificial colors", "titanium dioxide", "artificial flavor",
+                      "natural flavor", "modified food starch", "hydrogenated oil"]
+    nutrient_factors = ["sodium", "sugar", "fat", "caffeine"]
     
-    # Chemical risk (0-100)
-    chemical_risk_score = 0
-    high_risk_count = sum(1 for c in detected_chemicals if c.risk_level == 'High')
-    moderate_risk_count = sum(1 for c in detected_chemicals if c.risk_level == 'Moderate')
-    low_risk_count = sum(1 for c in detected_chemicals if c.risk_level in ['Low', 'Minimal'])
+    for factor in detected_factors:
+        if factor in sweetener_factors:
+            categories["sweeteners"].append(factor)
+        elif factor in preservative_factors:
+            categories["preservatives"].append(factor)
+        elif factor in additive_factors:
+            categories["additives"].append(factor)
+        elif factor in nutrient_factors:
+            categories["nutrients"].append(factor)
     
-    chemical_risk_score = (
-        high_risk_count * 30 +
-        moderate_risk_count * 15 +
-        low_risk_count * 5
-    )
-    chemical_risk_score = min(100, chemical_risk_score)
+    # Build summary
+    summary_parts = []
     
-    # Determine processing level
-    if chemical_risk_score >= 60 or len(detected_chemicals) >= 5:
-        processing_level = 'ultra_processed'
-        processing_risk = processing_weights['ultra_processed']
-    elif chemical_risk_score >= 30 or len(detected_chemicals) >= 2:
-        processing_level = 'processed'
-        processing_risk = processing_weights['processed']
-    elif chemical_risk_score >= 10 or len(detected_chemicals) >= 1:
-        processing_level = 'minimally_processed'
-        processing_risk = processing_weights['minimally_processed']
+    if categories["sweeteners"]:
+        summary_parts.append("This product contains artificial or alternative sweeteners.")
+    
+    if categories["preservatives"]:
+        summary_parts.append("Preservatives detected in this product.")
+    
+    if categories["additives"]:
+        summary_parts.append("Food additives are present.")
+    
+    if categories["nutrients"]:
+        nutrient_names = ", ".join(categories["nutrients"])
+        summary_parts.append(f"Nutritional factors of interest: {nutrient_names}.")
+    
+    # Add health risk context
+    if health_effects:
+        if len(health_effects) <= 3:
+            effects = ", ".join(health_effects)
+            summary_parts.append(f"Potential health effects: {effects}.")
+        else:
+            summary_parts.append(f"This product has {len(health_effects)} different health concerns that may affect long-term health if consumed frequently.")
     else:
-        processing_level = 'whole_food'
-        processing_risk = processing_weights['whole_food']
+        summary_parts.append("No significant long-term health risks identified based on detected factors.")
     
-    # Calculate overall score (weighted average)
-    total_weight = (
-        weights['sugar_risk'] +
-        weights['fat_risk'] +
-        weights['sodium_risk'] +
-        weights['chemical_risk'] +
-        weights['processing_risk']
-    )
+    return " ".join(summary_parts)
+
+
+def analyze_factors(nutrition_text: str, ingredient_text: str = "") -> Dict[str, Any]:
+    """
+    Main analysis function that detects factors and maps them to health risks.
+    """
+    # Detect all factors
+    detected_factors = detect_factors(nutrition_text, ingredient_text)
     
-    overall_score = int((
-        sugar_risk_score * weights['sugar_risk'] +
-        fat_risk_score * weights['fat_risk'] +
-        sodium_risk_score * weights['sodium_risk'] +
-        chemical_risk_score * weights['chemical_risk'] +
-        processing_risk * weights['processing_risk']
-    ) / total_weight)
+    # Map to health effects
+    health_effects = map_factors_to_diseases(detected_factors)
     
-    # Determine risk level
-    if overall_score >= 70:
-        risk_level = 'High'
-    elif overall_score >= 40:
-        risk_level = 'Moderate'
-    else:
-        risk_level = 'Low'
+    # Generate summary
+    summary = generate_analysis_summary(detected_factors, health_effects)
     
     return {
-        'risk_score': overall_score,
-        'risk_level': risk_level,
-        'sugar_risk_score': sugar_risk_score,
-        'fat_risk_score': fat_risk_score,
-        'sodium_risk_score': sodium_risk_score,
-        'chemical_risk_score': chemical_risk_score,
-        'processing_level': processing_level,
-        'processing_risk': processing_risk
+        "detected_factors": detected_factors,
+        "possible_long_term_health_effects": health_effects,
+        "analysis_summary": summary
     }
 
-# Generate Recommendation
-def generate_recommendation(
-    risk_level: str,
-    detected_chemicals: List[ChemicalDetection],
-    hidden_sugars: List[str],
-    nutrition_issues: List[NutritionIssue]
-) -> str:
-    """Generate food safety recommendation"""
-    
-    recommendations = []
-    
-    if risk_level == 'High':
-        recommendations.append("⚠️ High risk product detected. Consider avoiding frequent consumption.")
-        
-        if hidden_sugars:
-            recommendations.append(f"Contains hidden sugars: {', '.join(hidden_sugars[:5])}")
-        
-        high_risk_chemicals = [c for c in detected_chemicals if c.risk_level == 'High']
-        if high_risk_chemicals:
-            chem_names = [c.chemical_name for c in high_risk_chemicals[:3]]
-            recommendations.append(f"High-risk additives detected: {', '.join(chem_names)}")
-        
-    elif risk_level == 'Moderate':
-        recommendations.append("⚡ Moderate risk detected. Consume in moderation.")
-        
-        if hidden_sugars:
-            recommendations.append("Contains hidden sugars - check labels carefully.")
-        
-    else:
-        recommendations.append("✅ Relatively safe product with minimal additives.")
-        
-        if not detected_chemicals and not hidden_sugars:
-            recommendations.append("No concerning additives or hidden sugars detected.")
-    
-    # Add specific warnings
-    if any(c.risk_level == 'High' for c in detected_chemicals):
-        recommendations.append("Contains potentially harmful additives. Research before consuming.")
-    
-    if len(hidden_sugars) >= 3:
-        recommendations.append("High hidden sugar content - may affect blood sugar levels.")
-    
-    if any(n.nutrient == 'sodium' and n.risk_level == 'High' for n in nutrition_issues):
-        recommendations.append("Very high sodium content - may affect blood pressure.")
-    
-    if any(n.nutrient == 'trans_fat' for n in nutrition_issues):
-        recommendations.append("Contains trans fats - avoid for heart health.")
-    
-    return " ".join(recommendations)
+
+# Global exception handler
+@app.exception_handler(Exception)
+async def global_exception_handler(request, exc):
+    print(f"DEBUG: Global exception handler caught: {str(exc)}")
+    return JSONResponse(
+        status_code=500,
+        content={
+            "detail": "An unexpected error occurred. Please try again.",
+            "detected_factors": [],
+            "possible_long_term_health_effects": [],
+            "analysis_summary": "Unable to process request. Please try again."
+        }
+    )
 
 # API Routes
 @app.get("/")
@@ -503,8 +493,8 @@ async def root():
     """Root endpoint"""
     return {
         "name": "NutriGuard AI API",
-        "version": "1.0.0",
-        "description": "Smart Food Safety & Chemical Risk Awareness Platform",
+        "version": "3.0.0",
+        "description": "Smart Food Safety & Nutrition Risk Analysis Platform",
         "status": "running"
     }
 
@@ -512,127 +502,46 @@ async def root():
 async def health_check():
     """Health check endpoint"""
     return {
-        "status": "healthy",
-        "chemicals_database": len(CHEMICALS_DB),
-        "sugar_aliases": len(SUGAR_INDEX)
+        "status": "healthy"
     }
 
-@app.post("/api/analyze")
-async def analyze_food(
-    file: UploadFile = File(None),
-    ingredients: str = None,
-    nutrition: str = None
-):
-    """Analyze food for chemicals and nutrition risks"""
+@app.post("/analyze-nutrition")
+async def analyze_nutrition(request: NutritionAnalysisRequest):
+    """
+    Analyze nutrition facts text and detect factors associated with long-term health risks.
     
-    ocr_text = None
-    nutrition_data = None
-    
-    # Process image if provided
-    if file:
-        try:
-            image_data = await file.read()
-            ocr_text = extract_text_from_image(image_data)
-        except Exception as e:
-            raise HTTPException(status_code=400, detail=f"Failed to process image: {str(e)}")
-    
-    # Use provided ingredients or parse from OCR
-    if ingredients:
-        parsed_ingredients = [i.strip() for i in ingredients.split(',')]
-    elif ocr_text:
-        parsed_ingredients = parse_ingredients(ocr_text)
-    else:
-        raise HTTPException(status_code=400, detail="No ingredients or image provided")
-    
-    # Parse nutrition data if provided
-    if nutrition:
-        try:
-            nutrition_data = json.loads(nutrition)
-        except:
-            nutrition_data = None
-    
-    # Detect chemicals
-    detected_chemicals = detect_chemicals(parsed_ingredients)
-    
-    # Detect hidden sugars
-    hidden_sugars = detect_hidden_sugars(parsed_ingredients)
-    
-    # Analyze nutrition
-    nutrition_issues = analyze_nutrition(nutrition_data or {})
-    
-    # Calculate risk scores
-    risk_scores = calculate_risk_scores(detected_chemicals, hidden_sugars, nutrition_issues)
-    
-    # Generate recommendation
-    recommendation = generate_recommendation(
-        risk_scores['risk_level'],
-        detected_chemicals,
-        hidden_sugars,
-        nutrition_issues
-    )
-    
-    # Build response
-    report = {
-        "timestamp": datetime.now().isoformat(),
-        "ocr_text": ocr_text,
-        "extracted_ingredients": parsed_ingredients,
-        "detected_chemicals": [c.dict() for c in detected_chemicals],
-        "hidden_sugars": hidden_sugars,
-        "nutrition_issues": [n.dict() for n in nutrition_issues],
-        "risk_score": risk_scores['risk_score'],
-        "risk_level": risk_scores['risk_level'],
-        "sugar_risk_score": risk_scores['sugar_risk_score'],
-        "fat_risk_score": risk_scores['fat_risk_score'],
-        "sodium_risk_score": risk_scores['sodium_risk_score'],
-        "chemical_risk_score": risk_scores['chemical_risk_score'],
-        "processing_level": risk_scores['processing_level'],
-        "recommendation": recommendation
+    Accepts JSON:
+    {
+      "nutrition_text": "Amount Per Serving Calories 0 Sodium 40mg ..."
     }
     
-    return report
-
-@app.get("/api/chemicals")
-async def get_chemicals(category: str = None, risk_level: str = None):
-    """Get chemicals from database with optional filters"""
-    
-    filtered = CHEMICALS_DB
-    
-    if category:
-        filtered = [c for c in filtered if c['category'].lower() == category.lower()]
-    
-    if risk_level:
-        filtered = [c for c in filtered if c['risk_level'].lower() == risk_level.lower()]
-    
-    return {
-        "total": len(filtered),
-        "chemicals": filtered[:100]  # Limit to 100 for performance
+    Returns:
+    {
+      "detected_factors": ["sodium", "sugar", "aspartame"],
+      "possible_long_term_health_effects": ["hypertension", "type 2 diabetes", "headaches"],
+      "analysis_summary": "This product contains artificial sweeteners..."
     }
-
-@app.get("/api/categories")
-async def get_categories():
-    """Get all chemical categories"""
-    categories = set()
-    for chem in CHEMICALS_DB:
-        categories.add(chem['category'])
-    return {"categories": sorted(list(categories))}
-
-@app.post("/api/ocr")
-async def perform_ocr(file: UploadFile = File(...)):
-    """Perform OCR on uploaded image"""
+    """
+    print("\n" + "="*50)
+    print("DEBUG: Received analyze-nutrition request")
+    print(f"DEBUG: nutrition_text length: {len(request.nutrition_text)}")
+    print("="*50 + "\n")
     
     try:
-        image_data = await file.read()
-        text = extract_text_from_image(image_data)
+        # Run factor analysis
+        analysis_result = analyze_factors(request.nutrition_text)
         
-        # Parse ingredients from OCR text
-        ingredients = parse_ingredients(text)
+        print("DEBUG: Analysis complete:")
+        print(f"  - Detected Factors: {analysis_result['detected_factors']}")
+        print(f"  - Health Effects: {analysis_result['possible_long_term_health_effects']}")
+        print("="*50 + "\n")
         
-        return {
-            "ocr_text": text,
-            "extracted_ingredients": ingredients
-        }
+        return analysis_result
+    
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"DEBUG: Error in analyze_nutrition: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
+
 
 if __name__ == "__main__":
     import uvicorn
