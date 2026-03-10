@@ -83,13 +83,13 @@ function Chemicals() {
             <select
               value={filterRisk}
               onChange={(e) => setFilterRisk(e.target.value)}
-              className="w-full px-4 py-2.5 bg-slate-800/50 border border-white/10 rounded-xl focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none transition text-white"
+              className="w-full px-4 py-2.5 bg-slate-800 border border-slate-600 rounded-xl focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none transition text-white appearance-none pr-10"
             >
-              <option value="all">All Levels</option>
-              <option value="high">High Risk</option>
-              <option value="moderate">Moderate</option>
-              <option value="low">Low Risk</option>
-              <option value="minimal">Minimal Risk</option>
+              <option className="bg-slate-800 text-white" value="all">All Levels</option>
+              <option className="bg-slate-800 text-white" value="high">High Risk</option>
+              <option className="bg-slate-800 text-white" value="moderate">Moderate</option>
+              <option className="bg-slate-800 text-white" value="low">Low Risk</option>
+              <option className="bg-slate-800 text-white" value="minimal">Minimal Risk</option>
             </select>
           </div>
 
@@ -99,11 +99,11 @@ function Chemicals() {
             <select
               value={filterCategory}
               onChange={(e) => setFilterCategory(e.target.value)}
-              className="w-full px-4 py-2.5 bg-slate-800/50 border border-white/10 rounded-xl focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none transition text-white"
+              className="w-full px-4 py-2.5 bg-slate-800 border border-slate-600 rounded-xl focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none transition text-white appearance-none pr-10"
             >
-              <option value="all">All Categories</option>
+              <option className="bg-slate-800 text-white" value="all">All Categories</option>
               {categories.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
+                <option className="bg-slate-800 text-white" key={cat} value={cat}>{cat}</option>
               ))}
             </select>
           </div>

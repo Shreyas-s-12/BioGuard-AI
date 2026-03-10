@@ -1,13 +1,14 @@
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
-import { analyzeFood } from '../services/api';
+import { analyzeFoodWithHealthMode } from '../services/api';
 
 function Analyze() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [inputText, setInputText] = useState('');
   const [language, setLanguage] = useState('auto');
+  const [healthCondition, setHealthCondition] = useState('');
   const [error, setError] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const textareaRef = useRef(null);
@@ -82,8 +83,16 @@ function Analyze() {
     try {
       console.log("Sending food analysis request");
       
-      // Use the new analyzeFood function with language support
-      const result = await analyzeFood(inputText, language);
+      // Parse input to extract ingredients and nutrition text
+      const { ingredients, nutritionText } = parseInput(inputText);
+      
+      // Use the new analyzeFoodWithHealthMode function with all advanced features
+      const result = await analyzeFoodWithHealthMode(
+        ingredients, 
+        nutritionText, 
+        language,
+        healthCondition || null
+      );
       
       console.log('Analysis result received:', result);
       
@@ -192,15 +201,32 @@ Ingredients: Carbonated Water, Citric Acid, Natural Flavors, Aspartame, Potassiu
                 <select
                   value={language}
                   onChange={(e) => setLanguage(e.target.value)}
-                  className="bg-white/10 border border-white/20 rounded-lg px-3 py-1.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                  className="bg-slate-800 text-white border border-slate-600 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500 appearance-none pr-10"
                 >
-                  <option value="auto">Auto Detect</option>
-                  <option value="en">English</option>
-                  <option value="es">Spanish</option>
-                  <option value="hi">Hindi</option>
-                  <option value="kn">Kannada</option>
+                  <option className="bg-slate-800 text-white" value="auto">Auto Detect</option>
+                  <option className="bg-slate-800 text-white" value="en">English</option>
+                  <option className="bg-slate-800 text-white" value="es">Spanish</option>
+                  <option className="bg-slate-800 text-white" value="hi">Hindi</option>
+                  <option className="bg-slate-800 text-white" value="kn">Kannada</option>
                 </select>
               </div>
+            </div>
+            
+            {/* Health Condition Selector - FEATURE 3 */}
+            <div className="flex items-center space-x-2 mb-3">
+              <label className="text-sm text-slate-400">Health Mode:</label>
+              <select
+                value={healthCondition}
+                onChange={(e) => setHealthCondition(e.target.value)}
+                className="bg-slate-800 text-white border border-purple-500 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 appearance-none pr-10"
+              >
+                <option className="bg-slate-800 text-white" value="">None</option>
+                <option className="bg-slate-800 text-white" value="diabetes">Diabetes</option>
+                <option className="bg-slate-800 text-white" value="hypertension">Hypertension</option>
+                <option className="bg-slate-800 text-white" value="heart_disease">Heart Disease</option>
+                <option className="bg-slate-800 text-white" value="kidney_disease">Kidney Disease</option>
+              </select>
+              <span className="text-xs text-slate-500">Get personalized warnings based on your health condition</span>
             </div>
             
             <div className="flex items-center space-x-2 mb-3">

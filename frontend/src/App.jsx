@@ -10,6 +10,7 @@ import Guide from "./pages/Guide";
 import Login from "./pages/Login";
 import History from "./pages/History";
 import ChatAssistant from "./components/ChatAssistant";
+import CompareFoods from "./pages/CompareFoods";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -48,6 +49,7 @@ function App() {
         <Route path="/about" element={<About />} />
         <Route path="/history" element={<History />} />
         <Route path="/guide" element={<Guide />} />
+        <Route path="/compare" element={<CompareFoods />} />
         {/* Default route - redirect to home */}
         <Route path="*" element={<Home />} />
       </Routes>

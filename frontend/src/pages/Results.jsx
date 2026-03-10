@@ -86,7 +86,13 @@ function Results() {
     // Translation fields
     original_ingredients = '',
     translated_ingredients = '',
-    was_translated = false
+    was_translated = false,
+    // NEW FIELDS FOR ADVANCED FEATURES
+    processing_level = '',
+    health_warnings = [],
+    additive_interactions = [],
+    ingredient_explanations = [],
+    health_condition = ''
   } = results;
 
   // Handle both old and new format
@@ -290,6 +296,141 @@ function Results() {
             )}
           </div>
         </div>
+
+        {/* NEW: Health Warnings - Feature 3 */}
+        {health_warnings && health_warnings.length > 0 && (
+          <div className="mt-6 bg-orange-500/10 backdrop-blur-xl border border-orange-500/20 rounded-2xl p-6">
+            <h2 className="text-lg font-semibold text-orange-400 mb-4 flex items-center">
+              <div className="w-8 h-8 bg-orange-500/20 rounded-lg flex items-center justify-center mr-2">
+                <svg className="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              Health Condition Warnings
+              {health_condition && (
+                <span className="ml-2 text-sm text-orange-300">
+                  (for {health_condition.replace('_', ' ')} patients)
+                </span>
+              )}
+            </h2>
+            
+            <div className="space-y-2">
+              {health_warnings.map((warning, index) => (
+                <div 
+                  key={index}
+                  className="flex items-start p-4 bg-orange-500/10 border border-orange-500/20 rounded-xl"
+                >
+                  <svg className="w-5 h-5 text-orange-400 mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  <span className="text-orange-200">{warning.message}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* NEW: Processing Level - Feature 4 */}
+        {processing_level && (
+          <div className="mt-6 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
+            <h2 className="text-lg font-semibold text-white mb-4 flex items-center">
+              <div className="w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center mr-2">
+                <svg className="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
+              </div>
+              Processing Level (NOVA Classification)
+            </h2>
+            
+            <div className="flex items-center">
+              <span className={`px-4 py-2 rounded-xl text-sm font-medium border ${
+                processing_level === 'Ultra Processed' ? 'bg-red-500/20 text-red-400 border-red-500/30' :
+                processing_level === 'Processed' ? 'bg-orange-500/20 text-orange-400 border-orange-500/30' :
+                processing_level === 'Minimally Processed' ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' :
+                'bg-green-500/20 text-green-400 border-green-500/30'
+              }`}>
+                {processing_level}
+              </span>
+              <span className="ml-4 text-slate-400 text-sm">
+                {processing_level === 'Ultra Processed' && 'Highly processed with many additives and industrial formulations'}
+                {processing_level === 'Processed' && 'Processed with added sugars, oils, salts, or other substances'}
+                {processing_level === 'Minimally Processed' && 'Simple foods with minimal processing'}
+                {processing_level === 'Whole Food' && 'Natural, unprocessed foods'}
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* NEW: Additive Interactions - Feature 5 */}
+        {additive_interactions && additive_interactions.length > 0 && (
+          <div className="mt-6 bg-red-500/10 backdrop-blur-xl border border-red-500/20 rounded-2xl p-6">
+            <h2 className="text-lg font-semibold text-red-400 mb-4 flex items-center">
+              <div className="w-8 h-8 bg-red-500/20 rounded-lg flex items-center justify-center mr-2">
+                <svg className="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              Additive Interaction Warnings
+            </h2>
+            
+            <div className="space-y-3">
+              {additive_interactions.map((interaction, index) => (
+                <div 
+                  key={index}
+                  className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl"
+                >
+                  <div className="flex items-center mb-2">
+                    <span className="text-red-300 font-medium">
+                      {interaction.ingredients?.join(' + ')}
+                    </span>
+                    <span className={`ml-2 px-2 py-0.5 text-xs rounded ${
+                      interaction.severity === 'high' ? 'bg-red-500/30 text-red-300' :
+                      interaction.severity === 'moderate' ? 'bg-orange-500/30 text-orange-300' :
+                      'bg-yellow-500/30 text-yellow-300'
+                    }`}>
+                      {interaction.severity}
+                    </span>
+                  </div>
+                  <p className="text-red-200 text-sm">{interaction.warning}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* NEW: Ingredient Explanations - Feature 1 */}
+        {ingredient_explanations && ingredient_explanations.length > 0 && (
+          <div className="mt-6 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
+            <h2 className="text-lg font-semibold text-white mb-4 flex items-center">
+              <div className="w-8 h-8 bg-cyan-500/20 rounded-lg flex items-center justify-center mr-2">
+                <svg className="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              AI Ingredient Explanations
+            </h2>
+            
+            <div className="space-y-4">
+              {detected_chemicals.slice(0, 5).map((chemical, index) => (
+                <div 
+                  key={index}
+                  className="p-4 bg-slate-800/50 border border-white/10 rounded-xl"
+                >
+                  {chemical.explanation && (
+                    <pre className="text-sm text-slate-300 whitespace-pre-wrap font-sans">
+                      {chemical.explanation}
+                    </pre>
+                  )}
+                </div>
+              ))}
+              {detected_chemicals.length > 5 && (
+                <p className="text-slate-400 text-sm text-center">
+                  + {detected_chemicals.length - 5} more chemicals detected
+                </p>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Analysis Summary */}
         <div className="mt-6 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6">

@@ -121,6 +121,7 @@ class FoodAnalysisRequest(BaseModel):
     ingredients: str
     nutrition_text: Optional[str] = ""
     language: Optional[str] = "auto"  # Source language for translation (auto-detect by default)
+    health_condition: Optional[str] = None  # Personal health mode: diabetes, hypertension, heart_disease, kidney_disease
 
 
 class NutritionValues(BaseModel):
@@ -925,7 +926,8 @@ def generate_recommendation(risk_level: str, detected_chemicals: List[Dict], nut
     return "✅ This product appears to be a safe choice."
 
 
-def analyze_food_comprehensive(ingredient_text: str, nutrition_text: str = "") -> Dict[str, Any]:
+def analyze_food_comprehensive(ingredient_text: str, nutrition_text: str = "", 
+                        health_condition: str = None) -> Dict[str, Any]:
     """
     Comprehensive food analysis using database-driven detection.
     Returns structured analysis with risk level, score, detected chemicals, etc.
@@ -937,9 +939,19 @@ def analyze_food_comprehensive(ingredient_text: str, nutrition_text: str = "") -
     - Sugar escalation: +30 for sugar >= 25g
     - Risk levels: Low 0-39, Moderate 40-69, High 70-100
     - Escalation: HIGH nutrition issue → at least MODERATE, multiple HIGH → HIGH
+    
+    Now includes:
+    - FEATURE 1: AI Ingredient Explanations
+    - FEATURE 3: Personal Health Mode Warnings
+    - FEATURE 4: Processing Level Detection (NOVA)
+    - FEATURE 5: Additive Interaction Warnings
     """
     # Step 1: Detect ALL chemicals from ingredients (STEP 2)
     detected_chemicals = detect_chemicals_from_ingredients(ingredient_text)
+    
+    # FEATURE 1: Add explanations to each detected chemical
+    for chem in detected_chemicals:
+        chem['explanation'] = generate_explanation(chem)
     
     # Step 2: Extract nutrition values
     nutrition_values = extract_nutrition_values(nutrition_text)
@@ -957,6 +969,23 @@ def analyze_food_comprehensive(ingredient_text: str, nutrition_text: str = "") -
         detected_chemicals, 
         risk_result['nutrition_issues']
     )
+    
+    # FEATURE 4: Calculate processing level (NOVA classification)
+    processing_level = get_processing_level(
+        risk_result['total_additives'], 
+        risk_result['nutrition_issues']
+    )
+    
+    # FEATURE 3: Get health warnings based on user's health condition
+    health_warnings = get_health_warnings(
+        health_condition, 
+        ingredient_text, 
+        detected_chemicals, 
+        nutrition_values
+    ) if health_condition else []
+    
+    # FEATURE 5: Detect additive interactions
+    additive_interactions = detect_additive_interactions(ingredient_text, detected_chemicals)
     
     # Build response with all required fields (STEP 9)
     return {
@@ -976,7 +1005,16 @@ def analyze_food_comprehensive(ingredient_text: str, nutrition_text: str = "") -
         'nutrition_summary': {
             'values': nutrition_values,
             'issues_count': len(risk_result['nutrition_issues'])
-        }
+        },
+        # NEW: Feature 1 - Ingredient Explanations
+        'ingredient_explanations': [generate_explanation(chem) for chem in detected_chemicals],
+        # NEW: Feature 4 - Processing Level
+        'processing_level': processing_level,
+        # NEW: Feature 3 - Health Mode Warnings
+        'health_warnings': health_warnings,
+        'health_condition': health_condition,
+        # NEW: Feature 5 - Additive Interactions
+        'additive_interactions': additive_interactions
     }
 
 # Ingredient detection keywords
@@ -1014,6 +1052,205 @@ INGREDIENT_KEYWORDS = {
     "artificial flavor": ["artificial flavor", "artificial flavoring"],
     "modified food starch": ["modified food starch", "modified corn starch", "modified tapioca starch"],
 }
+
+# ============================================================================
+# FEATURE 3: PERSONAL HEALTH MODE - Health Rules Mapping
+# ============================================================================
+HEALTH_RULES = {
+    "diabetes": [
+        "sugar", "high fructose corn syrup", "corn syrup", "glucose", 
+        "fructose", "sucrose", "maltose", "dextrose", "lactose",
+        "aspartame", "saccharin", "sucralose", "acesulfame",
+        "honey", "maple syrup", "agave", "molasses"
+    ],
+    "hypertension": [
+        "sodium", "sodium benzoate", "sodium nitrite", "sodium nitrate",
+        "sodium metabisulfite", "sodium chloride", "monosodium glutamate",
+        "MSG", "disodium", "trisodium"
+    ],
+    "heart_disease": [
+        "trans fat", "hydrogenated oil", "partially hydrogenated",
+        "saturated fat", "palm oil", "coconut oil", "butter",
+        "cholesterol", "lard", "tallow"
+    ],
+    "kidney_disease": [
+        "phosphorus", "phosphate", "sodium", "potassium",
+        "calcium", "magnesium", "nitrite", "nitrate"
+    ]
+}
+
+# Health condition display names
+HEALTH_CONDITION_NAMES = {
+    "diabetes": "Diabetes",
+    "hypertension": "Hypertension",
+    "heart_disease": "Heart Disease",
+    "kidney_disease": "Kidney Disease"
+}
+
+
+# ============================================================================
+# FEATURE 5: SMART ADDITIVE INTERACTION WARNINGS
+# ============================================================================
+INTERACTION_RULES = [
+    {
+        "combo": ["sodium benzoate", "vitamin c", "ascorbic acid"],
+        "warning": "May form benzene under certain conditions (heat/light exposure)",
+        "severity": "moderate"
+    },
+    {
+        "combo": ["aspartame", "phenylalanine"],
+        "warning": "Unsafe for people with PKU (Phenylketonuria)",
+        "severity": "high"
+    },
+    {
+        "combo": ["sodium nitrite", "amine"],
+        "warning": "May form nitrosamines (potential carcinogens) when heated",
+        "severity": "high"
+    },
+    {
+        "combo": ["BHA", "BHT"],
+        "warning": "Multiple antioxidants may have combined health effects",
+        "severity": "low"
+    },
+    {
+        "combo": ["sodium nitrate", "sodium nitrite"],
+        "warning": "Both preservatives may increase cancer risk when consumed regularly",
+        "severity": "high"
+    },
+    {
+        "combo": ["monosodium glutamate", "glutamate"],
+        "warning": "May cause MSG symptom complex in sensitive individuals (headaches, nausea)",
+        "severity": "low"
+    },
+    {
+        "combo": ["carrageenan", " carrageenan"],
+        "warning": "May cause digestive issues in sensitive individuals",
+        "severity": "low"
+    },
+    {
+        "combo": ["titanium dioxide", "nano"],
+        "warning": "May have inflammatory effects in the gut",
+        "severity": "moderate"
+    }
+]
+
+
+def generate_explanation(chemical: Dict[str, Any]) -> str:
+    """
+    FEATURE 1: Generate AI-style explanation for a detected chemical.
+    """
+    name = chemical.get('chemical_name', 'Unknown')
+    purpose = chemical.get('purpose', 'Not specified')
+    concerns = chemical.get('health_concerns', 'No known concerns')
+    risk = chemical.get('risk_level', 'Unknown')
+    
+    # Format the explanation
+    explanation = f"""⚠ {name} detected
+
+Purpose: {purpose}
+
+Possible concerns:
+{concerns}
+
+Risk Level: {risk}"""
+    
+    return explanation
+
+
+def get_processing_level(chemical_count: int, nutrition_issues: List[str]) -> str:
+    """
+    FEATURE 4: Classify food using NOVA system.
+    
+    - Ultra Processed: 6+ additives
+    - Processed: 3-5 additives
+    - Minimally Processed: 1-2 additives
+    - Whole Food: 0 additives
+    """
+    if chemical_count >= 6:
+        return "Ultra Processed"
+    elif chemical_count >= 3:
+        return "Processed"
+    elif chemical_count >= 1:
+        return "Minimally Processed"
+    else:
+        return "Whole Food"
+
+
+def get_health_warnings(health_condition: str, ingredient_text: str, 
+                       detected_chemicals: List[Dict], nutrition_values: Dict) -> List[Dict]:
+    """
+    FEATURE 3: Generate health-specific warnings based on user's health condition.
+    """
+    warnings = []
+    
+    if not health_condition or health_condition not in HEALTH_RULES:
+        return warnings
+    
+    risk_ingredients = HEALTH_RULES.get(health_condition, [])
+    ingredient_lower = ingredient_text.lower()
+    
+    # Check for matching risk ingredients
+    for risk_item in risk_ingredients:
+        if risk_item.lower() in ingredient_lower:
+            warnings.append({
+                "type": "health_condition",
+                "condition": HEALTH_CONDITION_NAMES.get(health_condition, health_condition),
+                "ingredient": risk_item,
+                "message": f"⚠ {risk_item.title()} detected - Not recommended for {HEALTH_CONDITION_NAMES.get(health_condition, health_condition).lower()} patients."
+            })
+    
+    # Check nutrition values for diabetes
+    if health_condition == "diabetes":
+        sugar = nutrition_values.get('sugar')
+        if sugar and sugar > 10:
+            warnings.append({
+                "type": "nutrition",
+                "condition": "Diabetes",
+                "ingredient": "High Sugar",
+                "message": f"⚠ High sugar content ({sugar}g) - Not recommended for diabetic users."
+            })
+    
+    # Check sodium for hypertension
+    if health_condition == "hypertension":
+        sodium = nutrition_values.get('sodium')
+        if sodium and sodium > 400:
+            warnings.append({
+                "type": "nutrition",
+                "condition": "Hypertension",
+                "ingredient": "High Sodium",
+                "message": f"⚠ High sodium content ({sodium}mg) - Not recommended for hypertension patients."
+            })
+    
+    return warnings
+
+
+def detect_additive_interactions(ingredient_text: str, detected_chemicals: List[Dict]) -> List[Dict]:
+    """
+    FEATURE 5: Detect dangerous additive combinations.
+    """
+    warnings = []
+    ingredient_lower = ingredient_text.lower()
+    chemical_names = [c.get('chemical_name', '').lower() for c in detected_chemicals]
+    
+    for rule in INTERACTION_RULES:
+        combo = rule.get('combo', [])
+        found_items = []
+        
+        for item in combo:
+            # Check if item is in ingredients or detected chemicals
+            if item.lower() in ingredient_lower or any(item.lower() in name for name in chemical_names):
+                found_items.append(item)
+        
+        # If we found at least 2 items from the combo, add warning
+        if len(found_items) >= 2:
+            warnings.append({
+                "type": "additive_interaction",
+                "ingredients": found_items,
+                "warning": rule.get('warning', ''),
+                "severity": rule.get('severity', 'moderate')
+            })
+    
+    return warnings
 
 
 def extract_nutrition_values(text: str) -> Dict[str, float]:
@@ -1599,7 +1836,8 @@ async def analyze_food(request: FoodAnalysisRequest):
     Accepts JSON:
     {
       "ingredients": "water, sugar, aspartame, citric acid...",
-      "nutrition_text": "Calories 0 Sodium 40mg..."
+      "nutrition_text": "Calories 0 Sodium 40mg...",
+      "health_condition": "diabetes" (optional)
     }
     
     Returns:
@@ -1609,13 +1847,17 @@ async def analyze_food(request: FoodAnalysisRequest):
       "detected_chemicals": [...],
       "diseases": [...],
       "nutrition_issues": [...],
-      "recommendation": "..."
+      "recommendation": "...",
+      "processing_level": "Ultra Processed",
+      "health_warnings": [...],
+      "additive_interactions": [...]
     }
     """
     print("="*60)
     print("ANALYZE FOOD ENDPOINT CALLED")
     print(f"  Ingredients: {request.ingredients[:100]}...")
     print(f"  Language: {request.language}")
+    print(f"  Health Condition: {request.health_condition}")
     print(f"  Nutrition text: {request.nutrition_text[:100] if request.nutrition_text else 'None'}...")
     
     try:
@@ -1632,10 +1874,11 @@ async def analyze_food(request: FoodAnalysisRequest):
             )
             print(f"DEBUG: Translated: '{ingredients_to_analyze[:100]}...'")
         
-        # Run comprehensive analysis
+        # Run comprehensive analysis with health condition
         result = analyze_food_comprehensive(
             ingredient_text=ingredients_to_analyze,
-            nutrition_text=request.nutrition_text or ""
+            nutrition_text=request.nutrition_text or "",
+            health_condition=request.health_condition
         )
         
         # Add original and translated ingredients to result for display
@@ -1647,6 +1890,9 @@ async def analyze_food(request: FoodAnalysisRequest):
         print(f"    Risk Level: {result['risk_level']}")
         print(f"    Risk Score: {result['risk_score']}")
         print(f"    Detected Chemicals: {len(result['detected_chemicals'])}")
+        print(f"    Processing Level: {result['processing_level']}")
+        print(f"    Health Warnings: {len(result['health_warnings'])}")
+        print(f"    Additive Interactions: {len(result['additive_interactions'])}")
         print(f"    Diseases: {len(result['diseases'])}")
         print(f"    Nutrition Issues: {len(result['nutrition_issues'])}")
         print("="*60 + "\n")
@@ -1658,3 +1904,182 @@ async def analyze_food(request: FoodAnalysisRequest):
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
+
+
+# ============================================================================
+# FEATURE 2: FOOD COMPARISON ENDPOINT
+# ============================================================================
+class FoodComparisonRequest(BaseModel):
+    """Request model for food comparison."""
+    food1_name: Optional[str] = "Food A"
+    food1_ingredients: str
+    food1_nutrition: Optional[str] = ""
+    food2_name: Optional[str] = "Food B"
+    food2_ingredients: str
+    food2_nutrition: Optional[str] = ""
+    health_condition: Optional[str] = None
+
+
+@app.post("/compare-foods")
+async def compare_foods(request: FoodComparisonRequest):
+    """
+    FEATURE 2: Compare two foods side by side.
+    
+    Accepts JSON:
+    {
+      "food1_name": "Cola",
+      "food1_ingredients": "water, sugar, caffeine...",
+      "food1_nutrition": "Calories 140 Sodium 45mg...",
+      "food2_name": "Water",
+      "food2_ingredients": "water",
+      "food2_nutrition": "",
+      "health_condition": "diabetes"
+    }
+    
+    Returns comparison with winner and reasoning.
+    """
+    print("="*60)
+    print("COMPARE FOODS ENDPOINT CALLED")
+    print(f"  Food 1: {request.food1_name} - {request.food1_ingredients[:50]}...")
+    print(f"  Food 2: {request.food2_name} - {request.food2_ingredients[:50]}...")
+    
+    try:
+        # Analyze both foods
+        result1 = analyze_food_comprehensive(
+            ingredient_text=request.food1_ingredients,
+            nutrition_text=request.food1_nutrition or "",
+            health_condition=request.health_condition
+        )
+        
+        result2 = analyze_food_comprehensive(
+            ingredient_text=request.food2_ingredients,
+            nutrition_text=request.food2_nutrition or "",
+            health_condition=request.health_condition
+        )
+        
+        # Build comparison
+        comparison = {
+            "food1": {
+                "name": request.food1_name,
+                "risk_level": result1['risk_level'],
+                "risk_score": result1['risk_score'],
+                "additives_count": result1['total_additives'],
+                "processing_level": result1['processing_level'],
+                "detected_chemicals": result1['detected_chemicals'],
+                "sugar_risk": "High" if any('sugar' in issue.lower() for issue in result1.get('nutrition_issues', [])) else "Low",
+                "health_warnings": result1.get('health_warnings', []),
+                "additive_interactions": result1.get('additive_interactions', [])
+            },
+            "food2": {
+                "name": request.food2_name,
+                "risk_level": result2['risk_level'],
+                "risk_score": result2['risk_score'],
+                "additives_count": result2['total_additives'],
+                "processing_level": result2['processing_level'],
+                "detected_chemicals": result2['detected_chemicals'],
+                "sugar_risk": "High" if any('sugar' in issue.lower() for issue in result2.get('nutrition_issues', [])) else "Low",
+                "health_warnings": result2.get('health_warnings', []),
+                "additive_interactions": result2.get('additive_interactions', [])
+            },
+            "comparison_factors": {
+                "risk_score_diff": result1['risk_score'] - result2['risk_score'],
+                "additives_diff": result1['total_additives'] - result2['total_additives'],
+                "processing_diff": _get_processing_rank(result1['processing_level']) - _get_processing_rank(result2['processing_level'])
+            }
+        }
+        
+        # Determine winner
+        winner, reason = _determine_winner(comparison, request.health_condition)
+        comparison["winner"] = winner
+        comparison["reason"] = reason
+        
+        print(f"\n  Comparison Results:")
+        print(f"    Food 1: {request.food1_name} - {result1['risk_level']} ({result1['risk_score']} score)")
+        print(f"    Food 2: {request.food2_name} - {result2['risk_level']} ({result2['risk_score']} score)")
+        print(f"    Winner: {winner}")
+        print("="*60 + "\n")
+        
+        return comparison
+    
+    except Exception as e:
+        print(f"DEBUG: Error in compare_foods: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Comparison failed: {str(e)}")
+
+
+def _get_processing_rank(level: str) -> int:
+    """Get numerical rank for processing level."""
+    ranks = {
+        "Whole Food": 1,
+        "Minimally Processed": 2,
+        "Processed": 3,
+        "Ultra Processed": 4
+    }
+    return ranks.get(level, 0)
+
+
+def _determine_winner(comparison: Dict, health_condition: Optional[str]) -> tuple:
+    """Determine which food is safer based on comparison factors."""
+    food1 = comparison['food1']
+    food2 = comparison['food2']
+    factors = comparison['comparison_factors']
+    
+    # Start with risk score comparison
+    score1 = food1['risk_score']
+    score2 = food2['risk_score']
+    
+    # Build reasons list
+    reasons = []
+    
+    # Check health warnings
+    if health_condition:
+        warnings1 = len(food1.get('health_warnings', []))
+        warnings2 = len(food2.get('health_warnings', []))
+        
+        if warnings1 < warnings2:
+            reasons.append(f"fewer health warnings for {HEALTH_CONDITION_NAMES.get(health_condition, health_condition)}")
+        elif warnings2 < warnings1:
+            reasons.append(f"more health warnings for {HEALTH_CONDITION_NAMES.get(health_condition, health_condition)}")
+    
+    # Check additives count
+    if factors['additives_diff'] > 0:
+        reasons.append("fewer additives")
+    elif factors['additives_diff'] < 0:
+        reasons.append("more additives")
+    
+    # Check processing level
+    if factors['processing_diff'] > 0:
+        reasons.append("lower processing level")
+    elif factors['processing_diff'] < 0:
+        reasons.append("higher processing level")
+    
+    # Check sugar risk
+    if food1['sugar_risk'] == 'Low' and food2['sugar_risk'] == 'High':
+        reasons.append("lower sugar")
+    elif food1['sugar_risk'] == 'High' and food2['sugar_risk'] == 'Low':
+        reasons.append("higher sugar")
+    
+    # Check additive interactions
+    interactions1 = len(food1.get('additive_interactions', []))
+    interactions2 = len(food2.get('additive_interactions', []))
+    if interactions1 < interactions2:
+        reasons.append("fewer additive interactions")
+    elif interactions2 < interactions1:
+        reasons.append("more additive interactions")
+    
+    # Determine winner based on overall score
+    if score1 < score2:
+        winner = food1['name']
+        if not reasons:
+            reason = "lower overall risk score"
+        else:
+            reason = ", ".join(reasons)
+    else:
+        winner = food2['name']
+        if not reasons:
+            reason = "lower overall risk score"
+        else:
+            reason = ", ".join(reasons)
+    
+    return winner, reason

@@ -35,6 +35,49 @@ export const analyzeFoodLegacy = async (ingredients, nutritionText = '') => {
   return response.data;
 };
 
+// ============================================================================
+// NEW API FUNCTIONS FOR ADVANCED FEATURES
+// ============================================================================
+
+/**
+ * Analyze food with all advanced features:
+ * - AI Ingredient Explanations
+ * - Personal Health Mode
+ * - Processing Level Detection (NOVA)
+ * - Smart Additive Interaction Warnings
+ */
+export const analyzeFoodWithHealthMode = async (ingredients, nutritionText = '', language = 'auto', healthCondition = null) => {
+  const response = await api.post('/analyze-food', {
+    ingredients: ingredients,
+    nutrition_text: nutritionText || '',
+    language: language,
+    health_condition: healthCondition
+  });
+
+  return response.data;
+};
+
+/**
+ * Compare two foods side by side
+ */
+export const compareFoods = async (
+  food1Name, food1Ingredients, food1Nutrition = '',
+  food2Name, food2Ingredients, food2Nutrition = '',
+  healthCondition = null
+) => {
+  const response = await api.post('/compare-foods', {
+    food1_name: food1Name,
+    food1_ingredients: food1Ingredients,
+    food1_nutrition: food1Nutrition || '',
+    food2_name: food2Name,
+    food2_ingredients: food2Ingredients,
+    food2_nutrition: food2Nutrition || '',
+    health_condition: healthCondition
+  });
+
+  return response.data;
+};
+
 export const getChemicals = async (search = '', riskLevel = '', category = '', limit = 100) => {
   const params = new URLSearchParams();
   
