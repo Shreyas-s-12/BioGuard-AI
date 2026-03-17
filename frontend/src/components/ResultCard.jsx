@@ -23,7 +23,7 @@ function ChemicalCard({ chemical }) {
   };
 
   return (
-    <div className="glass rounded-xl p-4 card-hover">
+    <div className="bg-slate-900/60 backdrop-blur-xl border border-slate-800 rounded-2xl shadow-lg hover:shadow-[0_0_25px_rgba(56,189,248,0.3)] transition p-4">
       <div className="flex items-start justify-between mb-2">
         <div>
           <h3 className="font-semibold text-white">{chemical.chemical_name}</h3>

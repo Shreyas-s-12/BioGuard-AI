@@ -7,11 +7,16 @@ import json
 import re
 import yaml
 import csv
+import io
 from pathlib import Path
 from typing import List, Dict, Optional, Any
 from datetime import datetime
 
-from fastapi import FastAPI, HTTPException, Query, Form
+from fastapi import FastAPI, HTTPException, Query, Form, UploadFile, File
+import pytesseract
+from PIL import Image
+import cv2
+import numpy as np
 from deep_translator import GoogleTranslator
 
 
@@ -988,9 +993,13 @@ def analyze_food_comprehensive(ingredient_text: str, nutrition_text: str = "",
     additive_interactions = detect_additive_interactions(ingredient_text, detected_chemicals)
     
     # Build response with all required fields (STEP 9)
+    # Feature 1: Food Safety Score (0-100)
+    safety_score = max(0, 100 - risk_result['risk_score'])
+    
     return {
         'risk_score': risk_result['risk_score'],
         'risk_level': risk_result['risk_level'],
+        'food_safety_score': safety_score,
         'detected_chemicals': detected_chemicals,
         'total_additives': risk_result['total_additives'],  # STEP 9: Add total_additives
         'diseases': diseases,
@@ -1755,6 +1764,140 @@ async def chat_query(request: ChatRequest):
     }
 
 
+# ============================================
+# OCR ENDPOINT FOR CAMERA SCANNING
+# ============================================
+
+def extract_text_from_image(image):
+    """
+    Extract text from an image using Tesseract OCR.
+    
+    Args:
+        image: PIL Image object
+    
+    Returns:
+        Extracted text string
+    """
+    try:
+        # Preprocess image for better OCR results
+        # Convert to numpy array for OpenCV processing
+        img_array = np.array(image)
+        
+        # Convert to grayscale if it's not already
+        if len(img_array.shape) == 3:
+            gray = cv2.cvtColor(img_array, cv2.COLOR_RGB2GRAY)
+        else:
+            gray = img_array
+        
+        # Apply thresholding to improve OCR accuracy
+        # Otsu's thresholding
+        _, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+        
+        # Convert back to PIL Image
+        preprocessed_image = Image.fromarray(thresh)
+        
+        # Perform OCR with English language
+        text = pytesseract.image_to_string(preprocessed_image, lang='eng')
+        
+        return text.strip()
+    except Exception as e:
+        print(f"OCR Error: {str(e)}")
+        # Try without preprocessing as fallback
+        try:
+            text = pytesseract.image_to_string(image, lang='eng')
+            return text.strip()
+        except Exception as e2:
+            print(f"OCR Fallback Error: {str(e2)}")
+            return ""
+
+
+def extract_ingredients(text):
+    """
+    Extract ingredients from OCR text by splitting on commas.
+    
+    Args:
+        text: Full OCR text
+    
+    Returns:
+        List of extracted ingredients
+    """
+    text = text.replace("\n", " ")
+    
+    parts = text.split(",")
+    
+    ingredients = []
+    
+    for part in parts:
+        clean = part.strip()
+        # Filter: keep parts with reasonable length (between 3 and 80 chars)
+        if len(clean) > 2 and len(clean) < 80:
+            ingredients.append(clean)
+    
+    return ingredients
+
+
+@app.post("/ocr")
+async def perform_ocr(file: UploadFile = File(...)):
+    """
+    FEATURE: OCR endpoint for ingredient label scanning.
+    
+    Accepts an image file and returns extracted text/ingredients.
+    
+    Returns JSON:
+    {
+      "ocr_text": "Full extracted text from image",
+      "extracted_ingredients": ["list", "of", "ingredients"]
+    }
+    """
+    print("=" * 60)
+    print("/ocr ENDPOINT CALLED")
+    print(f"  File: {file.filename}")
+    
+    try:
+        # Read the uploaded file
+        contents = await file.read()
+        
+        # Open image with PIL
+        image = Image.open(io.BytesIO(contents))
+        
+        # Convert to RGB if necessary
+        if image.mode != 'RGB':
+            image = image.convert('RGB')
+        
+        print(f"  Image size: {image.size}")
+        
+        # Extract text using Tesseract
+        ocr_text = extract_text_from_image(image)
+        
+        print(f"  OCR text length: {len(ocr_text)}")
+        print(f"  OCR text preview: {ocr_text[:100] if ocr_text else 'None'}...")
+        
+        # Only reject if text is extremely short
+        if len(ocr_text.strip()) < 10:
+            raise HTTPException(
+                status_code=400,
+                detail="OCR could not detect readable text"
+            )
+        
+        # Extract ingredients from the OCR text
+        ingredients = extract_ingredients(ocr_text)
+        
+        print(f"  Extracted ingredients: {ingredients[:5] if ingredients else 'None'}...")
+        
+        return {
+            "ocr_text": ocr_text,
+            "extracted_ingredients": ingredients
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"OCR Error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"OCR processing failed: {str(e)}")
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
@@ -1810,6 +1953,10 @@ async def analyze_food_simple(
             "detected_chemicals": result.get("detected_chemicals", []),
             "explanation": result.get("recommendation", ""),
             "risk_score": result.get("risk_score", 0),
+            "food_safety_score": result.get(
+                "food_safety_score",
+                max(0, 100 - result.get("risk_score", 0))
+            ),
             "diseases": result.get("diseases", []),
             "nutrition_issues": result.get("nutrition_issues", []),
             "original_ingredients": ingredients,

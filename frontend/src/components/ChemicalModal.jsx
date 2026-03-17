@@ -31,11 +31,11 @@ function ChemicalModal({ chemical, onClose }) {
       
       {/* Modal Content */}
       <div 
-        className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-slate-900 border border-white/20 rounded-2xl shadow-2xl animate-fade-in"
+        className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-slate-900/60 backdrop-blur-xl border border-slate-800 rounded-2xl shadow-2xl hover:shadow-[0_0_25px_rgba(56,189,248,0.3)] transition animate-fade-in"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="sticky top-0 bg-slate-900/90 backdrop-blur-lg border-b border-white/10 p-6 flex items-start justify-between">
+        <div className="sticky top-0 bg-slate-900/70 backdrop-blur-xl border-b border-slate-800 p-6 flex items-start justify-between">
           <div>
             <h2 className="text-2xl font-bold text-white">{chemical.chemical_name}</h2>
             {chemical.e_number && (

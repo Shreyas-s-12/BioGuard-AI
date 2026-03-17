@@ -1,8 +1,31 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
-import RiskMeter from '../components/RiskMeter';
-import RiskBadge from '../components/RiskBadge';
+
+function RiskMeter({ score }) {
+  const safeScore = Math.max(0, Math.min(100, Number(score) || 0));
+  const color =
+    safeScore < 30 ? 'bg-green-500' : safeScore < 60 ? 'bg-yellow-400' : 'bg-red-500';
+
+  return (
+    <div className="w-full mt-6">
+      <div className="flex justify-between text-sm mb-2 text-slate-400">
+        <span>Low</span>
+        <span>Moderate</span>
+        <span>High</span>
+      </div>
+
+      <div className="w-full bg-slate-800 rounded-full h-4 overflow-hidden">
+        <div
+          className={`${color} h-4 transition-all duration-700`}
+          style={{ width: `${safeScore}%` }}
+        />
+      </div>
+
+      <p className="text-center mt-2 text-slate-300">Risk Score: {safeScore}%</p>
+    </div>
+  );
+}
 
 function Results() {
   const navigate = useNavigate();
@@ -10,9 +33,8 @@ function Results() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Get results from sessionStorage
     const storedResults = sessionStorage.getItem('analysisResults');
-    
+
     if (storedResults) {
       try {
         const parsedResults = JSON.parse(storedResults);
@@ -21,7 +43,7 @@ function Results() {
         console.error('Failed to parse results:', err);
       }
     }
-    
+
     setLoading(false);
   }, []);
 
@@ -55,7 +77,7 @@ function Results() {
             </div>
             <h2 className="text-2xl font-bold text-white mb-3">No Analysis Results</h2>
             <p className="text-slate-400 mb-8">
-              You haven't analyzed any nutrition facts yet. Start by pasting nutrition facts.
+              You have not analyzed any nutrition facts yet. Start by pasting nutrition facts.
             </p>
             <Link
               to="/analyze"
@@ -72,34 +94,24 @@ function Results() {
     );
   }
 
-  const { 
+  const {
     detected_factors = [],
     health_effects = [],
     analysis_summary = '',
-    risk_score = 50,
-    // New format fields
-    risk_level = '',
     detected_chemicals = [],
     diseases = [],
     nutrition_issues = [],
     recommendation = '',
-    // Translation fields
     original_ingredients = '',
     translated_ingredients = '',
     was_translated = false,
-    // NEW FIELDS FOR ADVANCED FEATURES
-    processing_level = '',
-    health_warnings = [],
-    additive_interactions = [],
-    ingredient_explanations = [],
-    health_condition = ''
+    food_safety_score = null
   } = results;
 
-  // Handle both old and new format
   const getRiskScore = () => {
-    // New format has direct risk_score
-    if (results.risk_score !== undefined) return results.risk_score;
-    // Old format - calculate from health effects
+    if (results.risk_score !== undefined && results.risk_score !== null) {
+      return Math.max(0, Math.min(100, Number(results.risk_score) || 0));
+    }
     if (health_effects.length > 5) return 80;
     if (health_effects.length > 2) return 60;
     if (health_effects.length > 0) return 40;
@@ -107,9 +119,7 @@ function Results() {
   };
 
   const getRiskLevel = () => {
-    // New format has direct risk_level
     if (results.risk_level) return results.risk_level;
-    // Old format - derive from score
     const score = getRiskScore();
     if (score >= 70) return 'High';
     if (score >= 40) return 'Moderate';
@@ -118,43 +128,55 @@ function Results() {
 
   const finalScore = getRiskScore();
   const finalRiskLevel = getRiskLevel();
-  
-  // Use new format data if available, otherwise fall back to old
-  const displayFactors = detected_chemicals.length > 0 
-    ? detected_chemicals.map(c => c.chemical_name) 
-    : detected_factors;
+  const finalSafetyScore =
+    typeof food_safety_score === 'number' ? food_safety_score : Math.max(0, 100 - finalScore);
+
+  const displayFactors =
+    detected_chemicals.length > 0 ? detected_chemicals.map((c) => c.chemical_name) : detected_factors;
   const displayDiseases = diseases.length > 0 ? diseases : health_effects;
+  const displayNutritionIssues = Array.isArray(nutrition_issues) ? nutrition_issues : [];
   const displaySummary = recommendation || analysis_summary;
 
-  // Get factor badge class based on factor type
-  const getFactorBadgeClass = (factor) => {
-    const factorLower = factor.toLowerCase();
-    
-    const sweetenerFactors = ['aspartame', 'sucralose', 'saccharin', 'acesulfame potassium', 'stevia', 
-                             'sugar alcohols', 'sorbitol', 'maltitol', 'xylitol', 'high fructose corn syrup'];
-    const preservativeFactors = ['sodium benzoate', 'potassium benzoate', 'sodium nitrite', 'sodium nitrate',
-                               'BHA', 'BHT', 'TBHQ', 'sodium metabisulfite', 'sulfur dioxide', 'parabens'];
-    const additiveFactors = ['monosodium glutamate', 'phosphoric acid', 'carrageenan', 'artificial colors',
-                          'titanium dioxide', 'artificial flavor', 'natural flavor', 'modified food starch', 
-                          'hydrogenated oil'];
-    const nutrientFactors = ['sodium', 'sugar', 'fat', 'caffeine'];
-    
-    if (sweetenerFactors.some(f => factorLower.includes(f))) {
-      return 'bg-pink-500/20 text-pink-400 border-pink-500/30';
-    } else if (preservativeFactors.some(f => factorLower.includes(f))) {
-      return 'bg-orange-500/20 text-orange-400 border-orange-500/30';
-    } else if (additiveFactors.some(f => factorLower.includes(f))) {
-      return 'bg-purple-500/20 text-purple-400 border-purple-500/30';
-    } else if (nutrientFactors.some(f => factorLower.includes(f))) {
-      return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
-    }
-    return 'bg-slate-500/20 text-slate-400 border-slate-500/30';
-  };
+  const healthyAlternatives = [
+    'Fresh Fruit Juice',
+    'Coconut Water',
+    'Homemade Lemon Juice',
+    'Fresh Smoothie',
+    'Natural Yogurt'
+  ];
+
+  const hiddenSugars = useMemo(() => {
+    const sugarMarkers = [
+      'sugar',
+      'syrup',
+      'fructose',
+      'glucose',
+      'dextrose',
+      'maltose',
+      'honey',
+      'high fructose corn syrup',
+      'aspartame',
+      'sucralose',
+      'saccharin',
+      'acesulfame',
+      'sweetener'
+    ];
+
+    const fromIngredients = (displayFactors || []).filter((item) => {
+      const text = String(item || '').toLowerCase();
+      return sugarMarkers.some((marker) => text.includes(marker));
+    });
+
+    const fromNutrition = displayNutritionIssues.filter((item) =>
+      String(item || '').toLowerCase().includes('sugar')
+    );
+
+    return Array.from(new Set([...fromIngredients, ...fromNutrition]));
+  }, [displayFactors, displayNutritionIssues]);
 
   return (
     <Layout>
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
+      <div className="max-w-6xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
           <div>
             <div className="flex items-center mb-2">
@@ -166,7 +188,7 @@ function Results() {
                 Analysis Results
               </span>
             </h1>
-            <p className="text-slate-400 mt-1">Food safety & health risk assessment</p>
+            <p className="text-slate-400 mt-1">Food safety and health risk assessment</p>
           </div>
           <button
             onClick={handleNewAnalysis}
@@ -179,7 +201,6 @@ function Results() {
           </button>
         </div>
 
-        {/* Translation Info - Show when ingredients were translated */}
         {was_translated && translated_ingredients && (
           <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 mb-8">
             <div className="flex items-center mb-4">
@@ -188,7 +209,7 @@ function Results() {
               </svg>
               <h3 className="text-lg font-semibold text-white">Translated Ingredients</h3>
             </div>
-            
+
             <div className="grid md:grid-cols-2 gap-4">
               <div>
                 <p className="text-sm text-slate-400 mb-1">Original Input:</p>
@@ -202,250 +223,90 @@ function Results() {
           </div>
         )}
 
-        {/* Risk Score Card */}
-        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 mb-8">
-          <div className="flex flex-col md:flex-row items-center gap-8">
-            <div className="flex-1 w-full">
-              <h2 className="text-xl font-semibold text-white mb-6">Overall Safety Summary</h2>
+        <div className="grid md:grid-cols-2 gap-6 mt-6">
+          <div className="space-y-6">
+            <div className="bg-slate-900/60 backdrop-blur-xl border border-slate-800 rounded-2xl p-6">
+              <h2 className="text-lg font-semibold text-cyan-400">Food Safety Score</h2>
+              <p className="text-4xl font-bold mt-2 text-white">{finalSafetyScore}/100</p>
+              <div className="text-sm text-slate-400 mt-1">
+                Risk Level: <span className="text-slate-200">{finalRiskLevel}</span>
+              </div>
               <RiskMeter score={finalScore} />
             </div>
-            <div className="flex-1">
-              <div className={`p-6 rounded-2xl border ${
-                finalScore >= 70 
-                  ? 'bg-red-500/10 border-red-500/20' 
-                  : finalScore >= 40 
-                  ? 'bg-yellow-500/10 border-yellow-500/20'
-                  : 'bg-green-500/10 border-green-500/20'
-              }`}>
-                <div className={`text-2xl font-bold mb-2 ${
-                  finalScore >= 70 
-                    ? 'text-red-400' 
-                    : finalScore >= 40 
-                    ? 'text-yellow-400'
-                    : 'text-green-400'
-                }`}>
-                  {finalRiskLevel} Risk
-                </div>
-                <p className="text-slate-400 text-sm">
-                  {displaySummary || 'Based on the detected ingredients and nutritional values, this food product shows the following risk profile.'}
-                </p>
-              </div>
+
+            <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-red-400 mb-3">Health Concerns</h3>
+              {displayDiseases.length > 0 ? (
+                <ul className="space-y-2 text-slate-300">
+                  {displayDiseases.map((effect, index) => (
+                    <li key={index}>- {String(effect).replace(/_/g, ' ')}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-slate-400">No significant health concerns detected.</p>
+              )}
+            </div>
+          </div>
+
+          <div className="space-y-6">
+            <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-cyan-400 mb-3">Detected Chemicals</h3>
+              {displayFactors.length > 0 ? (
+                <ul className="space-y-2 text-slate-300">
+                  {displayFactors.map((item, index) => (
+                    <li key={index}>- {String(item).replace(/_/g, ' ')}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-slate-400">No specific additives detected.</p>
+              )}
+            </div>
+
+            <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-yellow-400 mb-3">Hidden Sugars</h3>
+              {hiddenSugars.length > 0 ? (
+                <ul className="space-y-2 text-slate-300">
+                  {hiddenSugars.map((item, index) => (
+                    <li key={index}>- {String(item).replace(/_/g, ' ')}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-slate-400">No hidden sugar indicators detected.</p>
+              )}
+            </div>
+
+            <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-orange-400 mb-3">Nutrition Issues</h3>
+              {displayNutritionIssues.length > 0 ? (
+                <ul className="space-y-2 text-slate-300">
+                  {displayNutritionIssues.map((item, index) => (
+                    <li key={index}>- {String(item).replace(/_/g, ' ')}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-slate-400">No major nutrition issues detected.</p>
+              )}
             </div>
           </div>
         </div>
 
-        {/* Results Grid */}
-        <div className="grid md:grid-cols-2 gap-6">
-          {/* Detected Factors */}
-          <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
-            <h2 className="text-lg font-semibold text-white mb-4 flex items-center">
-              <div className="w-8 h-8 bg-cyan-500/20 rounded-lg flex items-center justify-center mr-2">
-                <svg className="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                </svg>
-              </div>
-              Detected Ingredients
-            </h2>
-            
-            {displayFactors && displayFactors.length > 0 ? (
-              <div className="flex flex-wrap gap-2">
-                {displayFactors.map((factor, index) => (
-                  <span
-                    key={index}
-                    className={`px-3 py-1.5 rounded-full border text-sm ${getFactorBadgeClass(typeof factor === 'string' ? factor : factor.chemical_name)} capitalize`}
-                  >
-                    {typeof factor === 'string' ? factor.replace(/_/g, ' ') : factor.chemical_name}
-                  </span>
-                ))}
-              </div>
-            ) : (
-              <p className="text-slate-400">No specific factors detected.</p>
-            )}
-          </div>
-
-          {/* Health Effects */}
-          <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
-            <h2 className="text-lg font-semibold text-white mb-4 flex items-center">
-              <div className="w-8 h-8 bg-red-500/20 rounded-lg flex items-center justify-center mr-2">
-                <svg className="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-              </div>
-              Health Concerns
-            </h2>
-            
-            {displayDiseases && displayDiseases.length > 0 ? (
-              <div className="space-y-2">
-                {displayDiseases.map((effect, index) => (
-                  <div 
-                    key={index}
-                    className="flex items-start p-3 bg-red-500/10 border border-red-500/20 rounded-xl"
-                  >
-                    <span className="text-red-400 mr-2">•</span>
-                    <span className="text-slate-200 capitalize text-sm">{typeof effect === 'string' ? effect.replace(/_/g, ' ') : effect}</span>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="flex items-center p-4 bg-green-500/10 border border-green-500/20 rounded-xl">
-                <svg className="w-5 h-5 text-green-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                <span className="text-green-300 text-sm">No significant health concerns detected</span>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* NEW: Health Warnings - Feature 3 */}
-        {health_warnings && health_warnings.length > 0 && (
-          <div className="mt-6 bg-orange-500/10 backdrop-blur-xl border border-orange-500/20 rounded-2xl p-6">
-            <h2 className="text-lg font-semibold text-orange-400 mb-4 flex items-center">
-              <div className="w-8 h-8 bg-orange-500/20 rounded-lg flex items-center justify-center mr-2">
-                <svg className="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-              </div>
-              Health Condition Warnings
-              {health_condition && (
-                <span className="ml-2 text-sm text-orange-300">
-                  (for {health_condition.replace('_', ' ')} patients)
-                </span>
-              )}
-            </h2>
-            
-            <div className="space-y-2">
-              {health_warnings.map((warning, index) => (
-                <div 
-                  key={index}
-                  className="flex items-start p-4 bg-orange-500/10 border border-orange-500/20 rounded-xl"
-                >
-                  <svg className="w-5 h-5 text-orange-400 mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                  </svg>
-                  <span className="text-orange-200">{warning.message}</span>
-                </div>
+        {finalScore > 50 && (
+          <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6 mt-6">
+            <h3 className="text-lg font-semibold text-green-400 mb-3">Healthier Alternatives</h3>
+            <ul className="space-y-2 text-slate-300">
+              {healthyAlternatives.map((item, index) => (
+                <li key={index}>- {item}</li>
               ))}
-            </div>
+            </ul>
           </div>
         )}
 
-        {/* NEW: Processing Level - Feature 4 */}
-        {processing_level && (
-          <div className="mt-6 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
-            <h2 className="text-lg font-semibold text-white mb-4 flex items-center">
-              <div className="w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center mr-2">
-                <svg className="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                </svg>
-              </div>
-              Processing Level (NOVA Classification)
-            </h2>
-            
-            <div className="flex items-center">
-              <span className={`px-4 py-2 rounded-xl text-sm font-medium border ${
-                processing_level === 'Ultra Processed' ? 'bg-red-500/20 text-red-400 border-red-500/30' :
-                processing_level === 'Processed' ? 'bg-orange-500/20 text-orange-400 border-orange-500/30' :
-                processing_level === 'Minimally Processed' ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' :
-                'bg-green-500/20 text-green-400 border-green-500/30'
-              }`}>
-                {processing_level}
-              </span>
-              <span className="ml-4 text-slate-400 text-sm">
-                {processing_level === 'Ultra Processed' && 'Highly processed with many additives and industrial formulations'}
-                {processing_level === 'Processed' && 'Processed with added sugars, oils, salts, or other substances'}
-                {processing_level === 'Minimally Processed' && 'Simple foods with minimal processing'}
-                {processing_level === 'Whole Food' && 'Natural, unprocessed foods'}
-              </span>
-            </div>
-          </div>
-        )}
-
-        {/* NEW: Additive Interactions - Feature 5 */}
-        {additive_interactions && additive_interactions.length > 0 && (
-          <div className="mt-6 bg-red-500/10 backdrop-blur-xl border border-red-500/20 rounded-2xl p-6">
-            <h2 className="text-lg font-semibold text-red-400 mb-4 flex items-center">
-              <div className="w-8 h-8 bg-red-500/20 rounded-lg flex items-center justify-center mr-2">
-                <svg className="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-              </div>
-              Additive Interaction Warnings
-            </h2>
-            
-            <div className="space-y-3">
-              {additive_interactions.map((interaction, index) => (
-                <div 
-                  key={index}
-                  className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl"
-                >
-                  <div className="flex items-center mb-2">
-                    <span className="text-red-300 font-medium">
-                      {interaction.ingredients?.join(' + ')}
-                    </span>
-                    <span className={`ml-2 px-2 py-0.5 text-xs rounded ${
-                      interaction.severity === 'high' ? 'bg-red-500/30 text-red-300' :
-                      interaction.severity === 'moderate' ? 'bg-orange-500/30 text-orange-300' :
-                      'bg-yellow-500/30 text-yellow-300'
-                    }`}>
-                      {interaction.severity}
-                    </span>
-                  </div>
-                  <p className="text-red-200 text-sm">{interaction.warning}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* NEW: Ingredient Explanations - Feature 1 */}
-        {ingredient_explanations && ingredient_explanations.length > 0 && (
-          <div className="mt-6 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
-            <h2 className="text-lg font-semibold text-white mb-4 flex items-center">
-              <div className="w-8 h-8 bg-cyan-500/20 rounded-lg flex items-center justify-center mr-2">
-                <svg className="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              AI Ingredient Explanations
-            </h2>
-            
-            <div className="space-y-4">
-              {detected_chemicals.slice(0, 5).map((chemical, index) => (
-                <div 
-                  key={index}
-                  className="p-4 bg-slate-800/50 border border-white/10 rounded-xl"
-                >
-                  {chemical.explanation && (
-                    <pre className="text-sm text-slate-300 whitespace-pre-wrap font-sans">
-                      {chemical.explanation}
-                    </pre>
-                  )}
-                </div>
-              ))}
-              {detected_chemicals.length > 5 && (
-                <p className="text-slate-400 text-sm text-center">
-                  + {detected_chemicals.length - 5} more chemicals detected
-                </p>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Analysis Summary */}
         <div className="mt-6 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
-          <h2 className="text-lg font-semibold text-white mb-4 flex items-center">
-            <div className="w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center mr-2">
-              <svg className="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-            </div>
-            Detailed Analysis
-          </h2>
-          
+          <h2 className="text-lg font-semibold text-white mb-4">Detailed Analysis</h2>
           <div className="bg-slate-800/30 rounded-xl p-5">
             <p className="text-slate-300 leading-relaxed">
-              {displaySummary || 'The analysis has been completed. Please review the detected ingredients and health concerns above for more details. This product has been evaluated based on nutritional values and ingredient safety profiles.'}
+              {displaySummary ||
+                'The analysis has been completed. Please review the detected ingredients and health concerns above for more details.'}
             </p>
           </div>
         </div>

@@ -1,22 +1,7 @@
 import { Link } from 'react-router-dom';
 import Layout from '../components/Layout';
-import { useState, useEffect } from 'react';
 
 function Home() {
-  const [user, setUser] = useState(null);
-  
-  useEffect(() => {
-    // Get user from localStorage
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        setUser(parsedUser);
-      } catch (e) {
-        localStorage.removeItem("user");
-      }
-    }
-  }, []);
   const features = [
     {
       icon: (
@@ -91,31 +76,8 @@ function Home() {
 
   return (
     <Layout>
-      {/* Welcome Message for Logged In Users */}
-      {user && (
-        <section className="px-4 pt-8">
-          <div className="max-w-4xl mx-auto">
-            <div className="bg-gradient-to-r from-cyan-500/20 to-purple-500/20 border border-cyan-500/30 rounded-2xl p-6">
-              <div className="flex items-center justify-between flex-wrap gap-4">
-                <div>
-                  <h2 className="text-2xl font-bold text-white mb-1">
-                    Welcome back, {user?.name || 'User'} 👋
-                  </h2>
-                  <p className="text-slate-300">
-                    You are logged in to NutriDetect AI.
-                  </p>
-                </div>
-                <span className="bg-green-500/20 text-green-400 rounded-full px-3 py-1 text-sm">
-                  Status: Logged In
-                </span>
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
-
       {/* Hero Section */}
-      <section className="relative py-16 px-4">
+      <section className="relative pt-6 px-4 pb-16">
         <div className="max-w-4xl mx-auto text-center">
           <div className="animate-fade-in">
             <div className="inline-flex items-center px-4 py-2 bg-cyan-500/10 border border-cyan-500/20 rounded-full text-cyan-400 text-sm mb-6">

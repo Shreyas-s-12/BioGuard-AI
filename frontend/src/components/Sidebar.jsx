@@ -104,7 +104,7 @@ function Sidebar() {
           <Link
             key={item.path}
             to={item.path}
-            className={`relative flex items-center px-4 py-3 rounded-lg transition-all duration-300 ease-in-out ${
+            className={`relative flex items-center px-4 py-3 rounded-lg transition-all duration-300 ease-in-out hover:bg-slate-800/60 hover:translate-x-1 ${
               isActive(item.path) 
                 ? 'bg-slate-800 text-cyan-400' 
                 : 'text-slate-400 hover:text-white'

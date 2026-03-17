@@ -2,6 +2,8 @@ import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 import { analyzeFoodWithHealthMode } from '../services/api';
+import BarcodeScanner from '../components/BarcodeScanner';
+import CameraOCR from '../components/CameraOCR';
 
 function Analyze() {
   const navigate = useNavigate();
@@ -12,6 +14,8 @@ function Analyze() {
   const [error, setError] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const textareaRef = useRef(null);
+  const [showBarcodeScanner, setShowBarcodeScanner] = useState(false);
+  const [showCameraOCR, setShowCameraOCR] = useState(false);
 
   // Voice recognition handler
   const startVoiceRecognition = () => {
@@ -33,8 +37,18 @@ function Analyze() {
       'kn': 'kn-IN'
     };
     recognition.lang = langMap[language] || 'en-US';
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
     
-    recognition.start();
+    // Request microphone permission first
+    navigator.mediaDevices.getUserMedia({ audio: true })
+      .then(() => {
+        recognition.start();
+      })
+      .catch(() => {
+        alert("Microphone access required. Please allow microphone permission and try again.");
+      });
     
     recognition.onresult = (event) => {
       const transcript = event.results[0][0].transcript;
@@ -43,7 +57,21 @@ function Analyze() {
     
     recognition.onerror = (event) => {
       console.error('Voice recognition error:', event.error);
-      alert(`Voice recognition error: ${event.error}`);
+      
+      if (event.error === 'not-allowed') {
+        alert("Microphone permission denied. Please allow microphone access in your browser settings.");
+      } else if (event.error === 'network') {
+        alert("Voice recognition network error. Please check your internet connection and try again.");
+      } else if (event.error === 'no-speech') {
+        // No speech detected - silently ignore
+        console.log('No speech detected');
+      } else {
+        alert(`Voice recognition error: ${event.error}`);
+      }
+    };
+    
+    recognition.onend = () => {
+      console.log('Voice recognition stopped');
     };
   };
 
@@ -150,6 +178,13 @@ Protein: 0g
 Ingredients: Carbonated Water, Citric Acid, Natural Flavors, Aspartame, Potassium Benzoate, Phosphoric Acid`);
   };
 
+  // Handle scan complete from barcode scanner or camera OCR
+  const handleScanComplete = (ingredients) => {
+    setInputText(ingredients);
+    setShowBarcodeScanner(false);
+    setShowCameraOCR(false);
+  };
+
   return (
     <Layout>
       <div className="max-w-4xl mx-auto">
@@ -240,6 +275,31 @@ Ingredients: Carbonated Water, Citric Acid, Natural Flavors, Aspartame, Potassiu
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
                 </svg>
                 Voice Input
+              </button>
+
+              {/* Barcode Scanner Button */}
+              <button
+                onClick={() => setShowBarcodeScanner(true)}
+                className="flex items-center px-4 py-2 bg-green-500 hover:bg-green-400 text-white rounded-lg transition-colors text-sm font-medium"
+                title="Scan product barcode"
+              >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+                </svg>
+                Scan Barcode
+              </button>
+
+              {/* Camera OCR Button */}
+              <button
+                onClick={() => setShowCameraOCR(true)}
+                className="flex items-center px-4 py-2 bg-purple-500 hover:bg-purple-400 text-white rounded-lg transition-colors text-sm font-medium"
+                title="Scan ingredient label with camera"
+              >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                Scan Label
               </button>
             </div>
             
@@ -339,7 +399,7 @@ Ingredients: Carbonated Water, Aspartame, Citric Acid`}
         </div>
 
         {/* Tips Section */}
-        <div className="mt-8 grid md:grid-cols-2 gap-4">
+        <div className="mt-8 grid md:grid-cols-3 gap-4">
           <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-5">
             <div className="flex items-center mb-3">
               <div className="w-8 h-8 bg-green-500/20 rounded-lg flex items-center justify-center mr-2">
@@ -367,8 +427,39 @@ Ingredients: Carbonated Water, Aspartame, Citric Acid`}
               Harmful additives, hidden sugars, preservatives, and nutritional concerns
             </p>
           </div>
+
+          <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-5">
+            <div className="flex items-center mb-3">
+              <div className="w-8 h-8 bg-cyan-500/20 rounded-lg flex items-center justify-center mr-2">
+                <svg className="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              </div>
+              <h3 className="font-medium text-white">Quick Scan</h3>
+            </div>
+            <p className="text-sm text-slate-400">
+              Use barcode or camera to instantly scan products and labels
+            </p>
+          </div>
         </div>
       </div>
+
+      {/* Barcode Scanner Modal */}
+      {showBarcodeScanner && (
+        <BarcodeScanner
+          onScanComplete={handleScanComplete}
+          onClose={() => setShowBarcodeScanner(false)}
+        />
+      )}
+
+      {/* Camera OCR Modal */}
+      {showCameraOCR && (
+        <CameraOCR
+          onScanComplete={handleScanComplete}
+          onClose={() => setShowCameraOCR(false)}
+        />
+      )}
     </Layout>
   );
 }

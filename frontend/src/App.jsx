@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 
+import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import Analyze from "./pages/Analyze";
 import Results from "./pages/Results";
@@ -8,54 +8,46 @@ import Chemicals from "./pages/Chemicals";
 import About from "./pages/About";
 import Guide from "./pages/Guide";
 import Login from "./pages/Login";
+import LoginGoogle from "./pages/LoginGoogle";
 import History from "./pages/History";
-import ChatAssistant from "./components/ChatAssistant";
 import CompareFoods from "./pages/CompareFoods";
+import ProtectedRoute from "./components/ProtectedRoute";
+import ChatAssistant from "./components/ChatAssistant";
+import { AuthProvider } from "./context/AuthContext";
 
-function App() {
-  const [user, setUser] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+function Layout() {
+  const location = useLocation();
+  const hideNavbar = location.pathname === "/login" || location.pathname === "/login/google";
 
-  useEffect(() => {
-    // Check for existing user in localStorage on app load
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        if (parsedUser && parsedUser.name) {
-          setUser(parsedUser);
-        }
-      } catch (e) {
-        // Invalid JSON, treat as not logged in
-        localStorage.removeItem("user");
-      }
-    }
-    setIsLoading(false);
-  }, []);
-
-  // If no user is found in localStorage, show Login page
-  if (!isLoading && !user) {
-    return <Login />;
-  }
-
-  // If user exists, render the main application with routing
   return (
-    <Router>
+    <>
+      {!hideNavbar && <Navbar />}
+
       <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/analyze" element={<Analyze />} />
-        <Route path="/results" element={<Results />} />
-        <Route path="/chemicals" element={<Chemicals />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/history" element={<History />} />
-        <Route path="/guide" element={<Guide />} />
-        <Route path="/compare" element={<CompareFoods />} />
-        {/* Default route - redirect to home */}
-        <Route path="*" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/login/google" element={<LoginGoogle />} />
+
+        <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+        <Route path="/analyze" element={<ProtectedRoute><Analyze /></ProtectedRoute>} />
+        <Route path="/results" element={<ProtectedRoute><Results /></ProtectedRoute>} />
+        <Route path="/chemicals" element={<ProtectedRoute><Chemicals /></ProtectedRoute>} />
+        <Route path="/about" element={<ProtectedRoute><About /></ProtectedRoute>} />
+        <Route path="/guide" element={<ProtectedRoute><Guide /></ProtectedRoute>} />
+        <Route path="/history" element={<ProtectedRoute><History /></ProtectedRoute>} />
+        <Route path="/compare" element={<ProtectedRoute><CompareFoods /></ProtectedRoute>} />
       </Routes>
+
       <ChatAssistant />
-    </Router>
+    </>
   );
 }
 
-export default App;
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AuthProvider>
+        <Layout />
+      </AuthProvider>
+    </BrowserRouter>
+  );
+}

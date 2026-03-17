@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "805117385406",
+    "project_id": "nutridetect-ai",
+    "storage_bucket": "nutridetect-ai.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:805117385406:android:3beef4fca54d00ab7adcef",
+        "android_client_info": {
+          "package_name": "com.nutridetect.ai"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "805117385406-l97hacbuae5oqeegtshrnbkodmj9c9h9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDtud--Il1AHe4YunLbuQvtV2pIdJK5s3w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "805117385406-l97hacbuae5oqeegtshrnbkodmj9c9h9.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
