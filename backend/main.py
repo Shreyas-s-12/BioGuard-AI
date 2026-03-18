@@ -8,6 +8,8 @@ import re
 import yaml
 import csv
 import io
+import os
+import shutil
 from pathlib import Path
 from typing import List, Dict, Optional, Any
 from datetime import datetime
@@ -18,6 +20,49 @@ from PIL import Image
 import cv2
 import numpy as np
 from deep_translator import GoogleTranslator
+
+
+def configure_tesseract() -> Optional[str]:
+    """
+    Configure Tesseract executable path for pytesseract.
+
+    Resolution order:
+    1) TESSERACT_CMD env var
+    2) tesseract found in PATH
+    3) Common Windows install locations
+    """
+    candidates = []
+
+    env_cmd = os.getenv("TESSERACT_CMD")
+    if env_cmd:
+        candidates.append(env_cmd)
+
+    path_cmd = shutil.which("tesseract")
+    if path_cmd:
+        candidates.append(path_cmd)
+
+    candidates.extend(
+        [
+            r"C:\Program Files\Tesseract-OCR\tesseract.exe",
+            r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe",
+        ]
+    )
+
+    for candidate in candidates:
+        if candidate and Path(candidate).exists():
+            pytesseract.pytesseract.tesseract_cmd = candidate
+            print(f"DEBUG: Tesseract configured at: {candidate}")
+            return candidate
+
+    print(
+        "DEBUG: Tesseract not found. Set TESSERACT_CMD or install Tesseract OCR "
+        "from https://github.com/UB-Mannheim/tesseract/wiki"
+    )
+    return None
+
+
+# Configure OCR engine path at startup.
+configure_tesseract()
 
 
 def translate_to_english(text: str, source_language: str = 'auto') -> str:
@@ -47,6 +92,18 @@ def translate_to_english(text: str, source_language: str = 'auto') -> str:
     except Exception as e:
         print(f"DEBUG: Translation error: {str(e)}")
         return text
+
+
+def should_auto_translate(text: str) -> bool:
+    """
+    Decide if auto-translation is worth attempting.
+    For plain ASCII/English-like ingredient text, skip translation to avoid
+    unnecessary external calls and latency.
+    """
+    if not text:
+        return False
+    # Attempt translation only when non-ASCII chars are present.
+    return bool(re.search(r"[^\x00-\x7F]", text))
 
 # Load chemicals data at startup
 CHEMICALS_DATA = []
@@ -1778,37 +1835,77 @@ def extract_text_from_image(image):
     Returns:
         Extracted text string
     """
+    def score_text(text: str) -> int:
+        # Prioritize ingredient-like OCR output: words + separators.
+        cleaned = re.sub(r"\s+", " ", text or "").strip()
+        if not cleaned:
+            return 0
+        alpha_num = sum(ch.isalnum() for ch in cleaned)
+        commas = cleaned.count(",")
+        return alpha_num + (commas * 8)
+
+    def normalize_ocr_text(text: str) -> str:
+        return re.sub(r"\s+", " ", (text or "")).strip()
+
     try:
-        # Preprocess image for better OCR results
-        # Convert to numpy array for OpenCV processing
         img_array = np.array(image)
-        
-        # Convert to grayscale if it's not already
         if len(img_array.shape) == 3:
             gray = cv2.cvtColor(img_array, cv2.COLOR_RGB2GRAY)
         else:
             gray = img_array
-        
-        # Apply thresholding to improve OCR accuracy
-        # Otsu's thresholding
-        _, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-        
-        # Convert back to PIL Image
-        preprocessed_image = Image.fromarray(thresh)
-        
-        # Perform OCR with English language
-        text = pytesseract.image_to_string(preprocessed_image, lang='eng')
-        
-        return text.strip()
+
+        h, w = gray.shape[:2]
+        # Upscale small text regions to help Tesseract.
+        scale = max(1.0, min(3.0, 1600.0 / max(1, min(h, w))))
+        if scale > 1.15:
+            gray = cv2.resize(gray, None, fx=scale, fy=scale, interpolation=cv2.INTER_CUBIC)
+
+        # Build several preprocessed variants and pick the best OCR result.
+        variants = []
+        variants.append(("gray", gray))
+
+        # Otsu threshold.
+        _, otsu = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+        variants.append(("otsu", otsu))
+
+        # Adaptive threshold for uneven lighting.
+        adaptive = cv2.adaptiveThreshold(
+            gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 31, 12
+        )
+        variants.append(("adaptive", adaptive))
+
+        # CLAHE + threshold can recover faint text.
+        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8)).apply(gray)
+        _, clahe_otsu = cv2.threshold(clahe, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+        variants.append(("clahe_otsu", clahe_otsu))
+
+        best_text = ""
+        best_score = 0
+        psm_modes = (6, 11)
+
+        for variant_name, variant_img in variants:
+            pil_img = Image.fromarray(variant_img)
+            for psm in psm_modes:
+                config = f"--oem 3 --psm {psm} -c preserve_interword_spaces=1"
+                try:
+                    text = pytesseract.image_to_string(pil_img, lang="eng", config=config)
+                    normalized = normalize_ocr_text(text)
+                    score = score_text(normalized)
+                    if score > best_score:
+                        best_score = score
+                        best_text = normalized
+                except Exception as inner_e:
+                    print(f"OCR variant failed ({variant_name}, psm={psm}): {inner_e}")
+
+        if best_text:
+            return best_text
+
+        # Last-resort fallback.
+        text = pytesseract.image_to_string(image, lang="eng", config="--oem 3 --psm 6")
+        return normalize_ocr_text(text)
     except Exception as e:
         print(f"OCR Error: {str(e)}")
-        # Try without preprocessing as fallback
-        try:
-            text = pytesseract.image_to_string(image, lang='eng')
-            return text.strip()
-        except Exception as e2:
-            print(f"OCR Fallback Error: {str(e2)}")
-            return ""
+        return ""
 
 
 def extract_ingredients(text):
@@ -1822,15 +1919,16 @@ def extract_ingredients(text):
         List of extracted ingredients
     """
     text = text.replace("\n", " ")
-    
-    parts = text.split(",")
+
+    # Support labels separated by commas, semicolons, or line breaks.
+    parts = re.split(r"[,;]", text)
     
     ingredients = []
     
     for part in parts:
         clean = part.strip()
-        # Filter: keep parts with reasonable length (between 3 and 80 chars)
-        if len(clean) > 2 and len(clean) < 80:
+        # Filter: keep parts with reasonable length.
+        if len(clean) > 2 and len(clean) < 120:
             ingredients.append(clean)
     
     return ingredients
@@ -1854,6 +1952,18 @@ async def perform_ocr(file: UploadFile = File(...)):
     print(f"  File: {file.filename}")
     
     try:
+        # Validate OCR engine availability for clearer error reporting.
+        try:
+            _ = pytesseract.get_tesseract_version()
+        except Exception:
+            raise HTTPException(
+                status_code=500,
+                detail=(
+                    "Tesseract OCR engine is not available on the backend server. "
+                    "Install Tesseract and set TESSERACT_CMD if needed."
+                )
+            )
+
         # Read the uploaded file
         contents = await file.read()
         
@@ -1873,7 +1983,7 @@ async def perform_ocr(file: UploadFile = File(...)):
         print(f"  OCR text preview: {ocr_text[:100] if ocr_text else 'None'}...")
         
         # Only reject if text is extremely short
-        if len(ocr_text.strip()) < 10:
+        if len(ocr_text.strip()) < 5:
             raise HTTPException(
                 status_code=400,
                 detail="OCR could not detect readable text"
@@ -1929,14 +2039,36 @@ async def analyze_food_simple(
     print(f"  Language: {language}")
     print(f"  Nutrition: {nutrition[:100] if nutrition else 'None'}...")
     
+    # Validate input - return safe fallback for empty or invalid input
+    if not ingredients or not ingredients.strip():
+        return {
+            "risk_level": "Low",
+            "detected_chemicals": [],
+            "explanation": "No ingredients provided for analysis.",
+            "risk_score": 0,
+            "food_safety_score": 100,
+            "diseases": [],
+            "nutrition_issues": [],
+            "original_ingredients": "",
+            "translated_ingredients": "",
+            "was_translated": False
+        }
+    
     try:
         # Translate ingredients to English if needed
         ingredients_to_analyze = ingredients
         
-        if ingredients and language and language != 'en':
+        should_translate = False
+        if ingredients and language:
+            if language not in ("en", "auto"):
+                should_translate = True
+            elif language == "auto":
+                should_translate = should_auto_translate(ingredients)
+
+        if should_translate:
             print(f"DEBUG: Translating ingredients from '{language}' to English...")
             ingredients_to_analyze = translate_to_english(
-                ingredients, 
+                ingredients,
                 source_language=language
             )
             print(f"DEBUG: Translated: '{ingredients_to_analyze[:100]}...'")
@@ -1968,7 +2100,20 @@ async def analyze_food_simple(
         print(f"DEBUG: Error in /analyze: {str(e)}")
         import traceback
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
+        # Return safe fallback instead of raising exception
+        return {
+            "risk_level": "Low",
+            "detected_chemicals": [],
+            "explanation": "Analysis could not be completed. Please try again.",
+            "risk_score": 0,
+            "food_safety_score": 100,
+            "diseases": [],
+            "nutrition_issues": [],
+            "original_ingredients": ingredients or "",
+            "translated_ingredients": ingredients or "",
+            "was_translated": False,
+            "error": str(e)
+        }
 
 @app.post("/analyze-food")
 async def analyze_food(request: FoodAnalysisRequest):
@@ -2007,16 +2152,46 @@ async def analyze_food(request: FoodAnalysisRequest):
     print(f"  Health Condition: {request.health_condition}")
     print(f"  Nutrition text: {request.nutrition_text[:100] if request.nutrition_text else 'None'}...")
     
+    # Validate input - return safe fallback for empty or invalid input
+    if not request.ingredients or not request.ingredients.strip():
+        return {
+            "risk_score": 0,
+            "risk_level": "Low",
+            "food_safety_score": 100,
+            "detected_chemicals": [],
+            "total_additives": 0,
+            "diseases": [],
+            "nutrition_issues": [],
+            "recommendation": "No ingredients provided for analysis.",
+            "original_ingredients": "",
+            "translated_ingredients": "",
+            "was_translated": False,
+            "chemical_summary": {"chemical_score": 0, "density_bonus": 0, "nutrition_bonus": 0, "total_count": 0},
+            "nutrition_summary": {"values": {}, "issues_count": 0},
+            "ingredient_explanations": [],
+            "processing_level": "Unknown",
+            "health_warnings": [],
+            "health_condition": request.health_condition,
+            "additive_interactions": []
+        }
+    
     try:
         # Translate ingredients to English if needed
         original_ingredients = request.ingredients
         ingredients_to_analyze = request.ingredients
         
         # If language is not English, translate
-        if request.language and request.language != 'en':
+        should_translate = False
+        if request.language:
+            if request.language not in ("en", "auto"):
+                should_translate = True
+            elif request.language == "auto":
+                should_translate = should_auto_translate(request.ingredients)
+
+        if should_translate:
             print(f"DEBUG: Translating ingredients from '{request.language}' to English...")
             ingredients_to_analyze = translate_to_english(
-                request.ingredients, 
+                request.ingredients,
                 source_language=request.language
             )
             print(f"DEBUG: Translated: '{ingredients_to_analyze[:100]}...'")
@@ -2028,6 +2203,18 @@ async def analyze_food(request: FoodAnalysisRequest):
             health_condition=request.health_condition
         )
         
+        # Normalize key fields to avoid downstream frontend crashes.
+        if not isinstance(result.get('detected_chemicals'), list):
+            result['detected_chemicals'] = []
+        if not isinstance(result.get('diseases'), list):
+            result['diseases'] = []
+        if not isinstance(result.get('nutrition_issues'), list):
+            result['nutrition_issues'] = []
+        if not isinstance(result.get('health_warnings'), list):
+            result['health_warnings'] = []
+        if not isinstance(result.get('additive_interactions'), list):
+            result['additive_interactions'] = []
+
         # Add original and translated ingredients to result for display
         result['original_ingredients'] = original_ingredients
         result['translated_ingredients'] = ingredients_to_analyze
@@ -2036,12 +2223,12 @@ async def analyze_food(request: FoodAnalysisRequest):
         print(f"\n  Results:")
         print(f"    Risk Level: {result['risk_level']}")
         print(f"    Risk Score: {result['risk_score']}")
-        print(f"    Detected Chemicals: {len(result['detected_chemicals'])}")
-        print(f"    Processing Level: {result['processing_level']}")
-        print(f"    Health Warnings: {len(result['health_warnings'])}")
-        print(f"    Additive Interactions: {len(result['additive_interactions'])}")
-        print(f"    Diseases: {len(result['diseases'])}")
-        print(f"    Nutrition Issues: {len(result['nutrition_issues'])}")
+        print(f"    Detected Chemicals: {len(result.get('detected_chemicals', []))}")
+        print(f"    Processing Level: {result.get('processing_level', 'Unknown')}")
+        print(f"    Health Warnings: {len(result.get('health_warnings', []))}")
+        print(f"    Additive Interactions: {len(result.get('additive_interactions', []))}")
+        print(f"    Diseases: {len(result.get('diseases', []))}")
+        print(f"    Nutrition Issues: {len(result.get('nutrition_issues', []))}")
         print("="*60 + "\n")
         
         return result
@@ -2050,7 +2237,28 @@ async def analyze_food(request: FoodAnalysisRequest):
         print(f"DEBUG: Error in analyze_food: {str(e)}")
         import traceback
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
+        # Return safe fallback instead of raising exception to prevent frontend crash
+        return {
+            "risk_score": 0,
+            "risk_level": "Low",
+            "food_safety_score": 100,
+            "detected_chemicals": [],
+            "total_additives": 0,
+            "diseases": [],
+            "nutrition_issues": [],
+            "recommendation": "Analysis could not be completed. Please try again with valid ingredients.",
+            "original_ingredients": request.ingredients,
+            "translated_ingredients": request.ingredients,
+            "was_translated": False,
+            "chemical_summary": {"chemical_score": 0, "density_bonus": 0, "nutrition_bonus": 0, "total_count": 0},
+            "nutrition_summary": {"values": {}, "issues_count": 0},
+            "ingredient_explanations": [],
+            "processing_level": "Unknown",
+            "health_warnings": [],
+            "health_condition": request.health_condition,
+            "additive_interactions": [],
+            "error": str(e)
+        }
 
 
 # ============================================================================

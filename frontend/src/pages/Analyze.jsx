@@ -76,14 +76,30 @@ function Analyze() {
   };
 
   const parseInput = (text) => {
+    // First, clean the input - remove nutrition facts and numbers
+    let cleanedText = text
+      // Remove "Nutrition Facts" and everything after it until we hit "Ingredients"
+      .replace(/nutrition facts.*?(?=ingredients)/gi, '')
+      // Also remove standalone nutrition facts section
+      .replace(/^\s*nutrition facts\s*$/gmi, '')
+      // Remove calorie-related lines
+      .replace(/calories\s*\d+/gi, '')
+      // Remove lines that are just numbers with units (like "0g", "40mg", etc.)
+      .replace(/\b\d+\s*(g|mg|mcg|kg|ml|l|cal|kcal)%?\b/gi, '')
+      // Remove standalone numbers
+      .replace(/^\d+\s*$/gm, '')
+      // Clean up multiple spaces
+      .replace(/\s+/g, ' ')
+      .trim();
+    
     // Split into ingredients and nutrition facts sections
-    const ingredientsMatch = text.toLowerCase().includes('ingredient');
+    const ingredientsMatch = cleanedText.toLowerCase().includes('ingredient');
     let ingredients = '';
     let nutritionText = '';
     
     if (ingredientsMatch) {
       // Try to extract ingredients
-      const ingredientLines = text.split(/\n|ingredients/i).slice(1);
+      const ingredientLines = cleanedText.split(/\n|ingredients/i).slice(1);
       if (ingredientLines.length > 0) {
         const splitPattern = new RegExp('(nutrition|facts|calories|serving|amount)', 'i');
         ingredients = ingredientLines.join(' ').split(splitPattern);
@@ -93,15 +109,16 @@ function Analyze() {
     
     // If no separate sections, assume the whole text might be ingredients
     if (!ingredients.trim()) {
-      ingredients = text;
+      ingredients = cleanedText;
     }
     
     return { ingredients: ingredients.trim(), nutritionText: nutritionText.trim() };
   };
 
   const handleAnalyze = async () => {
-    if (!inputText.trim()) {
-      setError('Please paste nutrition facts or ingredients to analyze.');
+    // Validate input - check minimum length
+    if (!inputText || inputText.trim().length < 5) {
+      setError('Please enter valid ingredients (at least 5 characters).');
       return;
     }
     
@@ -114,6 +131,11 @@ function Analyze() {
       // Parse input to extract ingredients and nutrition text
       const { ingredients, nutritionText } = parseInput(inputText);
       
+      // Validate that we have actual ingredients after cleaning
+      if (!ingredients || ingredients.trim().length < 3) {
+        throw new Error('Could not extract valid ingredients from input. Please paste ingredients list.');
+      }
+      
       // Use the new analyzeFoodWithHealthMode function with all advanced features
       const result = await analyzeFoodWithHealthMode(
         ingredients, 
@@ -121,18 +143,47 @@ function Analyze() {
         language,
         healthCondition || null
       );
+
+      // Validate response structure
+      if (!result || typeof result !== 'object') {
+        throw new Error('Invalid analysis response received from server.');
+      }
       
-      console.log('Analysis result received:', result);
+      // Ensure required fields exist with fallbacks
+      const safeResult = {
+        risk_score: result.risk_score ?? 0,
+        risk_level: result.risk_level ?? 'Low',
+        detected_chemicals: Array.isArray(result.detected_chemicals) ? result.detected_chemicals : [],
+        diseases: Array.isArray(result.diseases) ? result.diseases : [],
+        nutrition_issues: Array.isArray(result.nutrition_issues) ? result.nutrition_issues : [],
+        recommendation: result.recommendation || 'Analysis complete.',
+        original_ingredients: result.original_ingredients || ingredients,
+        translated_ingredients: result.translated_ingredients || ingredients,
+        was_translated: result.was_translated || false,
+        food_safety_score: result.food_safety_score ?? 100,
+        health_warnings: Array.isArray(result.health_warnings) ? result.health_warnings : [],
+        additive_interactions: Array.isArray(result.additive_interactions) ? result.additive_interactions : [],
+        processing_level: result.processing_level || 'Unknown'
+      };
+      
+      console.log('Analysis result received:', safeResult);
       
       // Store results in sessionStorage for the results page
-      sessionStorage.setItem('analysisResults', JSON.stringify(result));
+      sessionStorage.setItem('analysisResults', JSON.stringify(safeResult));
       
       // Save to history in localStorage
       const historyItem = {
-        ...result,
+        ...safeResult,
         date: new Date().toISOString()
       };
-      const existingHistory = JSON.parse(localStorage.getItem('analysisHistory') || '[]');
+      const existingHistoryRaw = localStorage.getItem('analysisHistory');
+      let existingHistory = [];
+      try {
+        const parsed = JSON.parse(existingHistoryRaw || '[]');
+        existingHistory = Array.isArray(parsed) ? parsed : [];
+      } catch (_parseErr) {
+        existingHistory = [];
+      }
       existingHistory.push(historyItem);
       localStorage.setItem('analysisHistory', JSON.stringify(existingHistory));
       
@@ -140,7 +191,11 @@ function Analyze() {
       navigate('/results');
     } catch (err) {
       console.error('Analysis error:', err);
-      setError(err.response?.data?.detail || 'Failed to analyze. Please try again.');
+      setError(
+        err.response?.data?.detail ||
+        err.message ||
+        'Failed to analyze. Please try again with valid ingredients.'
+      );
     } finally {
       setLoading(false);
     }

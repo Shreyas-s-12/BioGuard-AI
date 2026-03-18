@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 
 function RiskMeter({ score }) {
-  const safeScore = Math.max(0, Math.min(100, Number(score) || 0));
+  const safeScore = Math.max(0, Math.min(100, Number.isNaN(score) ? 0 : Number(score) || 0));
   const color =
     safeScore < 30 ? 'bg-green-500' : safeScore < 60 ? 'bg-yellow-400' : 'bg-red-500';
 
@@ -94,23 +94,24 @@ function Results() {
     );
   }
 
-  const {
-    detected_factors = [],
-    health_effects = [],
-    analysis_summary = '',
-    detected_chemicals = [],
-    diseases = [],
-    nutrition_issues = [],
-    recommendation = '',
-    original_ingredients = '',
-    translated_ingredients = '',
-    was_translated = false,
-    food_safety_score = null
-  } = results;
+  const safeResults = results && typeof results === 'object' ? results : {};
+  const detected_factors = Array.isArray(safeResults.detected_factors) ? safeResults.detected_factors : [];
+  const health_effects = Array.isArray(safeResults.health_effects) ? safeResults.health_effects : [];
+  const analysis_summary = typeof safeResults.analysis_summary === 'string' ? safeResults.analysis_summary : '';
+  const detected_chemicals = Array.isArray(safeResults.detected_chemicals) ? safeResults.detected_chemicals : [];
+  const diseases = Array.isArray(safeResults.diseases) ? safeResults.diseases : [];
+  const nutrition_issues = Array.isArray(safeResults.nutrition_issues) ? safeResults.nutrition_issues : [];
+  const recommendation = typeof safeResults.recommendation === 'string' ? safeResults.recommendation : '';
+  const original_ingredients = typeof safeResults.original_ingredients === 'string' ? safeResults.original_ingredients : '';
+  const translated_ingredients = typeof safeResults.translated_ingredients === 'string' ? safeResults.translated_ingredients : '';
+  const was_translated = Boolean(safeResults.was_translated);
+  const food_safety_score =
+    typeof safeResults.food_safety_score === 'number' ? safeResults.food_safety_score :
+    (typeof safeResults.food_safety_score === 'string' ? parseInt(safeResults.food_safety_score, 10) : null);
 
   const getRiskScore = () => {
-    if (results.risk_score !== undefined && results.risk_score !== null) {
-      return Math.max(0, Math.min(100, Number(results.risk_score) || 0));
+    if (safeResults.risk_score !== undefined && safeResults.risk_score !== null) {
+      return Math.max(0, Math.min(100, Number(safeResults.risk_score) || 0));
     }
     if (health_effects.length > 5) return 80;
     if (health_effects.length > 2) return 60;
@@ -119,7 +120,9 @@ function Results() {
   };
 
   const getRiskLevel = () => {
-    if (results.risk_level) return results.risk_level;
+    if (typeof safeResults.risk_level === 'string' && safeResults.risk_level.trim()) {
+      return safeResults.risk_level;
+    }
     const score = getRiskScore();
     if (score >= 70) return 'High';
     if (score >= 40) return 'Moderate';
@@ -129,10 +132,15 @@ function Results() {
   const finalScore = getRiskScore();
   const finalRiskLevel = getRiskLevel();
   const finalSafetyScore =
-    typeof food_safety_score === 'number' ? food_safety_score : Math.max(0, 100 - finalScore);
+    typeof food_safety_score === 'number' && !isNaN(food_safety_score) 
+      ? Math.max(0, Math.min(100, food_safety_score)) 
+      : Math.max(0, 100 - finalScore);
 
-  const displayFactors =
-    detected_chemicals.length > 0 ? detected_chemicals.map((c) => c.chemical_name) : detected_factors;
+  const displayFactors = detected_chemicals.length > 0
+    ? detected_chemicals
+        .map((c) => (c && typeof c === 'object' ? c.chemical_name : c))
+        .filter((name) => typeof name === 'string' && name.trim())
+    : detected_factors;
   const displayDiseases = diseases.length > 0 ? diseases : health_effects;
   const displayNutritionIssues = Array.isArray(nutrition_issues) ? nutrition_issues : [];
   const displaySummary = recommendation || analysis_summary;
@@ -145,34 +153,32 @@ function Results() {
     'Natural Yogurt'
   ];
 
-  const hiddenSugars = useMemo(() => {
-    const sugarMarkers = [
-      'sugar',
-      'syrup',
-      'fructose',
-      'glucose',
-      'dextrose',
-      'maltose',
-      'honey',
-      'high fructose corn syrup',
-      'aspartame',
-      'sucralose',
-      'saccharin',
-      'acesulfame',
-      'sweetener'
-    ];
+  const sugarMarkers = [
+    'sugar',
+    'syrup',
+    'fructose',
+    'glucose',
+    'dextrose',
+    'maltose',
+    'honey',
+    'high fructose corn syrup',
+    'aspartame',
+    'sucralose',
+    'saccharin',
+    'acesulfame',
+    'sweetener'
+  ];
 
-    const fromIngredients = (displayFactors || []).filter((item) => {
-      const text = String(item || '').toLowerCase();
-      return sugarMarkers.some((marker) => text.includes(marker));
-    });
+  const fromIngredients = (displayFactors || []).filter((item) => {
+    const text = String(item || '').toLowerCase();
+    return sugarMarkers.some((marker) => text.includes(marker));
+  });
 
-    const fromNutrition = displayNutritionIssues.filter((item) =>
-      String(item || '').toLowerCase().includes('sugar')
-    );
+  const fromNutrition = displayNutritionIssues.filter((item) =>
+    String(item || '').toLowerCase().includes('sugar')
+  );
 
-    return Array.from(new Set([...fromIngredients, ...fromNutrition]));
-  }, [displayFactors, displayNutritionIssues]);
+  const hiddenSugars = Array.from(new Set([...fromIngredients, ...fromNutrition]));
 
   return (
     <Layout>
