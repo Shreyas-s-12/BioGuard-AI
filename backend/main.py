@@ -183,7 +183,7 @@ class FoodAnalysisRequest(BaseModel):
     ingredients: str
     nutrition_text: Optional[str] = ""
     language: Optional[str] = "auto"  # Source language for translation (auto-detect by default)
-    health_condition: Optional[str] = None  # Personal health mode: diabetes, hypertension, heart_disease, kidney_disease
+    health_condition: Optional[str] = None  # Personal health mode: diabetes, hypertension, heart_disease, kidney_disease, obesity, fatty_liver, pcos, thyroid_disorder, digestive_disorder, pregnancy
 
 
 class NutritionValues(BaseModel):
@@ -192,6 +192,149 @@ class NutritionValues(BaseModel):
     fat: Optional[float] = None
     sugar: Optional[float] = None
     protein: Optional[float] = None
+
+
+class DailyGoalsRequest(BaseModel):
+    """Request model for personalized daily nutrition goals."""
+    age: Optional[int] = None
+    weight: Optional[float] = None
+    goal: Optional[str] = None
+
+
+class GroceryAnalysisRequest(BaseModel):
+    """Request model for multi-item grocery analysis."""
+    items: List[str]
+    health_condition: Optional[str] = None
+    health_mode: Optional[str] = None
+
+
+class WeeklyMealPlanRequest(BaseModel):
+    """Request model for weekly meal plan generation."""
+    goal: Optional[str] = None
+
+
+def calculate_daily_nutrition_goals(
+    age: Optional[int] = None,
+    weight: Optional[float] = None,
+    goal: Optional[str] = None,
+) -> Dict[str, Any]:
+    """
+    Calculate personalized daily nutrition goals with safe defaults.
+
+    Returns:
+    {
+      "calories_goal": int,
+      "protein_goal": int,
+      "limits": {"sugar": int, "sodium": int}
+    }
+    """
+    defaults = {
+        "calories_goal": 2100,
+        "protein_goal": 98,
+        "limits": {"sugar": 30, "sodium": 2000},
+    }
+
+    try:
+        safe_age = int(age) if age is not None else 25
+        if safe_age < 10 or safe_age > 120:
+            safe_age = 25
+
+        safe_weight = float(weight) if weight is not None else 70.0
+        if safe_weight < 25 or safe_weight > 300:
+            safe_weight = 70.0
+
+        normalized_goal = str(goal or "maintain").strip().lower()
+        goal_aliases = {
+            "weight loss": "weight_loss",
+            "loss": "weight_loss",
+            "weight_loss": "weight_loss",
+            "weight gain": "weight_gain",
+            "gain": "weight_gain",
+            "weight_gain": "weight_gain",
+            "maintain": "maintain",
+            "maintenance": "maintain",
+        }
+        goal_mode = goal_aliases.get(normalized_goal, "maintain")
+
+        base_calories = safe_weight * 30.0
+        if safe_age >= 50:
+            base_calories -= 100
+
+        if goal_mode == "weight_loss":
+            calories_goal = base_calories - 400
+            protein_factor = 1.8
+            sugar_limit = 25
+            sodium_limit = 1800
+        elif goal_mode == "weight_gain":
+            calories_goal = base_calories + 300
+            protein_factor = 2.0
+            sugar_limit = 35
+            sodium_limit = 2300
+        else:
+            calories_goal = base_calories
+            protein_factor = 1.4
+            sugar_limit = 30
+            sodium_limit = 2000
+
+        calories_goal = int(max(1200, min(4000, round(calories_goal))))
+        protein_goal = int(max(40, min(260, round(safe_weight * protein_factor))))
+
+        return {
+            "calories_goal": calories_goal,
+            "protein_goal": protein_goal,
+            "limits": {
+                "sugar": int(sugar_limit),
+                "sodium": int(sodium_limit),
+            },
+        }
+    except Exception:
+        return defaults
+
+
+def generate_weekly_meal_plan(goal: Optional[str] = None) -> Dict[str, List[str]]:
+    """
+    Generate weekly meal plan based on user goal.
+    Returns day1..day7, each with [breakfast, lunch, dinner].
+    """
+    maintain_plan = {
+        "day1": ["Oats with fruits", "Dal + brown rice + salad", "Vegetable soup + chapati"],
+        "day2": ["Poha with peanuts", "Grilled paneer bowl", "Khichdi + curd"],
+        "day3": ["Idli + sambar", "Roti + mixed veg + dal", "Millet upma + salad"],
+        "day4": ["Greek yogurt + nuts", "Quinoa veggie bowl", "Moong chilla + chutney"],
+        "day5": ["Besan chilla", "Rajma + rice + salad", "Vegetable stir fry + roti"],
+        "day6": ["Fruit smoothie + seeds", "Chole + chapati", "Soup + paneer tikka"],
+        "day7": ["Dalia + fruits", "Sambar rice + salad", "Light pulao + curd"],
+    }
+
+    weight_loss_plan = {
+        "day1": ["Overnight oats + berries", "Grilled tofu salad", "Soup + sauteed veggies"],
+        "day2": ["Veg omelette", "Quinoa + dal + salad", "Moong dal chilla"],
+        "day3": ["Greek yogurt + chia", "Brown rice + mixed veg", "Paneer salad bowl"],
+        "day4": ["Fruit + nuts", "Millet khichdi + salad", "Stir-fried vegetables"],
+        "day5": ["Poha (low oil)", "Sprouts bowl + curd", "Vegetable soup + roti"],
+        "day6": ["Oats + flaxseeds", "Grilled paneer + greens", "Dal soup + sauteed beans"],
+        "day7": ["Smoothie bowl", "Chickpea salad", "Light khichdi + curd"],
+    }
+
+    weight_gain_plan = {
+        "day1": ["Peanut butter oats + banana", "Rice + dal + paneer", "Roti + veg + curd"],
+        "day2": ["Eggs + toast + milk", "Chicken/soy curry + rice", "Khichdi + ghee + salad"],
+        "day3": ["Smoothie + nuts", "Paneer wrap + sprouts", "Dal + rice + avocado"],
+        "day4": ["Upma + curd + nuts", "Rajma rice + paneer", "Paratha + yogurt"],
+        "day5": ["Banana shake + oats", "Chole rice + salad", "Tofu stir fry + noodles"],
+        "day6": ["Dalia + dry fruits", "Quinoa + lentils + paneer", "Egg bhurji + roti"],
+        "day7": ["Idli + peanut chutney", "Pulao + raita + soy chunks", "Soup + grilled paneer"],
+    }
+
+    try:
+        normalized_goal = str(goal or "maintain").strip().lower()
+        if normalized_goal in ["weight loss", "loss", "weight_loss"]:
+            return weight_loss_plan
+        if normalized_goal in ["weight gain", "gain", "weight_gain"]:
+            return weight_gain_plan
+        return maintain_plan
+    except Exception:
+        return maintain_plan
 
 # Disease Knowledge Mapping Dictionary
 DISEASE_MAPPING = {
@@ -573,6 +716,58 @@ def detect_chemicals_from_ingredients(ingredient_text: str) -> List[Dict]:
                     matched_term_suffixes.add(words_in_term[-1].lower())
     
     return detected
+
+
+# Hidden ingredient aliases mapping.
+HIDDEN_INGREDIENT_ALIASES: Dict[str, str] = {
+    "dextrose": "sugar",
+    "maltose": "sugar",
+    "e621": "MSG",
+    "aspartame": "artificial sweetener",
+}
+
+
+def detect_hidden_ingredient_aliases(ingredient_text: str) -> List[Dict[str, str]]:
+    """
+    Detect hidden ingredient aliases from ingredient text.
+
+    Returns:
+        [
+            {"original": "dextrose", "actual": "sugar"},
+            ...
+        ]
+    """
+    if not ingredient_text or not ingredient_text.strip():
+        return []
+
+    ingredients = re.split(r"[,;\n\r]+", ingredient_text)
+    hidden_ingredients: List[Dict[str, str]] = []
+    seen_aliases = set()
+
+    for raw_item in ingredients:
+        original_item = raw_item.strip()
+        if not original_item:
+            continue
+
+        normalized_item = re.sub(r"[^a-z0-9\s]", " ", original_item.lower())
+        normalized_item = re.sub(r"\s+", " ", normalized_item).strip()
+        if not normalized_item:
+            continue
+
+        for alias, actual in HIDDEN_INGREDIENT_ALIASES.items():
+            alias_key = alias.lower().strip()
+            if alias_key in seen_aliases:
+                continue
+
+            if re.search(rf"\b{re.escape(alias_key)}\b", normalized_item):
+                hidden_ingredients.append({
+                    "original": original_item,
+                    "actual": actual
+                })
+                seen_aliases.add(alias_key)
+                break
+
+    return hidden_ingredients
 
 
 # Risk level score mapping (STEP 3)
@@ -988,6 +1183,529 @@ def generate_recommendation(risk_level: str, detected_chemicals: List[Dict], nut
     return "✅ This product appears to be a safe choice."
 
 
+def generate_risk_summary(risk_score: Any) -> str:
+    """Generate a concise AI-style summary from risk score."""
+    try:
+        score = float(risk_score)
+    except (TypeError, ValueError):
+        score = 0.0
+
+    if score > 70:
+        return "High-risk product with harmful additives. Avoid frequent consumption."
+    if score > 40:
+        return "Moderate risk. Consume occasionally."
+    return "Low-risk product. Generally safe."
+
+
+def generate_simplified_ingredient_summary(ingredient_text: str, detected_chemicals: List[Dict]) -> str:
+    """
+    Convert raw ingredient signals into a simple human-readable summary.
+    Always returns a string.
+    """
+    try:
+        text = str(ingredient_text or "").lower()
+        chem_names = " ".join(
+            str(item.get("chemical_name", "")).lower()
+            for item in (detected_chemicals or [])
+            if isinstance(item, dict)
+        )
+        combined = f"{text} {chem_names}".strip()
+
+        has_added_sugars = any(
+            marker in combined
+            for marker in [
+                "sugar", "syrup", "high fructose corn syrup", "glucose",
+                "dextrose", "maltose", "fructose"
+            ]
+        )
+        has_preservatives = any(
+            marker in combined
+            for marker in [
+                "preservative", "benzoate", "nitrite", "nitrate", "sorbate",
+                "bha", "bht", "tbhq", "sodium benzoate", "potassium benzoate"
+            ]
+        )
+        has_artificial_flavors = any(
+            marker in combined
+            for marker in [
+                "artificial flavor", "artificial flavours", "natural flavor",
+                "flavoring", "flavours", "flavors", "colour", "color added"
+            ]
+        )
+        has_artificial_sweeteners = any(
+            marker in combined
+            for marker in ["aspartame", "sucralose", "saccharin", "acesulfame", "sweetener"]
+        )
+
+        parts: List[str] = []
+        if has_added_sugars:
+            parts.append("added sugars")
+        if has_preservatives:
+            parts.append("preservatives")
+        if has_artificial_flavors:
+            parts.append("artificial flavors")
+        if has_artificial_sweeteners:
+            parts.append("artificial sweeteners")
+
+        if not parts:
+            return "This product appears to have a relatively simple ingredient profile."
+        if len(parts) == 1:
+            return f"This product contains {parts[0]}."
+        if len(parts) == 2:
+            return f"This product contains {parts[0]} and {parts[1]}."
+        return f"This product contains {', '.join(parts[:-1])}, and {parts[-1]}."
+    except Exception:
+        return "No data available"
+
+
+def calculate_processing_complexity(detected_chemicals: List[Dict]) -> int:
+    """
+    Calculate processing complexity score from detected chemicals count.
+    complexity = len(detected_chemicals) * 10, clamped to 100.
+    """
+    count = len(detected_chemicals) if isinstance(detected_chemicals, list) else 0
+    return max(0, min(100, count * 10))
+
+
+ALTERNATIVE_SUGGESTION_MAP: Dict[str, str] = {
+    "cola": "coconut water",
+    "chips": "roasted snacks",
+    "processed food": "fresh fruits",
+}
+
+# Food pairing suggestions - maps unhealthy items to healthier alternatives
+PAIRING_SUGGESTIONS_MAP: Dict[str, str] = {
+    # Beverages
+    "cola": "pair with water or coconut water",
+    "soda": "pair with sparkling water with lemon",
+    "energy drink": "pair with green tea",
+    "iced tea": "pair with fresh fruit-infused water",
+    "fruit juice": "pair with whole fruit",
+    "lemonade": "pair with plain water",
+    
+    # Snacks
+    "chips": "pair with fresh salad",
+    "potato chips": "pair with roasted chickpeas",
+    "fried snacks": "pair with air-popped popcorn",
+    "cookies": "pair with fresh fruits",
+    "candy": "pair with dark chocolate (70%+)",
+    "chocolate bar": "pair with nuts",
+    
+    # Processed foods
+    "instant noodles": "pair with vegetable soup",
+    "frozen pizza": "pair with grilled vegetables",
+    "frozen meals": "pair with fresh salad",
+    "canned soup": "pair with homemade broth",
+    
+    # Sugars & Sweets
+    "sugar": "pair with fresh fruits",
+    "high fructose corn syrup": "pair with honey (in moderation)",
+    "artificial sweetener": "pair with natural sweeteners",
+    "syrup": "pair with fresh berries",
+    
+    # Dairy
+    "ice cream": "pair with fresh fruit salad",
+    "flavored yogurt": "pair with plain yogurt with fruits",
+    
+    # Fast food
+    "burger": "pair with grilled chicken salad",
+    "fries": "pair with baked sweet potato",
+    "pizza": "pair with vegetable stir-fry",
+    "hot dog": "pair with grilled chicken",
+    
+    # Others
+    "bread": "pair with fresh vegetables",
+    "white bread": "pair with whole grain bread",
+    "cereal": "pair with fresh berries",
+    "granola": "pair with fresh fruits",
+}
+
+
+def generate_alternative_suggestions(ingredient_text: str, risk_score: Any) -> List[str]:
+    """
+    Return alternative food suggestions when risk score is high enough.
+    """
+    try:
+        score = float(risk_score)
+    except (TypeError, ValueError):
+        score = 0.0
+
+    if score <= 50:
+        return []
+
+    text = (ingredient_text or "").lower()
+    suggestions: List[str] = []
+    for source_term, suggestion in ALTERNATIVE_SUGGESTION_MAP.items():
+        if source_term in text and suggestion not in suggestions:
+            suggestions.append(suggestion)
+
+    return suggestions
+
+
+def generate_pairing_suggestions(ingredient_text: str, detected_chemicals: List[Any], risk_score: Any) -> List[Dict[str, str]]:
+    """
+    Generate pairing suggestions for unhealthy items found in the food.
+    Returns a list of dictionaries with 'item' and 'suggestion' keys.
+    """
+    try:
+        score = float(risk_score)
+    except (TypeError, ValueError):
+        score = 0.0
+    
+    # Only suggest pairings for moderate to high risk foods
+    if score < 30:
+        return []
+    
+    text = (ingredient_text or "").lower()
+    
+    # Also check detected chemicals
+    chemical_text = ""
+    if isinstance(detected_chemicals, list):
+        for chem in detected_chemicals:
+            if isinstance(chem, dict):
+                chemical_text += " " + (chem.get("chemical_name", "") or "")
+            elif isinstance(chem, str):
+                chemical_text += " " + chem
+    
+    combined_text = text + " " + chemical_text.lower()
+    
+    pairing_suggestions: List[Dict[str, str]] = []
+    seen_items = set()
+    
+    for unhealthy_item, suggestion in PAIRING_SUGGESTIONS_MAP.items():
+        if unhealthy_item in combined_text and unhealthy_item not in seen_items:
+            pairing_suggestions.append({
+                "item": unhealthy_item,
+                "suggestion": suggestion
+            })
+            seen_items.add(unhealthy_item)
+    
+    return pairing_suggestions
+
+
+DEFAULT_RECOMMENDED_MEALS: List[str] = [
+    "Oats with fruits",
+    "Grilled paneer",
+    "Salad bowl",
+]
+
+MAX_GROCERY_ITEMS = 40
+MAX_GROCERY_ITEM_LENGTH = 600
+
+
+def generate_recommended_meals(health_mode: Optional[str]) -> List[str]:
+    """
+    Suggest meals based on user health profile.
+    Supports aliases like: diabetes, heart/heart_disease, fitness.
+    Always returns fallback meals when no profile match is found.
+    """
+    normalized = str(health_mode or "").strip().lower()
+    if normalized in ["heart_disease", "cardiac", "heart"]:
+        normalized = "heart"
+
+    if normalized == "diabetes":
+        meals = [
+            "Oats with chia seeds",
+            "Moong dal chilla",
+            "Vegetable salad bowl",
+        ]
+    elif normalized == "fitness":
+        meals = [
+            "Grilled paneer with quinoa",
+            "Boiled eggs with sauteed veggies",
+            "Greek yogurt with nuts",
+        ]
+    elif normalized == "heart":
+        meals = [
+            "Steamed vegetables with brown rice",
+            "Mixed lentil soup",
+            "Low-sodium salad bowl",
+        ]
+    else:
+        meals = DEFAULT_RECOMMENDED_MEALS.copy()
+
+    safe_meals = [str(item).strip() for item in meals if str(item).strip()]
+    return safe_meals if safe_meals else DEFAULT_RECOMMENDED_MEALS.copy()
+
+
+def analyze_grocery_items(items: List[str], health_condition: Optional[str] = None) -> Dict[str, Any]:
+    """
+    Analyze a full grocery list by analyzing each item individually.
+    Large input is handled safely by capping count and per-item text length.
+    """
+    fallback = {
+        "total_items": 0,
+        "high_risk_count": 0,
+        "safe_items": [],
+        "overall_grocery_score": 0,
+        "item_results": [],
+    }
+
+    try:
+        if not isinstance(items, list):
+            return fallback
+
+        sanitized_items: List[str] = []
+        for raw in items[:MAX_GROCERY_ITEMS]:
+            clean = str(raw or "").strip()
+            if not clean:
+                continue
+            clean = clean[:MAX_GROCERY_ITEM_LENGTH]
+            sanitized_items.append(clean)
+
+        if not sanitized_items:
+            return fallback
+
+        item_results: List[Dict[str, Any]] = []
+        high_risk_count = 0
+        safe_items: List[str] = []
+        risk_total = 0
+
+        for item in sanitized_items:
+            try:
+                analysis = analyze_food_comprehensive(
+                    ingredient_text=item,
+                    nutrition_text="",
+                    health_condition=health_condition
+                )
+                risk_score = max(0, min(100, int(float(analysis.get("risk_score", 0) or 0))))
+                risk_level = str(analysis.get("risk_level", "Low") or "Low")
+            except Exception:
+                risk_score = 0
+                risk_level = "Low"
+
+            risk_total += risk_score
+            if risk_score > 70 or risk_level.lower() == "high":
+                high_risk_count += 1
+            if risk_score <= 40:
+                safe_items.append(item)
+
+            item_results.append({
+                "item": item,
+                "risk_score": risk_score,
+                "risk_level": risk_level
+            })
+
+        total_items = len(sanitized_items)
+        average_risk = (risk_total / total_items) if total_items else 100
+        overall_grocery_score = int(max(0, min(100, round(100 - average_risk))))
+
+        return {
+            "total_items": total_items,
+            "high_risk_count": high_risk_count,
+            "safe_items": safe_items,
+            "overall_grocery_score": overall_grocery_score,
+            "item_results": item_results,
+        }
+    except Exception:
+        return fallback
+
+
+TOXICITY_LONG_TERM_MAP: Dict[str, str] = {
+    "sugar": "Long-term diabetes risk",
+    "trans fat": "Heart disease risk",
+    "sodium": "Blood pressure risk",
+}
+
+
+def generate_toxicity_timeline(
+    ingredient_text: str,
+    nutrition_values: Dict[str, float],
+    nutrition_issues: List[str]
+) -> List[str]:
+    """
+    Build a toxicity timeline from detected nutrition/ingredient signals.
+    Returns [] when no meaningful source data is available.
+    """
+    has_sources = bool((ingredient_text or "").strip()) or bool(nutrition_values) or bool(nutrition_issues)
+    if not has_sources:
+        return []
+
+    ingredient_blob = (ingredient_text or "").lower()
+    issues_blob = " ".join([str(item).lower() for item in (nutrition_issues or [])])
+    long_term_effects: List[str] = []
+
+    for marker, effect in TOXICITY_LONG_TERM_MAP.items():
+        marker_key = marker.lower().strip()
+        marker_nutrition_key = marker_key.replace(" ", "_")
+        value = nutrition_values.get(marker_nutrition_key)
+        matched = False
+
+        if marker_key in ingredient_blob or marker_key in issues_blob:
+            matched = True
+        elif value is not None:
+            try:
+                matched = float(value) > 0
+            except (TypeError, ValueError):
+                matched = False
+
+        if matched and effect not in long_term_effects:
+            long_term_effects.append(effect)
+
+    long_term_text = ", ".join(long_term_effects) if long_term_effects else "disease risk"
+    return [
+        "Short-term: minimal effect",
+        "Mid-term: metabolic changes",
+        f"Long-term: {long_term_text}",
+    ]
+
+
+MAX_PARSED_INGREDIENT_TEXT_LENGTH = 5000
+MAX_PARSED_INGREDIENT_ITEMS = 300
+
+
+def parse_ingredients_for_ai(ingredient_text: str) -> List[str]:
+    """
+    Parse ingredient text into normalized items with size limits for safety.
+    """
+    bounded_text = str(ingredient_text or "")[:MAX_PARSED_INGREDIENT_TEXT_LENGTH]
+    parts = re.split(r"[,;\n\r]+", bounded_text)
+    parsed: List[str] = []
+    for part in parts:
+        clean = part.strip()
+        if clean and len(clean) <= 120:
+            parsed.append(clean)
+        if len(parsed) >= MAX_PARSED_INGREDIENT_ITEMS:
+            break
+    return parsed
+
+
+def build_ai_nutrition_fields(
+    ingredient_text: str,
+    detected_chemicals: List[Dict],
+    risk_score: Any
+) -> Dict[str, Any]:
+    """
+    Build AI-assistant response fields with strict fallbacks and no nulls.
+    """
+    defaults: Dict[str, Any] = {
+        "food_score": 0,
+        "confidence": 0,
+        "summary": "No data available",
+        "decision": "Safe to eat",
+        "complexity_score": 0,
+        "hidden_ingredients": [],
+        "timeline": [],
+        "impact": "Minimal long-term impact",
+        "recommendations": [],
+        "deficiencies": [],
+        "category": "Healthy",
+        "simplified": "No data available",
+        "simplified_summary": "No data available",
+        "parsed_ingredients": [],
+    }
+
+    try:
+        parsed_ingredients = parse_ingredients_for_ai(ingredient_text)
+        detected_count = len(detected_chemicals) if isinstance(detected_chemicals, list) else 0
+        safe_risk_score = max(0, min(100, int(float(risk_score or 0))))
+
+        food_score = max(0, 100 - safe_risk_score)
+        confidence = int((detected_count / max(1, len(parsed_ingredients))) * 100)
+        confidence = max(0, min(100, confidence))
+
+        if safe_risk_score > 70:
+            summary = "High-risk product with harmful additives. Avoid frequent consumption."
+            decision = "No, avoid"
+            impact = "Frequent consumption may lead to obesity, diabetes, or heart disease"
+            category = "Junk"
+        elif safe_risk_score > 40:
+            summary = "Moderate risk. Consume occasionally."
+            decision = "Eat occasionally"
+            impact = "Moderate long-term health impact"
+            category = "Processed"
+        else:
+            summary = "Low-risk product. Generally safe."
+            decision = "Safe to eat"
+            impact = "Minimal long-term impact"
+            category = "Healthy"
+
+        complexity_score = min(100, detected_count * 10)
+
+        aliases = {
+            "dextrose": "sugar",
+            "maltose": "sugar",
+            "e621": "msg",
+            "aspartame": "artificial sweetener",
+        }
+
+        hidden_ingredients: List[Dict[str, str]] = []
+        for ing in parsed_ingredients:
+            key = ing.lower()
+            if key in aliases:
+                hidden_ingredients.append({
+                    "original": ing,
+                    "actual": aliases[key]
+                })
+
+        timeline = [
+            "Short-term: minimal effect",
+            "Mid-term: metabolic changes",
+            "Long-term: disease risk"
+        ]
+
+        recommendations = [
+            "Choose fresh foods",
+            "Avoid processed items",
+            "Check labels before buying"
+        ]
+
+        parsed_blob = str(parsed_ingredients).lower()
+        deficiencies: List[str] = []
+
+        protein_markers = [
+            "protein", "egg", "paneer", "tofu", "lentil", "dal", "bean",
+            "chickpea", "soy", "milk", "yogurt", "curd", "nuts", "seeds",
+            "fish", "chicken", "meat"
+        ]
+        fruit_markers = [
+            "fruit", "fruits", "apple", "banana", "orange", "mango", "papaya",
+            "grape", "berries", "berry", "pineapple", "guava", "melon",
+            "pear", "peach", "pomegranate"
+        ]
+        fiber_markers = [
+            "fiber", "fibre", "whole grain", "oats", "bran", "vegetable",
+            "veggie", "fruit", "fruits", "bean", "lentil", "dal", "chickpea",
+            "seed", "seeds"
+        ]
+
+        has_protein_source = any(marker in parsed_blob for marker in protein_markers)
+        has_fruit_source = any(marker in parsed_blob for marker in fruit_markers)
+        has_fiber_source = any(marker in parsed_blob for marker in fiber_markers)
+
+        if not has_protein_source:
+            deficiencies.append("Low protein intake")
+        if not has_fruit_source:
+            deficiencies.append("Low vitamin intake")
+        if not has_fiber_source:
+            deficiencies.append("Low fiber intake")
+
+        simplified_summary = generate_simplified_ingredient_summary(
+            ingredient_text=ingredient_text,
+            detected_chemicals=detected_chemicals,
+        )
+        simplified = simplified_summary
+
+        return {
+            "food_score": food_score,
+            "confidence": confidence,
+            "summary": summary,
+            "decision": decision,
+            "complexity_score": complexity_score,
+            "hidden_ingredients": hidden_ingredients,
+            "timeline": timeline,
+            "impact": impact,
+            "recommendations": recommendations,
+            "deficiencies": deficiencies,
+            "category": category,
+            "simplified": simplified,
+            "simplified_summary": simplified_summary,
+            "parsed_ingredients": parsed_ingredients,
+        }
+    except Exception:
+        return defaults
+
+
 def analyze_food_comprehensive(ingredient_text: str, nutrition_text: str = "", 
                         health_condition: str = None) -> Dict[str, Any]:
     """
@@ -1048,16 +1766,46 @@ def analyze_food_comprehensive(ingredient_text: str, nutrition_text: str = "",
     
     # FEATURE 5: Detect additive interactions
     additive_interactions = detect_additive_interactions(ingredient_text, detected_chemicals)
+
+    # AI assistant enhancement fields with safe defaults.
+    ai_fields = build_ai_nutrition_fields(
+        ingredient_text=ingredient_text,
+        detected_chemicals=detected_chemicals,
+        risk_score=risk_result['risk_score']
+    )
     
     # Build response with all required fields (STEP 9)
     # Feature 1: Food Safety Score (0-100)
     safety_score = max(0, 100 - risk_result['risk_score'])
+    summary = ai_fields.get('summary', generate_risk_summary(risk_result['risk_score']))
+    complexity_score = ai_fields.get('complexity_score', calculate_processing_complexity(detected_chemicals))
+    suggestions = generate_alternative_suggestions(ingredient_text, risk_result['risk_score'])
+    pairing_suggestions = generate_pairing_suggestions(ingredient_text, detected_chemicals, risk_result['risk_score'])
+    timeline = ai_fields.get('timeline', [])
+    recommended_meals = generate_recommended_meals(health_condition)
     
     return {
         'risk_score': risk_result['risk_score'],
         'risk_level': risk_result['risk_level'],
+        'food_score': ai_fields.get('food_score', safety_score),
+        'confidence': ai_fields.get('confidence', 0),
+        'summary': summary,
+        'decision': ai_fields.get('decision', 'Safe to eat'),
+        'complexity_score': complexity_score,
+        'suggestions': suggestions,
+        'pairing_suggestions': pairing_suggestions,
+        'timeline': timeline,
+        'impact': ai_fields.get('impact', 'Minimal long-term impact'),
+        'recommendations': ai_fields.get('recommendations', []),
+        'recommended_meals': recommended_meals,
+        'deficiencies': ai_fields.get('deficiencies', []),
+        'category': ai_fields.get('category', 'Healthy'),
+        'simplified': ai_fields.get('simplified', 'No data available'),
+        'simplified_summary': ai_fields.get('simplified_summary', ai_fields.get('simplified', 'No data available')),
+        'parsed_ingredients': ai_fields.get('parsed_ingredients', []),
         'food_safety_score': safety_score,
         'detected_chemicals': detected_chemicals,
+        'hidden_ingredients': ai_fields.get('hidden_ingredients', []),
         'total_additives': risk_result['total_additives'],  # STEP 9: Add total_additives
         'diseases': diseases,
         'nutrition_issues': risk_result['nutrition_issues'],
@@ -1124,7 +1872,7 @@ INGREDIENT_KEYWORDS = {
 # ============================================================================
 HEALTH_RULES = {
     "diabetes": [
-        "sugar", "high fructose corn syrup", "corn syrup", "glucose", 
+        "sugar", "high fructose corn syrup", "corn syrup", "glucose",
         "fructose", "sucrose", "maltose", "dextrose", "lactose",
         "aspartame", "saccharin", "sucralose", "acesulfame",
         "honey", "maple syrup", "agave", "molasses"
@@ -1132,7 +1880,7 @@ HEALTH_RULES = {
     "hypertension": [
         "sodium", "sodium benzoate", "sodium nitrite", "sodium nitrate",
         "sodium metabisulfite", "sodium chloride", "monosodium glutamate",
-        "MSG", "disodium", "trisodium"
+        "msg", "disodium", "trisodium"
     ],
     "heart_disease": [
         "trans fat", "hydrogenated oil", "partially hydrogenated",
@@ -1142,7 +1890,31 @@ HEALTH_RULES = {
     "kidney_disease": [
         "phosphorus", "phosphate", "sodium", "potassium",
         "calcium", "magnesium", "nitrite", "nitrate"
-    ]
+    ],
+    "obesity": [
+        "sugar", "corn syrup", "high fructose corn syrup", "trans fat",
+        "hydrogenated oil", "maltodextrin", "fructose", "glucose syrup"
+    ],
+    "fatty_liver": [
+        "high fructose corn syrup", "fructose", "corn syrup", "sugar",
+        "maltose", "dextrose", "glucose syrup"
+    ],
+    "pcos": [
+        "sugar", "high fructose corn syrup", "corn syrup", "maltodextrin",
+        "artificial sweetener", "dextrose", "sucrose"
+    ],
+    "thyroid_disorder": [
+        "soy protein isolate", "soy lecithin", "iodized salt", "nitrate",
+        "nitrite", "artificial color", "brominated"
+    ],
+    "digestive_disorder": [
+        "carrageenan", "sorbitol", "maltitol", "xylitol", "mannitol",
+        "sucralose", "aspartame", "artificial flavor"
+    ],
+    "pregnancy": [
+        "caffeine", "saccharin", "aspartame", "sodium nitrate",
+        "sodium nitrite", "alcohol", "unpasteurized"
+    ],
 }
 
 # Health condition display names
@@ -1150,7 +1922,13 @@ HEALTH_CONDITION_NAMES = {
     "diabetes": "Diabetes",
     "hypertension": "Hypertension",
     "heart_disease": "Heart Disease",
-    "kidney_disease": "Kidney Disease"
+    "kidney_disease": "Kidney Disease",
+    "obesity": "Obesity",
+    "fatty_liver": "Fatty Liver",
+    "pcos": "PCOS",
+    "thyroid_disorder": "Thyroid Disorder",
+    "digestive_disorder": "Digestive Disorder",
+    "pregnancy": "Pregnancy",
 }
 
 
@@ -1287,6 +2065,85 @@ def get_health_warnings(health_condition: str, ingredient_text: str,
                 "message": f"⚠ High sodium content ({sodium}mg) - Not recommended for hypertension patients."
             })
     
+    # Check fats for heart disease
+    if health_condition == "heart_disease":
+        sat_fat = nutrition_values.get('saturated_fat')
+        trans_fat = nutrition_values.get('trans_fat')
+        if sat_fat and sat_fat > 4:
+            warnings.append({
+                "type": "nutrition",
+                "condition": "Heart Disease",
+                "ingredient": "High Saturated Fat",
+                "message": f"Warning: High saturated fat ({sat_fat}g) - Not ideal for heart disease patients."
+            })
+        if trans_fat and trans_fat > 0.5:
+            warnings.append({
+                "type": "nutrition",
+                "condition": "Heart Disease",
+                "ingredient": "Trans Fat",
+                "message": f"Warning: Trans fat detected ({trans_fat}g) - Should be avoided in heart disease."
+            })
+
+    # Check sodium/protein load for kidney disease
+    if health_condition == "kidney_disease":
+        sodium = nutrition_values.get('sodium')
+        protein = nutrition_values.get('protein')
+        if sodium and sodium > 300:
+            warnings.append({
+                "type": "nutrition",
+                "condition": "Kidney Disease",
+                "ingredient": "High Sodium",
+                "message": f"Warning: High sodium content ({sodium}mg) - May stress kidney function."
+            })
+        if protein and protein > 20:
+            warnings.append({
+                "type": "nutrition",
+                "condition": "Kidney Disease",
+                "ingredient": "High Protein",
+                "message": f"Warning: High protein load ({protein}g) - Consult renal diet guidance."
+            })
+
+    # Check sugar/calorie burden for obesity, fatty liver and PCOS
+    if health_condition in ["obesity", "fatty_liver", "pcos"]:
+        sugar = nutrition_values.get('sugar')
+        calories = nutrition_values.get('calories')
+        condition_name = HEALTH_CONDITION_NAMES.get(health_condition, health_condition)
+        if sugar and sugar > 12:
+            warnings.append({
+                "type": "nutrition",
+                "condition": condition_name,
+                "ingredient": "High Sugar",
+                "message": f"Warning: Elevated sugar ({sugar}g) - May worsen {condition_name.lower()} risk."
+            })
+        if health_condition == "obesity" and calories and calories > 250:
+            warnings.append({
+                "type": "nutrition",
+                "condition": "Obesity",
+                "ingredient": "High Calories",
+                "message": f"Warning: High calorie density ({calories} kcal) - Not ideal for weight management."
+            })
+
+    # Check caffeine for pregnancy mode
+    if health_condition == "pregnancy" and "caffeine" in ingredient_lower:
+        warnings.append({
+            "type": "ingredient",
+            "condition": "Pregnancy",
+            "ingredient": "Caffeine",
+            "message": "Warning: Caffeine detected - Limit caffeine intake during pregnancy."
+        })
+
+    # Check trigger ingredients for digestive sensitivity
+    if health_condition == "digestive_disorder":
+        trigger_terms = ["carrageenan", "sorbitol", "maltitol", "xylitol", "sucralose"]
+        found_triggers = [term for term in trigger_terms if term in ingredient_lower]
+        if found_triggers:
+            warnings.append({
+                "type": "ingredient",
+                "condition": "Digestive Disorder",
+                "ingredient": ", ".join(found_triggers[:3]),
+                "message": "Warning: Digestive trigger ingredients detected - May cause bloating or gut discomfort."
+            })
+
     return warnings
 
 
@@ -1641,6 +2498,83 @@ async def analyze_nutrition(request: NutritionAnalysisRequest):
     except Exception as e:
         print(f"DEBUG: Error in analyze_nutrition: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
+
+
+@app.post("/daily-goals")
+async def daily_goals(request: DailyGoalsRequest):
+    """
+    Personalized daily nutrition goals.
+
+    Accepts JSON:
+    {
+      "age": 28,
+      "weight": 72,
+      "goal": "weight loss" | "weight gain" | "maintain"
+    }
+    """
+    try:
+        goals = calculate_daily_nutrition_goals(
+            age=request.age,
+            weight=request.weight,
+            goal=request.goal,
+        )
+
+        calories_goal = int(goals.get("calories_goal", 2100) or 2100)
+        protein_goal = int(goals.get("protein_goal", 98) or 98)
+        limits = goals.get("limits", {})
+        sugar_limit = int((limits.get("sugar", 30) if isinstance(limits, dict) else 30) or 30)
+        sodium_limit = int((limits.get("sodium", 2000) if isinstance(limits, dict) else 2000) or 2000)
+
+        return {
+            "calories_goal": max(1200, min(4000, calories_goal)),
+            "protein_goal": max(40, min(260, protein_goal)),
+            "limits": {
+                "sugar": max(10, min(80, sugar_limit)),
+                "sodium": max(1200, min(3500, sodium_limit)),
+            },
+        }
+    except Exception:
+        return {
+            "calories_goal": 2100,
+            "protein_goal": 98,
+            "limits": {
+                "sugar": 30,
+                "sodium": 2000,
+            },
+        }
+
+
+@app.post("/weekly-meal-plan")
+async def weekly_meal_plan(request: WeeklyMealPlanRequest):
+    """
+    Generate weekly meal plan based on user goal.
+
+    Input:
+    {
+      "goal": "weight loss" | "weight gain" | "maintain"
+    }
+    """
+    try:
+        plan = generate_weekly_meal_plan(request.goal)
+        if not isinstance(plan, dict) or not plan:
+            plan = generate_weekly_meal_plan("maintain")
+
+        # Guarantee stable day keys and 3 meals per day.
+        stable_plan: Dict[str, List[str]] = {}
+        for idx in range(1, 8):
+            key = f"day{idx}"
+            meals = plan.get(key, [])
+            if not isinstance(meals, list):
+                meals = []
+            safe_meals = [str(item).strip() for item in meals if str(item).strip()]
+            while len(safe_meals) < 3:
+                safe_meals.append("Balanced meal")
+            stable_plan[key] = safe_meals[:3]
+
+        return {"weekly_plan": stable_plan}
+    except Exception:
+        fallback = generate_weekly_meal_plan("maintain")
+        return {"weekly_plan": fallback}
 
 # ============================================
 # AI CHATBOT ENDPOINT
@@ -2044,8 +2978,25 @@ async def analyze_food_simple(
         return {
             "risk_level": "Low",
             "detected_chemicals": [],
+            "hidden_ingredients": [],
             "explanation": "No ingredients provided for analysis.",
             "risk_score": 0,
+            "food_score": 100,
+            "confidence": 0,
+            "summary": generate_risk_summary(0),
+            "decision": "Safe to eat",
+            "complexity_score": 0,
+            "suggestions": [],
+            "timeline": [],
+            "impact": "Minimal long-term impact",
+            "recommendations": [],
+            "pairing_suggestions": [],
+            "recommended_meals": DEFAULT_RECOMMENDED_MEALS.copy(),
+            "deficiencies": [],
+            "category": "Healthy",
+            "simplified": "No data available",
+            "simplified_summary": "No data available",
+            "parsed_ingredients": [],
             "food_safety_score": 100,
             "diseases": [],
             "nutrition_issues": [],
@@ -2079,21 +3030,123 @@ async def analyze_food_simple(
             nutrition_text=nutrition or ""
         )
         
+        # Normalize key fields so /analyze never returns null values.
+        risk_score = max(0, min(100, int(float(result.get("risk_score", 0) or 0))))
+        food_safety_score = max(
+            0,
+            min(100, int(float(result.get("food_safety_score", max(0, 100 - risk_score)) or max(0, 100 - risk_score))))
+        )
+        food_score = max(
+            0,
+            min(100, int(float(result.get("food_score", food_safety_score) or food_safety_score)))
+        )
+        confidence = max(0, min(100, int(float(result.get("confidence", 0) or 0))))
+        complexity_score = max(0, min(100, int(float(result.get("complexity_score", 0) or 0))))
+
+        risk_level = result.get("risk_level")
+        if not isinstance(risk_level, str) or not risk_level.strip():
+            risk_level = "Low" if risk_score < 40 else ("Moderate" if risk_score < 70 else "High")
+
+        summary = result.get("summary")
+        if not isinstance(summary, str) or not summary.strip():
+            summary = generate_risk_summary(risk_score)
+
+        decision = result.get("decision")
+        if not isinstance(decision, str) or not decision.strip():
+            decision = "Safe to eat"
+
+        impact = result.get("impact")
+        if not isinstance(impact, str) or not impact.strip():
+            impact = "Minimal long-term impact"
+
+        category = result.get("category")
+        if not isinstance(category, str) or not category.strip():
+            category = "Healthy"
+
+        simplified = result.get("simplified")
+        if not isinstance(simplified, str) or not simplified.strip():
+            simplified = "No data available"
+        simplified_summary = result.get("simplified_summary")
+        if not isinstance(simplified_summary, str) or not simplified_summary.strip():
+            simplified_summary = simplified
+
+        explanation = result.get("recommendation")
+        if not isinstance(explanation, str):
+            explanation = ""
+
+        suggestions = result.get("suggestions")
+        if not isinstance(suggestions, list):
+            suggestions = []
+
+        timeline = result.get("timeline")
+        if not isinstance(timeline, list):
+            timeline = []
+
+        recommendations = result.get("recommendations")
+        if not isinstance(recommendations, list):
+            recommendations = []
+
+        pairing_suggestions = result.get("pairing_suggestions")
+        if not isinstance(pairing_suggestions, list):
+            pairing_suggestions = []
+
+        recommended_meals = result.get("recommended_meals")
+        if not isinstance(recommended_meals, list) or not recommended_meals:
+            recommended_meals = DEFAULT_RECOMMENDED_MEALS.copy()
+
+        deficiencies = result.get("deficiencies")
+        if not isinstance(deficiencies, list):
+            deficiencies = []
+
+        parsed_ingredients = result.get("parsed_ingredients")
+        if not isinstance(parsed_ingredients, list):
+            parsed_ingredients = []
+
+        detected_chemicals = result.get("detected_chemicals")
+        if not isinstance(detected_chemicals, list):
+            detected_chemicals = []
+
+        hidden_ingredients = result.get("hidden_ingredients")
+        if not isinstance(hidden_ingredients, list):
+            hidden_ingredients = []
+
+        diseases = result.get("diseases")
+        if not isinstance(diseases, list):
+            diseases = []
+
+        nutrition_issues = result.get("nutrition_issues")
+        if not isinstance(nutrition_issues, list):
+            nutrition_issues = []
+
         # Return the required format
         return {
-            "risk_level": result.get("risk_level", "Unknown"),
-            "detected_chemicals": result.get("detected_chemicals", []),
-            "explanation": result.get("recommendation", ""),
-            "risk_score": result.get("risk_score", 0),
-            "food_safety_score": result.get(
-                "food_safety_score",
-                max(0, 100 - result.get("risk_score", 0))
-            ),
-            "diseases": result.get("diseases", []),
-            "nutrition_issues": result.get("nutrition_issues", []),
-            "original_ingredients": ingredients,
-            "translated_ingredients": ingredients_to_analyze,
-            "was_translated": ingredients_to_analyze != ingredients if ingredients else False
+            "risk_level": risk_level,
+            "detected_chemicals": detected_chemicals,
+            "hidden_ingredients": hidden_ingredients,
+            "explanation": explanation,
+            "risk_score": risk_score,
+            "food_score": food_score,
+            "confidence": confidence,
+            "summary": summary,
+            "decision": decision,
+            "complexity_score": complexity_score,
+            "suggestions": suggestions,
+            "timeline": timeline,
+            "impact": impact,
+            "recommendations": recommendations,
+            "pairing_suggestions": pairing_suggestions,
+            "recommended_meals": recommended_meals,
+            "deficiencies": deficiencies,
+            "category": category,
+            "simplified": simplified,
+            "simplified_summary": simplified_summary,
+            "parsed_ingredients": parsed_ingredients,
+            "food_safety_score": food_safety_score,
+            "diseases": diseases,
+            "nutrition_issues": nutrition_issues,
+            "original_ingredients": ingredients or "",
+            "translated_ingredients": ingredients_to_analyze or "",
+            "was_translated": bool(ingredients and ingredients_to_analyze != ingredients)
         }
     
     except Exception as e:
@@ -2104,8 +3157,25 @@ async def analyze_food_simple(
         return {
             "risk_level": "Low",
             "detected_chemicals": [],
+            "hidden_ingredients": [],
             "explanation": "Analysis could not be completed. Please try again.",
             "risk_score": 0,
+            "food_score": 100,
+            "confidence": 0,
+            "summary": generate_risk_summary(0),
+            "decision": "Safe to eat",
+            "complexity_score": 0,
+            "suggestions": [],
+            "timeline": [],
+            "impact": "Minimal long-term impact",
+            "recommendations": [],
+            "pairing_suggestions": [],
+            "recommended_meals": DEFAULT_RECOMMENDED_MEALS.copy(),
+            "deficiencies": [],
+            "category": "Healthy",
+            "simplified": "No data available",
+            "simplified_summary": "No data available",
+            "parsed_ingredients": [],
             "food_safety_score": 100,
             "diseases": [],
             "nutrition_issues": [],
@@ -2157,8 +3227,24 @@ async def analyze_food(request: FoodAnalysisRequest):
         return {
             "risk_score": 0,
             "risk_level": "Low",
+            "food_score": 100,
+            "confidence": 0,
+            "summary": generate_risk_summary(0),
+            "decision": "Safe to eat",
+            "complexity_score": 0,
+            "suggestions": [],
+            "timeline": [],
+            "impact": "Minimal long-term impact",
+            "recommendations": [],
+            "recommended_meals": generate_recommended_meals(request.health_condition),
+            "deficiencies": [],
+            "category": "Healthy",
+            "simplified": "No data available",
+            "simplified_summary": "No data available",
+            "parsed_ingredients": [],
             "food_safety_score": 100,
             "detected_chemicals": [],
+            "hidden_ingredients": [],
             "total_additives": 0,
             "diseases": [],
             "nutrition_issues": [],
@@ -2206,6 +3292,44 @@ async def analyze_food(request: FoodAnalysisRequest):
         # Normalize key fields to avoid downstream frontend crashes.
         if not isinstance(result.get('detected_chemicals'), list):
             result['detected_chemicals'] = []
+        if not isinstance(result.get('hidden_ingredients'), list):
+            result['hidden_ingredients'] = []
+        if not isinstance(result.get('summary'), str) or not result.get('summary', '').strip():
+            result['summary'] = generate_risk_summary(result.get('risk_score', 0))
+        if not isinstance(result.get('decision'), str) or not result.get('decision', '').strip():
+            result['decision'] = "Safe to eat"
+        try:
+            result['complexity_score'] = max(0, min(100, int(result.get('complexity_score', 0) or 0)))
+        except (TypeError, ValueError):
+            result['complexity_score'] = 0
+        try:
+            result['food_score'] = max(0, min(100, int(result.get('food_score', result.get('food_safety_score', 0)) or 0)))
+        except (TypeError, ValueError):
+            result['food_score'] = 0
+        try:
+            result['confidence'] = max(0, min(100, int(result.get('confidence', 0) or 0)))
+        except (TypeError, ValueError):
+            result['confidence'] = 0
+        if not isinstance(result.get('suggestions'), list):
+            result['suggestions'] = []
+        if not isinstance(result.get('timeline'), list):
+            result['timeline'] = []
+        if not isinstance(result.get('impact'), str) or not result.get('impact', '').strip():
+            result['impact'] = "Minimal long-term impact"
+        if not isinstance(result.get('recommendations'), list):
+            result['recommendations'] = []
+        if not isinstance(result.get('recommended_meals'), list) or not result.get('recommended_meals'):
+            result['recommended_meals'] = generate_recommended_meals(request.health_condition)
+        if not isinstance(result.get('deficiencies'), list):
+            result['deficiencies'] = []
+        if not isinstance(result.get('category'), str) or not result.get('category', '').strip():
+            result['category'] = "Healthy"
+        if not isinstance(result.get('simplified'), str) or not result.get('simplified', '').strip():
+            result['simplified'] = "No data available"
+        if not isinstance(result.get('simplified_summary'), str) or not result.get('simplified_summary', '').strip():
+            result['simplified_summary'] = result.get('simplified', 'No data available')
+        if not isinstance(result.get('parsed_ingredients'), list):
+            result['parsed_ingredients'] = []
         if not isinstance(result.get('diseases'), list):
             result['diseases'] = []
         if not isinstance(result.get('nutrition_issues'), list):
@@ -2241,8 +3365,24 @@ async def analyze_food(request: FoodAnalysisRequest):
         return {
             "risk_score": 0,
             "risk_level": "Low",
+            "food_score": 100,
+            "confidence": 0,
+            "summary": generate_risk_summary(0),
+            "decision": "Safe to eat",
+            "complexity_score": 0,
+            "suggestions": [],
+            "timeline": [],
+            "impact": "Minimal long-term impact",
+            "recommendations": [],
+            "recommended_meals": generate_recommended_meals(request.health_condition),
+            "deficiencies": [],
+            "category": "Healthy",
+            "simplified": "No data available",
+            "simplified_summary": "No data available",
+            "parsed_ingredients": [],
             "food_safety_score": 100,
             "detected_chemicals": [],
+            "hidden_ingredients": [],
             "total_additives": 0,
             "diseases": [],
             "nutrition_issues": [],
@@ -2258,6 +3398,51 @@ async def analyze_food(request: FoodAnalysisRequest):
             "health_condition": request.health_condition,
             "additive_interactions": [],
             "error": str(e)
+        }
+
+
+@app.post("/analyze-grocery")
+async def analyze_grocery(request: GroceryAnalysisRequest):
+    """
+    Analyze full grocery list by looping over each item individually.
+
+    Input:
+    {
+      "items": ["item 1 ingredients", "item 2 ingredients", ...],
+      "health_condition": "diabetes" (optional)
+    }
+    """
+    try:
+        profile = request.health_mode or request.health_condition
+        result = analyze_grocery_items(
+            items=request.items,
+            health_condition=profile
+        )
+
+        total_items = max(0, int(result.get("total_items", 0) or 0))
+        high_risk_count = max(0, int(result.get("high_risk_count", 0) or 0))
+        safe_items = result.get("safe_items", [])
+        if not isinstance(safe_items, list):
+            safe_items = []
+        overall_grocery_score = max(0, min(100, int(result.get("overall_grocery_score", 0) or 0)))
+        item_results = result.get("item_results", [])
+        if not isinstance(item_results, list):
+            item_results = []
+
+        return {
+            "total_items": total_items,
+            "high_risk_count": high_risk_count,
+            "safe_items": [str(item).strip() for item in safe_items if str(item).strip()],
+            "overall_grocery_score": overall_grocery_score,
+            "item_results": item_results,
+        }
+    except Exception:
+        return {
+            "total_items": 0,
+            "high_risk_count": 0,
+            "safe_items": [],
+            "overall_grocery_score": 0,
+            "item_results": [],
         }
 
 

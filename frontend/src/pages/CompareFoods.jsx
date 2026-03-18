@@ -118,6 +118,12 @@ function CompareFoods() {
             <option className="bg-slate-800 text-white" value="hypertension">Hypertension</option>
             <option className="bg-slate-800 text-white" value="heart_disease">Heart Disease</option>
             <option className="bg-slate-800 text-white" value="kidney_disease">Kidney Disease</option>
+            <option className="bg-slate-800 text-white" value="obesity">Obesity</option>
+            <option className="bg-slate-800 text-white" value="fatty_liver">Fatty Liver</option>
+            <option className="bg-slate-800 text-white" value="pcos">PCOS</option>
+            <option className="bg-slate-800 text-white" value="thyroid_disorder">Thyroid Disorder</option>
+            <option className="bg-slate-800 text-white" value="digestive_disorder">Digestive Disorder</option>
+            <option className="bg-slate-800 text-white" value="pregnancy">Pregnancy</option>
           </select>
           <span className="text-xs text-slate-500">Get personalized comparison based on your health</span>
         </div>

@@ -79,6 +79,43 @@ export const compareFoods = async (
   return response.data;
 };
 
+/**
+ * Analyze full grocery list (multiple items/products).
+ */
+export const analyzeGroceryList = async (items = [], healthCondition = null) => {
+  const response = await api.post('/analyze-grocery', {
+    items,
+    health_condition: healthCondition,
+    health_mode: healthCondition
+  });
+
+  return response.data;
+};
+
+/**
+ * Get personalized daily nutrition goals.
+ */
+export const getDailyNutritionGoals = async (age = null, weight = null, goal = 'maintain') => {
+  const response = await api.post('/daily-goals', {
+    age,
+    weight,
+    goal
+  });
+
+  return response.data;
+};
+
+/**
+ * Get weekly meal plan based on user goal.
+ */
+export const getWeeklyMealPlan = async (goal = 'maintain') => {
+  const response = await api.post('/weekly-meal-plan', {
+    goal
+  });
+
+  return response.data;
+};
+
 export const getChemicals = async (search = '', riskLevel = '', category = '', limit = 100) => {
   const params = new URLSearchParams();
   

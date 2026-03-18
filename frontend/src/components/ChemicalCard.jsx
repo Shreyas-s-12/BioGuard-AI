@@ -4,7 +4,7 @@ function ChemicalCard({ chemical, onClick }) {
   return (
     <div 
       onClick={() => onClick(chemical)}
-      className="group bg-slate-900/60 backdrop-blur-xl border border-slate-800 rounded-2xl p-6 cursor-pointer transition-all duration-300 hover:bg-white/10 hover:border-cyan-500/30 hover:shadow-lg hover:shadow-cyan-500/10 hover:-translate-y-1"
+      className="group bg-slate-900/60 backdrop-blur-xl border border-slate-800 rounded-2xl p-6 cursor-pointer transition-all duration-300 hover:shadow-[0_0_30px_rgba(34,211,238,0.3)] hover:border-cyan-400"
     >
       {/* Header */}
       <div className="flex items-start justify-between mb-4">

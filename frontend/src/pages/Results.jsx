@@ -1,6 +1,27 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
+import { getWeeklyMealPlan } from '../services/api';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer
+} from 'recharts';
+
+const FALLBACK_WEEKLY_PLAN = {
+  day1: ['Oats with fruits', 'Dal + brown rice + salad', 'Vegetable soup + chapati'],
+  day2: ['Poha with peanuts', 'Grilled paneer bowl', 'Khichdi + curd'],
+  day3: ['Idli + sambar', 'Roti + mixed veg + dal', 'Millet upma + salad'],
+  day4: ['Greek yogurt + nuts', 'Quinoa veggie bowl', 'Moong chilla + chutney'],
+  day5: ['Besan chilla', 'Rajma + rice + salad', 'Vegetable stir fry + roti'],
+  day6: ['Fruit smoothie + seeds', 'Chole + chapati', 'Soup + paneer tikka'],
+  day7: ['Dalia + fruits', 'Sambar rice + salad', 'Light pulao + curd']
+};
+const SUGAR_HYDRATION_KEY = 'sugar_hydration_tracker';
 
 function RiskMeter({ score }) {
   const safeScore = Math.max(0, Math.min(100, Number.isNaN(score) ? 0 : Number(score) || 0));
@@ -31,6 +52,12 @@ function Results() {
   const navigate = useNavigate();
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [weeklyPlan, setWeeklyPlan] = useState(FALLBACK_WEEKLY_PLAN);
+  const [dailySugarHydration, setDailySugarHydration] = useState({
+    date: new Date().toISOString().slice(0, 10),
+    sugar_counter: 0,
+    hydration_level: 'Good'
+  });
 
   useEffect(() => {
     const storedResults = sessionStorage.getItem('analysisResults');
@@ -45,6 +72,71 @@ function Results() {
     }
 
     setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    const today = new Date().toISOString().slice(0, 10);
+    let tracker = {
+      date: today,
+      sugar_counter: 0,
+      hydration_level: 'Good'
+    };
+
+    try {
+      const parsed = JSON.parse(localStorage.getItem(SUGAR_HYDRATION_KEY) || '{}');
+      if (parsed && parsed.date === today && Number.isFinite(Number(parsed.sugar_counter))) {
+        const sugarCounter = Math.max(0, Math.round(Number(parsed.sugar_counter)));
+        tracker = {
+          date: today,
+          sugar_counter: sugarCounter,
+          hydration_level: sugarCounter > 0 ? 'Low' : 'Good'
+        };
+      }
+    } catch (_err) {
+      tracker = { date: today, sugar_counter: 0, hydration_level: 'Good' };
+    }
+
+    localStorage.setItem(SUGAR_HYDRATION_KEY, JSON.stringify(tracker));
+    setDailySugarHydration(tracker);
+  }, []);
+
+  useEffect(() => {
+    const fetchWeeklyPlan = async () => {
+      try {
+        let goal = 'maintain';
+        try {
+          const rawProfile = localStorage.getItem('nutrition_goals_profile');
+          if (rawProfile) {
+            const parsed = JSON.parse(rawProfile);
+            if (parsed && typeof parsed.goal === 'string' && parsed.goal.trim()) {
+              goal = parsed.goal.trim().toLowerCase();
+            }
+          }
+        } catch (_profileErr) {
+          goal = 'maintain';
+        }
+
+        const response = await getWeeklyMealPlan(goal);
+        const plan = response?.weekly_plan;
+        if (plan && typeof plan === 'object') {
+          const safePlan = {};
+          for (let i = 1; i <= 7; i += 1) {
+            const key = `day${i}`;
+            const meals = Array.isArray(plan[key])
+              ? plan[key].filter((item) => typeof item === 'string').map((item) => item.trim()).filter(Boolean)
+              : [];
+            safePlan[key] = meals.length > 0 ? meals.slice(0, 3) : FALLBACK_WEEKLY_PLAN[key];
+          }
+          setWeeklyPlan(safePlan);
+          return;
+        }
+        setWeeklyPlan(FALLBACK_WEEKLY_PLAN);
+      } catch (_err) {
+        setWeeklyPlan(FALLBACK_WEEKLY_PLAN);
+      }
+    };
+
+    fetchWeeklyPlan();
   }, []);
 
   const handleNewAnalysis = () => {
@@ -65,40 +157,27 @@ function Results() {
     );
   }
 
-  if (!results) {
+  const data = results && typeof results === 'object' ? results : null;
+  if (!data) {
     return (
       <Layout>
-        <div className="max-w-2xl mx-auto text-center py-20">
-          <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-12">
-            <div className="w-24 h-24 bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-6">
-              <svg className="w-12 h-12 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-              </svg>
-            </div>
-            <h2 className="text-2xl font-bold text-white mb-3">No Analysis Results</h2>
-            <p className="text-slate-400 mb-8">
-              You have not analyzed any nutrition facts yet. Start by pasting nutrition facts.
-            </p>
-            <Link
-              to="/analyze"
-              className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-cyan-500 to-purple-500 text-white font-semibold rounded-xl hover:opacity-90 transition"
-            >
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-              Go to Analysis
-            </Link>
-          </div>
-        </div>
+        <div className="text-center text-slate-300 py-20">No data</div>
       </Layout>
     );
   }
 
-  const safeResults = results && typeof results === 'object' ? results : {};
+  const safeResults = data;
   const detected_factors = Array.isArray(safeResults.detected_factors) ? safeResults.detected_factors : [];
   const health_effects = Array.isArray(safeResults.health_effects) ? safeResults.health_effects : [];
   const analysis_summary = typeof safeResults.analysis_summary === 'string' ? safeResults.analysis_summary : '';
   const detected_chemicals = Array.isArray(safeResults.detected_chemicals) ? safeResults.detected_chemicals : [];
+  const hidden_ingredients = Array.isArray(safeResults.hidden_ingredients) ? safeResults.hidden_ingredients : [];
+  const toxicityTimeline = Array.isArray(safeResults.timeline)
+    ? safeResults.timeline
+        .filter((item) => typeof item === 'string')
+        .map((item) => item.trim())
+        .filter(Boolean)
+    : [];
   const diseases = Array.isArray(safeResults.diseases) ? safeResults.diseases : [];
   const nutrition_issues = Array.isArray(safeResults.nutrition_issues) ? safeResults.nutrition_issues : [];
   const recommendation = typeof safeResults.recommendation === 'string' ? safeResults.recommendation : '';
@@ -108,6 +187,77 @@ function Results() {
   const food_safety_score =
     typeof safeResults.food_safety_score === 'number' ? safeResults.food_safety_score :
     (typeof safeResults.food_safety_score === 'string' ? parseInt(safeResults.food_safety_score, 10) : null);
+  const complexity_score = Math.max(
+    0,
+    Math.min(
+      100,
+      typeof safeResults.complexity_score === 'number'
+        ? safeResults.complexity_score
+        : Number(safeResults.complexity_score) || 0
+      )
+  );
+  const food_score = Math.max(
+    0,
+    Math.min(
+      100,
+      typeof safeResults.food_score === 'number'
+        ? safeResults.food_score
+        : Number(safeResults.food_score) || 0
+    )
+  );
+  const confidence = Math.max(
+    0,
+    Math.min(
+      100,
+      typeof safeResults.confidence === 'number'
+        ? safeResults.confidence
+        : Number(safeResults.confidence) || 0
+    )
+  );
+  const decision = typeof safeResults.decision === 'string' && safeResults.decision.trim()
+    ? safeResults.decision.trim()
+    : 'Safe to eat';
+  const impact = typeof safeResults.impact === 'string' && safeResults.impact.trim()
+    ? safeResults.impact.trim()
+    : 'No data available';
+  const recommendations = Array.isArray(safeResults.recommendations)
+    ? safeResults.recommendations.filter((item) => typeof item === 'string').map((item) => item.trim()).filter(Boolean)
+    : [];
+  const recommendedMeals = Array.isArray(safeResults.recommended_meals) && safeResults.recommended_meals.length > 0
+    ? safeResults.recommended_meals
+        .filter((item) => typeof item === 'string')
+        .map((item) => item.trim())
+        .filter(Boolean)
+    : ['Oats with fruits', 'Grilled paneer', 'Salad bowl'];
+  const deficiencies = Array.isArray(safeResults.deficiencies)
+    ? safeResults.deficiencies.filter((item) => typeof item === 'string').map((item) => item.trim()).filter(Boolean)
+    : [];
+  const pairingSuggestions = Array.isArray(safeResults.pairing_suggestions)
+    ? safeResults.pairing_suggestions.filter((item) => item && typeof item === 'object' && item.item && item.suggestion)
+        .map((item) => ({
+          item: String(item.item || '').trim(),
+          suggestion: String(item.suggestion || '').trim()
+        }))
+    : [];
+  const category = typeof safeResults.category === 'string' && safeResults.category.trim()
+    ? safeResults.category.trim()
+    : 'Healthy';
+  const simplified = typeof safeResults.simplified === 'string' && safeResults.simplified.trim()
+    ? safeResults.simplified.trim()
+    : 'No data available';
+  const simplifiedSummary = typeof safeResults.simplified_summary === 'string' && safeResults.simplified_summary.trim()
+    ? safeResults.simplified_summary.trim()
+    : simplified;
+  const grocerySummary = safeResults.grocery_summary && typeof safeResults.grocery_summary === 'object'
+    ? {
+        total_items: Math.max(0, Number(safeResults.grocery_summary.total_items) || 0),
+        high_risk_count: Math.max(0, Number(safeResults.grocery_summary.high_risk_count) || 0),
+        safe_items: Array.isArray(safeResults.grocery_summary.safe_items)
+          ? safeResults.grocery_summary.safe_items.filter((item) => typeof item === 'string').map((item) => item.trim()).filter(Boolean)
+          : [],
+        overall_grocery_score: Math.max(0, Math.min(100, Number(safeResults.grocery_summary.overall_grocery_score) || 0))
+      }
+    : null;
 
   const getRiskScore = () => {
     if (safeResults.risk_score !== undefined && safeResults.risk_score !== null) {
@@ -131,27 +281,69 @@ function Results() {
 
   const finalScore = getRiskScore();
   const finalRiskLevel = getRiskLevel();
+  const backendSummary =
+    typeof safeResults.summary === 'string' ? safeResults.summary.trim() : '';
+  const topSummary = simplifiedSummary || backendSummary || 'No data available';
   const finalSafetyScore =
     typeof food_safety_score === 'number' && !isNaN(food_safety_score) 
       ? Math.max(0, Math.min(100, food_safety_score)) 
       : Math.max(0, 100 - finalScore);
+  const complexityBarColor =
+    complexity_score >= 70 ? 'bg-red-500' : complexity_score >= 40 ? 'bg-yellow-400' : 'bg-green-500';
+  const decisionBadgeClass =
+    decision.toLowerCase().includes('avoid')
+      ? 'bg-red-500/20 text-red-300 border-red-500/30'
+      : decision.toLowerCase().includes('occasion')
+        ? 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30'
+        : 'bg-green-500/20 text-green-300 border-green-500/30';
+  const categoryBadgeClass =
+    category.toLowerCase() === 'junk'
+      ? 'bg-red-500/20 text-red-300 border-red-500/30'
+      : category.toLowerCase() === 'processed'
+        ? 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30'
+        : 'bg-green-500/20 text-green-300 border-green-500/30';
 
-  const displayFactors = detected_chemicals.length > 0
+  const getRiskTextColorClass = (riskLevel) => {
+    const normalized = String(riskLevel || '').toLowerCase().trim();
+    if (normalized === 'high') return 'text-red-400';
+    if (normalized === 'moderate') return 'text-yellow-400';
+    if (normalized === 'low') return 'text-green-400';
+    return 'text-slate-300';
+  };
+
+  const displayChemicalsWithRisk = detected_chemicals.length > 0
     ? detected_chemicals
-        .map((c) => (c && typeof c === 'object' ? c.chemical_name : c))
-        .filter((name) => typeof name === 'string' && name.trim())
-    : detected_factors;
+        .map((chemical) => {
+          if (chemical && typeof chemical === 'object') {
+            return {
+              name: String(chemical.chemical_name || '').trim(),
+              riskLevel: String(chemical.risk_level || '').trim()
+            };
+          }
+          return {
+            name: String(chemical || '').trim(),
+            riskLevel: ''
+          };
+        })
+        .filter((item) => item.name)
+    : (Array.isArray(detected_factors) ? detected_factors : [])
+        .map((factor) => ({
+          name: String(factor || '').trim(),
+          riskLevel: ''
+        }))
+        .filter((item) => item.name);
+
+  const displayFactors = displayChemicalsWithRisk.map((item) => item.name);
   const displayDiseases = diseases.length > 0 ? diseases : health_effects;
   const displayNutritionIssues = Array.isArray(nutrition_issues) ? nutrition_issues : [];
-  const displaySummary = recommendation || analysis_summary;
-
-  const healthyAlternatives = [
-    'Fresh Fruit Juice',
-    'Coconut Water',
-    'Homemade Lemon Juice',
-    'Fresh Smoothie',
-    'Natural Yogurt'
-  ];
+  const displaySummary = topSummary || recommendation || analysis_summary || 'No data available';
+  const displayHiddenIngredients = hidden_ingredients
+    .filter((item) => item && typeof item === 'object')
+    .map((item) => ({
+      original: String(item.original || '').trim(),
+      actual: String(item.actual || '').trim()
+    }))
+    .filter((item) => item.original && item.actual);
 
   const sugarMarkers = [
     'sugar',
@@ -179,6 +371,81 @@ function Results() {
   );
 
   const hiddenSugars = Array.from(new Set([...fromIngredients, ...fromNutrition]));
+  const historyTrendData = (() => {
+    let parsedHistory = [];
+    try {
+      const rawHistory = localStorage.getItem('history');
+      const parsed = JSON.parse(rawHistory || '[]');
+      parsedHistory = Array.isArray(parsed) ? parsed : [];
+    } catch (_err) {
+      parsedHistory = [];
+    }
+
+    const points = parsedHistory
+      .map((item) => {
+        const rawDate = item?.date || item?.timestamp;
+        const riskScore = Number(item?.risk_score);
+        if (!rawDate || Number.isNaN(riskScore)) return null;
+        const dateObj = new Date(rawDate);
+        if (Number.isNaN(dateObj.getTime())) return null;
+        return {
+          time: dateObj.toLocaleDateString([], { month: 'short', day: 'numeric' }),
+          risk_score: Math.max(0, Math.min(100, riskScore)),
+          ts: dateObj.getTime()
+        };
+      })
+      .filter(Boolean)
+      .sort((a, b) => a.ts - b.ts)
+      .slice(-20)
+      .map(({ time, risk_score }) => ({ time, risk_score }));
+
+    return points;
+  })();
+  const historyStats = (() => {
+    let parsedHistory = [];
+
+    try {
+      const rawHistory = localStorage.getItem('history');
+      const parsed = JSON.parse(rawHistory || '[]');
+      parsedHistory = Array.isArray(parsed) ? parsed : [];
+    } catch (_err) {
+      parsedHistory = [];
+    }
+
+    const high_risk_count = parsedHistory.reduce((count, item) => {
+      const riskLevel = String(item?.risk_level || '').toLowerCase().trim();
+      const riskScore = Number(item?.risk_score);
+      const isHighRisk = riskLevel === 'high' || (!Number.isNaN(riskScore) && riskScore > 70);
+      return isHighRisk ? count + 1 : count;
+    }, 0);
+
+    const moderate_count = parsedHistory.reduce((count, item) => {
+      const riskLevel = String(item?.risk_level || '').toLowerCase().trim();
+      const riskScore = Number(item?.risk_score);
+      const isModerateByLevel = riskLevel === 'moderate';
+      const isModerateByScore =
+        !Number.isNaN(riskScore) && riskScore > 40 && riskScore <= 70;
+      return isModerateByLevel || isModerateByScore ? count + 1 : count;
+    }, 0);
+
+    let insight = '';
+    if (high_risk_count > 5) {
+      insight = 'User frequently consumes high-risk food';
+    } else if (moderate_count > 5) {
+      insight = 'User often consumes moderate-risk food';
+    } else if (parsedHistory.length > 0) {
+      insight = 'No strong high-risk pattern detected in recent history.';
+    } else {
+      insight = 'No history data yet.';
+    }
+
+    return {
+      hasHistory: parsedHistory.length > 0,
+      high_risk_count,
+      moderate_count,
+      insight
+    };
+  })();
 
   return (
     <Layout>
@@ -205,6 +472,150 @@ function Results() {
             </svg>
             New Analysis
           </button>
+        </div>
+
+        <div className="bg-cyan-500/10 border border-cyan-500/30 rounded-xl p-4 mb-8">
+          <p className="text-cyan-100 font-medium">{topSummary}</p>
+        </div>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5">
+            <p className="text-xs text-slate-400 mb-1">Food Score</p>
+            <p className="text-3xl font-bold text-white">{food_score}</p>
+          </div>
+          <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5">
+            <p className="text-xs text-slate-400 mb-2">Decision</p>
+            <span className={`inline-flex px-4 py-2 rounded-full border text-base font-semibold ${decisionBadgeClass}`}>
+              {decision}
+            </span>
+          </div>
+          <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5">
+            <p className="text-xs text-slate-400 mb-1">Confidence Score</p>
+            <p className="text-2xl font-bold text-cyan-300">{confidence}%</p>
+          </div>
+          <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5">
+            <p className="text-xs text-slate-400 mb-2">Category</p>
+            <span className={`inline-flex px-3 py-1 rounded-full border text-sm font-medium ${categoryBadgeClass}`}>
+              {category}
+            </span>
+          </div>
+        </div>
+
+        <div className="bg-indigo-500/10 border border-indigo-500/30 rounded-xl p-5 mb-8">
+          <h3 className="text-lg font-semibold text-indigo-200 mb-2">Daily Sugar & Hydration Impact</h3>
+          <p className="text-slate-200">Today's Sugar Intake: {dailySugarHydration.sugar_counter}g</p>
+          <p className={`${dailySugarHydration.hydration_level === 'Low' ? 'text-amber-300' : 'text-emerald-300'}`}>
+            Hydration Level: {dailySugarHydration.hydration_level}
+          </p>
+        </div>
+
+        {grocerySummary && (
+          <div className="bg-teal-500/10 border border-teal-500/30 rounded-xl p-6 mb-8">
+            <h3 className="text-xl font-semibold text-teal-200 mb-2">Grocery Health Score</h3>
+            <div className="grid md:grid-cols-4 gap-4 text-slate-200">
+              <div>
+                <p className="text-xs text-slate-400">Overall Score</p>
+                <p className="text-2xl font-bold text-teal-300">{grocerySummary.overall_grocery_score}/100</p>
+              </div>
+              <div>
+                <p className="text-xs text-slate-400">Total Items</p>
+                <p className="text-xl font-semibold">{grocerySummary.total_items}</p>
+              </div>
+              <div>
+                <p className="text-xs text-slate-400">High-Risk Items</p>
+                <p className="text-xl font-semibold text-red-300">{grocerySummary.high_risk_count}</p>
+              </div>
+              <div>
+                <p className="text-xs text-slate-400">Safe Items</p>
+                <p className="text-xl font-semibold text-green-300">{grocerySummary.safe_items.length}</p>
+              </div>
+            </div>
+            {grocerySummary.safe_items.length > 0 && (
+              <div className="mt-4">
+                <p className="text-sm text-slate-300 mb-2">Safer picks:</p>
+                <ul className="space-y-1 text-slate-200">
+                  {grocerySummary.safe_items.slice(0, 8).map((item, index) => (
+                    <li key={index}>- {item}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6 mb-8">
+          <h3 className="text-lg font-semibold text-indigo-300 mb-4">History Insights</h3>
+          {historyStats.hasHistory ? (
+            <div className="space-y-2 text-slate-200">
+              <p>
+                High Risk Count: <span className="text-red-400 font-semibold">{historyStats.high_risk_count}</span>
+              </p>
+              <p>
+                Moderate Count: <span className="text-yellow-400 font-semibold">{historyStats.moderate_count}</span>
+              </p>
+              <p className="text-cyan-200">{historyStats.insight}</p>
+            </div>
+          ) : (
+            <p className="text-slate-400">No history data yet.</p>
+          )}
+        </div>
+
+        <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6 mb-8">
+          <h3 className="text-lg font-semibold text-cyan-300 mb-4">Risk Trend Graph</h3>
+          {historyTrendData.length > 0 ? (
+            <div className="h-72">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={historyTrendData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                  <XAxis dataKey="time" stroke="#94a3b8" />
+                  <YAxis domain={[0, 100]} stroke="#94a3b8" />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: '#0f172a',
+                      border: '1px solid #334155',
+                      borderRadius: '10px',
+                      color: '#e2e8f0'
+                    }}
+                    labelStyle={{ color: '#e2e8f0' }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="risk_score"
+                    stroke="#22d3ee"
+                    strokeWidth={3}
+                    dot={{ r: 3, strokeWidth: 0, fill: '#22d3ee' }}
+                    activeDot={{ r: 5 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <p className="text-slate-400">No history data to plot.</p>
+          )}
+        </div>
+
+        {toxicityTimeline.length > 0 && (
+          <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6 mb-8">
+            <h3 className="text-lg font-semibold text-cyan-300 mb-5">Toxicity Timeline</h3>
+            <div className="relative pl-8">
+              <div className="absolute left-2 top-1 bottom-1 w-px bg-cyan-500/30" />
+              {toxicityTimeline.map((item, index) => (
+                <div key={index} className="relative mb-5 last:mb-0">
+                  <span
+                    className={`absolute -left-[29px] top-1.5 w-3 h-3 rounded-full border border-slate-900 ${
+                      index === toxicityTimeline.length - 1 ? 'bg-red-400' : index === 1 ? 'bg-yellow-400' : 'bg-green-400'
+                    }`}
+                  />
+                  <p className="text-slate-200">{item}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-5 mb-8">
+          <h3 className="text-lg font-semibold text-red-300 mb-2">Health Impact</h3>
+          <p className="text-red-100">{impact}</p>
         </div>
 
         {was_translated && translated_ingredients && (
@@ -241,6 +652,17 @@ function Results() {
             </div>
 
             <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-cyan-400 mb-3">Processing Complexity</h3>
+              <div className="w-full bg-slate-800 rounded-full h-3 overflow-hidden">
+                <div
+                  className={`${complexityBarColor} h-3 transition-all duration-700`}
+                  style={{ width: `${complexity_score}%` }}
+                />
+              </div>
+              <p className="text-slate-300 mt-3">Complexity Score: {complexity_score}/100</p>
+            </div>
+
+            <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6">
               <h3 className="text-lg font-semibold text-red-400 mb-3">Health Concerns</h3>
               {displayDiseases.length > 0 ? (
                 <ul className="space-y-2 text-slate-300">
@@ -257,10 +679,15 @@ function Results() {
           <div className="space-y-6">
             <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6">
               <h3 className="text-lg font-semibold text-cyan-400 mb-3">Detected Chemicals</h3>
-              {displayFactors.length > 0 ? (
-                <ul className="space-y-2 text-slate-300">
-                  {displayFactors.map((item, index) => (
-                    <li key={index}>- {String(item).replace(/_/g, ' ')}</li>
+              {displayChemicalsWithRisk.length > 0 ? (
+                <ul className="space-y-2">
+                  {displayChemicalsWithRisk.map((item, index) => (
+                    <li key={index}>
+                      -{' '}
+                      <span className={getRiskTextColorClass(item.riskLevel)}>
+                        {String(item.name).replace(/_/g, ' ')}
+                      </span>
+                    </li>
                   ))}
                 </ul>
               ) : (
@@ -282,6 +709,21 @@ function Results() {
             </div>
 
             <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-pink-400 mb-3">Hidden Ingredients Detected</h3>
+              {displayHiddenIngredients.length > 0 ? (
+                <ul className="space-y-2 text-slate-300">
+                  {displayHiddenIngredients.map((item, index) => (
+                    <li key={index}>
+                      - {item.original} {'->'} {item.actual}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-slate-400">No hidden ingredient aliases detected.</p>
+              )}
+            </div>
+
+            <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6">
               <h3 className="text-lg font-semibold text-orange-400 mb-3">Nutrition Issues</h3>
               {displayNutritionIssues.length > 0 ? (
                 <ul className="space-y-2 text-slate-300">
@@ -296,11 +738,72 @@ function Results() {
           </div>
         </div>
 
-        {finalScore > 50 && (
-          <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6 mt-6">
-            <h3 className="text-lg font-semibold text-green-400 mb-3">Healthier Alternatives</h3>
+        <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6 mt-6">
+          <h3 className="text-lg font-semibold text-green-400 mb-3">Recommendations</h3>
+          {recommendations.length > 0 ? (
             <ul className="space-y-2 text-slate-300">
-              {healthyAlternatives.map((item, index) => (
+              {recommendations.map((item, index) => (
+                <li key={index}>- {item}</li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-slate-400">No data available</p>
+          )}
+        </div>
+
+        {pairingSuggestions.length > 0 && (
+          <div className="bg-gradient-to-r from-violet-500/10 to-purple-500/10 border border-violet-500/30 rounded-xl p-6 mt-6">
+            <h3 className="text-lg font-semibold text-violet-300 mb-3">Healthier Pairing Suggestions</h3>
+            <ul className="space-y-3">
+              {pairingSuggestions.map((pair, index) => (
+                <li key={index} className="flex flex-col sm:flex-row sm:items-center gap-2">
+                  <span className="text-red-300 font-medium">- {pair.item}</span>
+                  <span className="text-slate-400 hidden sm:inline">→</span>
+                  <span className="text-green-300">{pair.suggestion}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6 mt-6">
+          <h3 className="text-lg font-semibold text-teal-300 mb-3">Recommended Meals</h3>
+          {recommendedMeals.length > 0 ? (
+            <ul className="space-y-2 text-slate-300">
+              {recommendedMeals.map((item, index) => (
+                <li key={index}>- {item}</li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-slate-400">No data available</p>
+          )}
+        </div>
+
+        <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6 mt-6">
+          <h3 className="text-lg font-semibold text-cyan-300 mb-4">Weekly Meal Calendar</h3>
+          <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
+            {Array.from({ length: 7 }, (_, idx) => idx + 1).map((dayNum) => {
+              const key = `day${dayNum}`;
+              const meals = Array.isArray(weeklyPlan[key]) ? weeklyPlan[key] : FALLBACK_WEEKLY_PLAN[key];
+              return (
+                <div key={key} className="rounded-xl border border-white/10 bg-slate-900/45 p-4">
+                  <p className="text-sm font-semibold text-cyan-200 mb-3">Day {dayNum}</p>
+                  <div className="space-y-2 text-sm text-slate-200">
+                    <p><span className="text-slate-400">Breakfast:</span> {meals[0] || 'Balanced meal'}</p>
+                    <p><span className="text-slate-400">Lunch:</span> {meals[1] || 'Balanced meal'}</p>
+                    <p><span className="text-slate-400">Dinner:</span> {meals[2] || 'Balanced meal'}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {deficiencies.length > 0 && (
+          <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-6 mt-6">
+            <h3 className="text-lg font-semibold text-amber-300 mb-3">Nutrient Deficiency Alerts</h3>
+            <ul className="space-y-2 text-amber-100">
+              {deficiencies.map((item, index) => (
                 <li key={index}>- {item}</li>
               ))}
             </ul>
@@ -311,8 +814,7 @@ function Results() {
           <h2 className="text-lg font-semibold text-white mb-4">Detailed Analysis</h2>
           <div className="bg-slate-800/30 rounded-xl p-5">
             <p className="text-slate-300 leading-relaxed">
-              {displaySummary ||
-                'The analysis has been completed. Please review the detected ingredients and health concerns above for more details.'}
+              {simplified || displaySummary}
             </p>
           </div>
         </div>

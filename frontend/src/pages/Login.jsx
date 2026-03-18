@@ -1,138 +1,123 @@
 import { useState } from "react";
-import { useNavigate, Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
-
   const navigate = useNavigate();
   const { login, isAuthenticated, isLoading } = useAuth();
 
+  const [showGmailForm, setShowGmailForm] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  // Prevent redirect loop
   if (!isLoading && isAuthenticated) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/home" replace />;
   }
 
-  const loginGoogle = () => {
-    navigate("/login/google");
-  };
-
-  const loginGmail = () => {
-
-    if (!name || !email || !password) {
-      alert("Fill all fields");
+  const handleGmailLogin = () => {
+    if (!name.trim() || !email.trim() || !password.trim()) {
+      alert("Please fill all fields");
       return;
     }
 
     login({
-      name,
-      email,
-      method: "gmail"
+      name: name.trim(),
+      email: email.trim(),
+      method: "gmail",
     });
 
-    navigate("/");
+    navigate("/home");
   };
 
   return (
+    <div className="relative min-h-screen overflow-hidden bg-[#050b1a] px-4">
+      <div className="pointer-events-none absolute -top-32 -left-24 h-96 w-96 rounded-full bg-cyan-500/20 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-24 -right-20 h-[28rem] w-[28rem] rounded-full bg-fuchsia-500/20 blur-3xl" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(34,211,238,0.12),transparent_35%),radial-gradient(circle_at_80%_75%,rgba(236,72,153,0.14),transparent_35%)]" />
 
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-slate-900 to-slate-800">
+      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-5xl items-center justify-center">
+        <div className="w-full max-w-2xl rounded-3xl border border-white/15 bg-slate-900/55 p-8 shadow-[0_20px_80px_rgba(0,0,0,0.45)] backdrop-blur-2xl md:p-12">
+          <div className="mb-6 inline-flex items-center rounded-full border border-cyan-400/30 bg-cyan-400/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-cyan-300">
+            AI Food Safety Platform
+          </div>
 
-      {/* LOGO */}
-      <div className="text-center mb-8">
+          <h1 className="text-balance text-4xl font-semibold leading-tight text-white md:text-5xl">
+            NutriDetect AI
+            <span className="block bg-gradient-to-r from-cyan-300 via-sky-300 to-fuchsia-300 bg-clip-text text-transparent">
+              Smarter Labels. Safer Choices.
+            </span>
+          </h1>
 
-        <div className="w-16 h-16 mx-auto rounded-xl bg-gradient-to-r from-cyan-500 to-purple-500 flex items-center justify-center mb-3">
-          <span className="text-white text-2xl">🛡</span>
+          <p className="mt-5 max-w-xl text-pretty text-base leading-relaxed text-slate-300 md:text-lg">
+            Scan ingredients, uncover hidden additives, and get instant risk insights
+            before a product reaches your cart.
+          </p>
+
+          <div className="my-8 h-px w-full bg-gradient-to-r from-transparent via-white/25 to-transparent" />
+
+          <div className="grid gap-3 text-sm text-slate-200 md:grid-cols-3">
+            <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-2">Real-time label analysis</div>
+            <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-2">Risk-based additive detection</div>
+            <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-2">Personalized health warnings</div>
+          </div>
+
+          <div className="mt-8 space-y-3">
+            <button
+              onClick={() => navigate("/login/google")}
+              className="group flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 py-4 text-base font-semibold text-white shadow-[0_12px_30px_rgba(14,165,233,0.45)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(14,165,233,0.6)]"
+            >
+              Continue with Google
+              <span className="transition-transform duration-300 group-hover:translate-x-1">-&gt;</span>
+            </button>
+
+            <button
+              onClick={() => setShowGmailForm((prev) => !prev)}
+              className="w-full rounded-2xl border border-white/20 bg-white/5 py-3 text-sm font-medium text-slate-200 transition hover:bg-white/10"
+            >
+              {showGmailForm ? "Hide Gmail Login" : "Use Gmail Instead"}
+            </button>
+          </div>
+
+          {showGmailForm && (
+            <div className="mt-4 space-y-3 rounded-2xl border border-white/15 bg-black/20 p-4">
+              <input
+                placeholder="Your Name"
+                className="w-full rounded-xl border border-white/15 bg-slate-900/80 p-3 text-sm text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/60"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+
+              <input
+                type="email"
+                placeholder="Gmail Address"
+                className="w-full rounded-xl border border-white/15 bg-slate-900/80 p-3 text-sm text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/60"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+
+              <input
+                type="password"
+                placeholder="Password"
+                className="w-full rounded-xl border border-white/15 bg-slate-900/80 p-3 text-sm text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/60"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+
+              <button
+                onClick={handleGmailLogin}
+                className="w-full rounded-xl bg-gradient-to-r from-fuchsia-500 to-pink-500 py-3 text-sm font-semibold text-white transition hover:opacity-90"
+              >
+                Sign In with Gmail
+              </button>
+            </div>
+          )}
+
+          <p className="mt-4 text-center text-xs text-slate-400">
+            Secure sign-in with Google or Gmail
+          </p>
         </div>
-
-        <h1 className="text-3xl font-bold text-cyan-400">
-          NutriDetect AI
-        </h1>
-
-        <p className="text-gray-400 text-sm">
-          Smart Food Safety Platform
-        </p>
-
       </div>
-
-      {/* LOGIN CARD */}
-
-      <div className="w-[420px] bg-slate-800/60 backdrop-blur rounded-xl border border-slate-700 p-8">
-
-        <h2 className="text-xl text-center font-semibold mb-2">
-          Welcome Back
-        </h2>
-
-        <p className="text-center text-gray-400 text-sm mb-6">
-          Sign in to access your analysis history
-        </p>
-
-        {/* NAME */}
-
-        <input
-          placeholder="Your Name"
-          className="w-full p-3 mb-4 rounded bg-slate-700 text-white"
-          onChange={(e) => setName(e.target.value)}
-        />
-
-        {/* GOOGLE LOGIN */}
-
-        <button
-          onClick={loginGoogle}
-          className="w-full flex items-center justify-center gap-3 bg-white text-black py-3 rounded mb-4 hover:opacity-90"
-        >
-
-          <img
-            src="https://www.svgrepo.com/show/475656/google-color.svg"
-            className="w-5"
-          />
-
-          Continue with Google
-
-        </button>
-
-        {/* EMAIL */}
-
-        <input
-          placeholder="Gmail Address"
-          className="w-full p-3 mb-3 rounded bg-slate-700 text-white"
-          onChange={(e) => setEmail(e.target.value)}
-        />
-
-        {/* PASSWORD */}
-
-        <input
-          type="password"
-          placeholder="Password"
-          className="w-full p-3 mb-4 rounded bg-slate-700 text-white"
-          onChange={(e) => setPassword(e.target.value)}
-        />
-
-        {/* GMAIL LOGIN */}
-
-        <button
-          onClick={loginGmail}
-          className="w-full bg-cyan-500 py-3 rounded hover:bg-cyan-600"
-        >
-          Continue with Gmail
-        </button>
-
-        {/* MOBILE (OPTIONAL BUTTON) */}
-
-        <button
-          className="w-full bg-slate-700 py-3 rounded mt-4"
-        >
-          Continue with Mobile Number
-        </button>
-
-        <p className="text-xs text-gray-500 text-center mt-6">
-          By continuing, you agree to our Terms of Service and Privacy Policy
-        </p>
-
-      </div>
-
     </div>
   );
 }

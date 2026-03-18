@@ -1,17 +1,17 @@
 import { useEffect } from "react";
-import { useNavigate, Navigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { signInWithPopup } from "firebase/auth";
 import { auth, provider } from "../firebase";
 
 export default function LoginGoogle() {
   const navigate = useNavigate();
-  const { user, login, isAuthenticated, isLoading } = useAuth();
+  const { login, isAuthenticated, isLoading } = useAuth();
 
   // If already logged in, redirect to home
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
-      navigate("/");
+      navigate("/home");
     }
   }, [isAuthenticated, isLoading, navigate]);
 
@@ -37,7 +37,7 @@ export default function LoginGoogle() {
         method: "google"
       });
 
-      navigate("/");
+      navigate("/home");
     } catch (error) {
       console.error("Google login error:", error);
       

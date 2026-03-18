@@ -1,9 +1,14 @@
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
-import { analyzeFoodWithHealthMode } from '../services/api';
+import { analyzeFoodWithHealthMode, analyzeGroceryList } from '../services/api';
 import BarcodeScanner from '../components/BarcodeScanner';
 import CameraOCR from '../components/CameraOCR';
+
+const MAX_INPUT_CHARS = 5000;
+const MAX_GROCERY_ITEMS = 40;
+const SUGAR_HYDRATION_KEY = 'sugar_hydration_tracker';
+const DEFAULT_SUGARY_DRINK_SUGAR_GRAMS = 12;
 
 function Analyze() {
   const navigate = useNavigate();
@@ -16,6 +21,20 @@ function Analyze() {
   const textareaRef = useRef(null);
   const [showBarcodeScanner, setShowBarcodeScanner] = useState(false);
   const [showCameraOCR, setShowCameraOCR] = useState(false);
+  const lastAnalyzeAtRef = useRef(0);
+  const healthModeOptions = [
+    { value: 'diabetes', label: 'Diabetes', icon: '🩸', hint: 'Sugar, refined carbs, and sweetener alerts' },
+    { value: 'hypertension', label: 'Hypertension', icon: '🫀', hint: 'High sodium and salt-heavy additives' },
+    { value: 'heart_disease', label: 'Heart Disease', icon: '❤️', hint: 'Trans fat and saturated fat warnings' },
+    { value: 'kidney_disease', label: 'Kidney Disease', icon: '🫘', hint: 'Sodium/protein stress indicators' },
+    { value: 'obesity', label: 'Obesity', icon: '⚖️', hint: 'High-calorie and high-sugar pattern detection' },
+    { value: 'fatty_liver', label: 'Fatty Liver', icon: '🩺', hint: 'Fructose/corn syrup heavy ingredient checks' },
+    { value: 'pcos', label: 'PCOS', icon: '🌸', hint: 'Insulin-sensitive and sugar spike focused warnings' },
+    { value: 'thyroid_disorder', label: 'Thyroid Disorder', icon: '🦋', hint: 'Potential trigger additive awareness' },
+    { value: 'digestive_disorder', label: 'Digestive Disorder', icon: '🍽️', hint: 'Gut-sensitive additives and sweet alcohols' },
+    { value: 'pregnancy', label: 'Pregnancy', icon: '🤰', hint: 'Caffeine and sensitive additive precautions' }
+  ];
+  const selectedHealthMode = healthModeOptions.find((option) => option.value === healthCondition) || null;
 
   // Voice recognition handler
   const startVoiceRecognition = () => {
@@ -76,8 +95,10 @@ function Analyze() {
   };
 
   const parseInput = (text) => {
+    const boundedSource = String(text || '').slice(0, MAX_INPUT_CHARS);
+
     // First, clean the input - remove nutrition facts and numbers
-    let cleanedText = text
+    let cleanedText = boundedSource
       // Remove "Nutrition Facts" and everything after it until we hit "Ingredients"
       .replace(/nutrition facts.*?(?=ingredients)/gi, '')
       // Also remove standalone nutrition facts section
@@ -115,7 +136,160 @@ function Analyze() {
     return { ingredients: ingredients.trim(), nutritionText: nutritionText.trim() };
   };
 
+  const deriveFoodName = (rawInput, ingredientsText) => {
+    const lines = String(rawInput || '')
+      .split('\n')
+      .map((line) => line.trim())
+      .filter(Boolean);
+
+    let candidate = lines[0] || '';
+    candidate = candidate.replace(/^ingredients?\s*[:\-]?\s*/i, '').trim();
+
+    if (
+      !candidate ||
+      /nutrition|serving|calories|sodium|fat|protein|carbohydrate|sugars?/i.test(candidate)
+    ) {
+      candidate = String(ingredientsText || '')
+        .split(',')
+        .map((part) => part.trim())
+        .find(Boolean) || '';
+    }
+
+    if (!candidate) {
+      return 'Unknown Food';
+    }
+
+    return candidate.slice(0, 60);
+  };
+
+  const extractGroceryItems = (text) => {
+    const bounded = String(text || '').slice(0, MAX_INPUT_CHARS);
+    const lines = bounded
+      .split(/\r?\n/)
+      .map((line) => line.replace(/^\s*([-*•]|\d+[.)])\s*/, '').trim())
+      .filter(Boolean);
+
+    // Prefer line-based list. Fallback to semicolon-separated list.
+    let items = lines;
+    if (items.length <= 1 && bounded.includes(';')) {
+      items = bounded
+        .split(';')
+        .map((item) => item.trim())
+        .filter(Boolean);
+    }
+
+    return items.slice(0, MAX_GROCERY_ITEMS);
+  };
+
+  const appendDailyIntake = (foodName, riskScore) => {
+    const numericRisk = Number(riskScore);
+    if (Number.isNaN(numericRisk)) return;
+
+    const entry = {
+      name: foodName || 'Unknown Food',
+      risk_score: Math.max(0, Math.min(100, numericRisk)),
+      timestamp: Date.now()
+    };
+
+    let existing = [];
+    try {
+      const parsed = JSON.parse(localStorage.getItem('daily_intake') || '[]');
+      existing = Array.isArray(parsed) ? parsed : [];
+    } catch (_err) {
+      existing = [];
+    }
+
+    existing.push(entry);
+    // Keep last 300 entries to avoid unbounded growth.
+    if (existing.length > 300) {
+      existing = existing.slice(existing.length - 300);
+    }
+    localStorage.setItem('daily_intake', JSON.stringify(existing));
+  };
+
+  const getTodayKey = () => new Date().toISOString().slice(0, 10);
+
+  const loadSugarHydrationTracker = () => {
+    const today = getTodayKey();
+    try {
+      const parsed = JSON.parse(localStorage.getItem(SUGAR_HYDRATION_KEY) || '{}');
+      if (parsed && parsed.date === today && Number.isFinite(Number(parsed.sugar_counter))) {
+        return {
+          date: today,
+          sugar_counter: Math.max(0, Math.round(Number(parsed.sugar_counter))),
+          hydration_level: Number(parsed.sugar_counter) > 0 ? 'Low' : 'Good'
+        };
+      }
+    } catch (_err) {
+      // ignore invalid storage
+    }
+    return { date: today, sugar_counter: 0, hydration_level: 'Good' };
+  };
+
+  const saveSugarHydrationTracker = (tracker) => {
+    const safeTracker = {
+      date: getTodayKey(),
+      sugar_counter: Math.max(0, Math.round(Number(tracker?.sugar_counter) || 0)),
+      hydration_level: Number(tracker?.sugar_counter) > 0 ? 'Low' : 'Good'
+    };
+    localStorage.setItem(SUGAR_HYDRATION_KEY, JSON.stringify(safeTracker));
+  };
+
+  const extractSugarGramsFromText = (text) => {
+    const source = String(text || '');
+    const matches = [...source.matchAll(/sugars?\s*[:\-]?\s*(\d+(?:\.\d+)?)\s*g/gi)];
+    if (!matches.length) return 0;
+    const values = matches
+      .map((m) => Number(m[1]))
+      .filter((n) => Number.isFinite(n) && n >= 0);
+    if (!values.length) return 0;
+    return Math.round(Math.max(...values));
+  };
+
+  const isSugaryDrinkText = (text) => {
+    const source = String(text || '').toLowerCase();
+    const drinkMarkers = [
+      'drink', 'beverage', 'cola', 'soda', 'soft drink', 'juice',
+      'energy drink', 'sports drink', 'carbonated', 'flavored water'
+    ];
+    const sugarMarkers = [
+      'sugar', 'syrup', 'fructose', 'glucose', 'dextrose', 'maltose',
+      'high fructose corn syrup', 'aspartame', 'sucralose', 'sweetener'
+    ];
+    const hasDrinkMarker = drinkMarkers.some((marker) => source.includes(marker));
+    const hasSugarMarker = sugarMarkers.some((marker) => source.includes(marker));
+    return hasDrinkMarker && hasSugarMarker;
+  };
+
+  const updateSugarHydrationFromSingle = (rawInput) => {
+    const tracker = loadSugarHydrationTracker();
+    if (isSugaryDrinkText(rawInput)) {
+      const grams = extractSugarGramsFromText(rawInput) || DEFAULT_SUGARY_DRINK_SUGAR_GRAMS;
+      tracker.sugar_counter += grams;
+    }
+    saveSugarHydrationTracker(tracker);
+  };
+
+  const updateSugarHydrationFromGrocery = (items) => {
+    const tracker = loadSugarHydrationTracker();
+    const safeItems = Array.isArray(items) ? items : [];
+    const sugaryCount = safeItems.reduce(
+      (count, item) => (isSugaryDrinkText(item) ? count + 1 : count),
+      0
+    );
+    if (sugaryCount > 0) {
+      tracker.sugar_counter += sugaryCount * DEFAULT_SUGARY_DRINK_SUGAR_GRAMS;
+    }
+    saveSugarHydrationTracker(tracker);
+  };
+
   const handleAnalyze = async () => {
+    const now = Date.now();
+    if (now - lastAnalyzeAtRef.current < 500) {
+      return;
+    }
+    lastAnalyzeAtRef.current = now;
+
     // Validate input - check minimum length
     if (!inputText || inputText.trim().length < 5) {
       setError('Please enter valid ingredients (at least 5 characters).');
@@ -128,6 +302,62 @@ function Analyze() {
     try {
       console.log("Sending food analysis request");
       
+      const groceryItems = extractGroceryItems(inputText);
+
+      // If multiple items are provided, run grocery list analysis.
+      if (groceryItems.length > 1) {
+        const grocery = await analyzeGroceryList(groceryItems, healthCondition || null);
+        const safeGrocery = {
+          total_items: Math.max(0, Number(grocery?.total_items) || 0),
+          high_risk_count: Math.max(0, Number(grocery?.high_risk_count) || 0),
+          safe_items: Array.isArray(grocery?.safe_items)
+            ? grocery.safe_items.filter((item) => typeof item === 'string').map((item) => item.trim()).filter(Boolean)
+            : [],
+          overall_grocery_score: Math.max(0, Math.min(100, Number(grocery?.overall_grocery_score) || 0))
+        };
+
+        const groceryRisk = Math.max(0, Math.min(100, 100 - safeGrocery.overall_grocery_score));
+        const groceryResult = {
+          risk_score: groceryRisk,
+          risk_level: groceryRisk > 70 ? 'High' : groceryRisk > 40 ? 'Moderate' : 'Low',
+          food_score: safeGrocery.overall_grocery_score,
+          confidence: 100,
+          summary: 'Grocery list analyzed successfully.',
+          decision: safeGrocery.high_risk_count > 0 ? 'No, avoid' : 'Safe to eat',
+          complexity_score: 0,
+          timeline: [],
+          impact: safeGrocery.high_risk_count > 0
+            ? 'Some grocery items show elevated risk. Prefer safer alternatives where possible.'
+            : 'Your grocery list appears mostly safe.',
+          recommendations: ['Choose fresh foods', 'Avoid processed items', 'Check labels before buying'],
+          recommended_meals: ['Oats with fruits', 'Grilled paneer', 'Salad bowl'],
+          deficiencies: [],
+          category: safeGrocery.high_risk_count > 0 ? 'Processed' : 'Healthy',
+          simplified: 'Grocery list analyzed item-by-item.',
+          simplified_summary: 'Grocery list analyzed item-by-item.',
+          parsed_ingredients: [],
+          suggestions: [],
+          detected_chemicals: [],
+          hidden_ingredients: [],
+          diseases: [],
+          nutrition_issues: [],
+          recommendation: 'Review high-risk grocery items and pick safer options.',
+          original_ingredients: inputText,
+          translated_ingredients: inputText,
+          was_translated: false,
+          food_safety_score: safeGrocery.overall_grocery_score,
+          health_warnings: [],
+          additive_interactions: [],
+          processing_level: 'Unknown',
+          grocery_summary: safeGrocery
+        };
+
+        updateSugarHydrationFromGrocery(groceryItems);
+        sessionStorage.setItem('analysisResults', JSON.stringify(groceryResult));
+        navigate('/results');
+        return;
+      }
+
       // Parse input to extract ingredients and nutrition text
       const { ingredients, nutritionText } = parseInput(inputText);
       
@@ -153,7 +383,64 @@ function Analyze() {
       const safeResult = {
         risk_score: result.risk_score ?? 0,
         risk_level: result.risk_level ?? 'Low',
+        food_score: Math.max(0, Math.min(100, Number(result.food_score ?? result.food_safety_score ?? (100 - (result.risk_score ?? 0))) || 0)),
+        confidence: Math.max(0, Math.min(100, Number(result.confidence) || 0)),
+        summary: (typeof result.summary === 'string' && result.summary.trim())
+          ? result.summary.trim()
+          : 'No data available',
+        decision: (typeof result.decision === 'string' && result.decision.trim())
+          ? result.decision.trim()
+          : ((Number(result.risk_score) || 0) > 70 ? 'No, avoid' : (Number(result.risk_score) || 0) > 40 ? 'Eat occasionally' : 'Safe to eat'),
+        complexity_score: Math.max(0, Math.min(100, Number(result.complexity_score) || 0)),
+        timeline: Array.isArray(result.timeline)
+          ? result.timeline
+              .filter((item) => typeof item === 'string')
+              .map((item) => item.trim())
+              .filter(Boolean)
+          : [],
+        impact: (typeof result.impact === 'string' && result.impact.trim())
+          ? result.impact.trim()
+          : 'Minimal long-term impact',
+        recommendations: Array.isArray(result.recommendations)
+          ? result.recommendations.filter((item) => typeof item === 'string').map((item) => item.trim()).filter(Boolean)
+          : [],
+        recommended_meals: Array.isArray(result.recommended_meals) && result.recommended_meals.length > 0
+          ? result.recommended_meals
+              .filter((item) => typeof item === 'string')
+              .map((item) => item.trim())
+              .filter(Boolean)
+          : ['Oats with fruits', 'Grilled paneer', 'Salad bowl'],
+        deficiencies: Array.isArray(result.deficiencies)
+          ? result.deficiencies.filter((item) => typeof item === 'string').map((item) => item.trim()).filter(Boolean)
+          : [],
+        category: (typeof result.category === 'string' && result.category.trim())
+          ? result.category.trim()
+          : 'Healthy',
+        simplified: (typeof result.simplified === 'string' && result.simplified.trim())
+          ? result.simplified.trim()
+          : 'No data available',
+        simplified_summary: (typeof result.simplified_summary === 'string' && result.simplified_summary.trim())
+          ? result.simplified_summary.trim()
+          : ((typeof result.simplified === 'string' && result.simplified.trim()) ? result.simplified.trim() : 'No data available'),
+        parsed_ingredients: Array.isArray(result.parsed_ingredients)
+          ? result.parsed_ingredients.filter((item) => typeof item === 'string').map((item) => item.trim()).filter(Boolean)
+          : [],
+        suggestions: Array.isArray(result.suggestions)
+          ? result.suggestions
+              .filter((item) => typeof item === 'string')
+              .map((item) => item.trim())
+              .filter(Boolean)
+          : [],
         detected_chemicals: Array.isArray(result.detected_chemicals) ? result.detected_chemicals : [],
+        hidden_ingredients: Array.isArray(result.hidden_ingredients)
+          ? result.hidden_ingredients
+              .filter((item) => item && typeof item === 'object')
+              .map((item) => ({
+                original: String(item.original || '').trim(),
+                actual: String(item.actual || '').trim()
+              }))
+              .filter((item) => item.original && item.actual)
+          : [],
         diseases: Array.isArray(result.diseases) ? result.diseases : [],
         nutrition_issues: Array.isArray(result.nutrition_issues) ? result.nutrition_issues : [],
         recommendation: result.recommendation || 'Analysis complete.',
@@ -165,6 +452,11 @@ function Analyze() {
         additive_interactions: Array.isArray(result.additive_interactions) ? result.additive_interactions : [],
         processing_level: result.processing_level || 'Unknown'
       };
+
+      // Save entry for Daily Intake Tracker.
+      const foodName = deriveFoodName(inputText, ingredients);
+      appendDailyIntake(foodName, safeResult.risk_score);
+      updateSugarHydrationFromSingle(inputText);
       
       console.log('Analysis result received:', safeResult);
       
@@ -176,7 +468,7 @@ function Analyze() {
         ...safeResult,
         date: new Date().toISOString()
       };
-      const existingHistoryRaw = localStorage.getItem('analysisHistory');
+      const existingHistoryRaw = localStorage.getItem('history') || localStorage.getItem('analysisHistory');
       let existingHistory = [];
       try {
         const parsed = JSON.parse(existingHistoryRaw || '[]');
@@ -186,6 +478,7 @@ function Analyze() {
       }
       existingHistory.push(historyItem);
       localStorage.setItem('analysisHistory', JSON.stringify(existingHistory));
+      localStorage.setItem('history', JSON.stringify(existingHistory));
       
       // Navigate to results page
       navigate('/results');
@@ -303,20 +596,39 @@ Ingredients: Carbonated Water, Citric Acid, Natural Flavors, Aspartame, Potassiu
             </div>
             
             {/* Health Condition Selector - FEATURE 3 */}
-            <div className="flex items-center space-x-2 mb-3">
-              <label className="text-sm text-slate-400">Health Mode:</label>
-              <select
-                value={healthCondition}
-                onChange={(e) => setHealthCondition(e.target.value)}
-                className="bg-slate-800 text-white border border-purple-500 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 appearance-none pr-10"
-              >
-                <option className="bg-slate-800 text-white" value="">None</option>
-                <option className="bg-slate-800 text-white" value="diabetes">Diabetes</option>
-                <option className="bg-slate-800 text-white" value="hypertension">Hypertension</option>
-                <option className="bg-slate-800 text-white" value="heart_disease">Heart Disease</option>
-                <option className="bg-slate-800 text-white" value="kidney_disease">Kidney Disease</option>
-              </select>
-              <span className="text-xs text-slate-500">Get personalized warnings based on your health condition</span>
+            <div className="mb-4 rounded-xl border border-purple-500/20 bg-purple-500/5 p-4">
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+                <div>
+                  <label className="text-sm text-slate-300 block mb-1">Health Mode</label>
+                  <p className="text-xs text-slate-500">
+                    Select your condition to get more personalized warnings and safer recommendations.
+                  </p>
+                </div>
+                <select
+                  value={healthCondition}
+                  onChange={(e) => setHealthCondition(e.target.value)}
+                  className="bg-slate-800 text-white border border-purple-500/60 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-purple-500 appearance-none pr-10 min-w-[260px]"
+                >
+                  <option className="bg-slate-800 text-white" value="">None (General Analysis)</option>
+                  {healthModeOptions.map((option) => (
+                    <option
+                      key={option.value}
+                      className="bg-slate-800 text-white"
+                      value={option.value}
+                    >
+                      {option.icon} {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {selectedHealthMode && (
+                <div className="mt-3 inline-flex items-center gap-2 rounded-lg border border-purple-400/30 bg-slate-900/60 px-3 py-2">
+                  <span className="text-base" aria-hidden="true">{selectedHealthMode.icon}</span>
+                  <span className="text-sm text-slate-200">{selectedHealthMode.label}</span>
+                  <span className="text-xs text-slate-400">- {selectedHealthMode.hint}</span>
+                </div>
+              )}
             </div>
             
             <div className="flex items-center space-x-2 mb-3">

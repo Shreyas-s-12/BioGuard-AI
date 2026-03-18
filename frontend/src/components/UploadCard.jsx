@@ -39,7 +39,7 @@ function UploadCard({ onUpload, loading }) {
   };
 
   return (
-    <div className="glass rounded-2xl p-6">
+    <div className="bg-slate-900/60 backdrop-blur-xl border border-slate-800 rounded-2xl p-6 hover:shadow-[0_0_30px_rgba(34,211,238,0.3)] hover:border-cyan-400 transition-all duration-300">
       <h2 className="text-xl font-semibold mb-4 flex items-center">
         <span className="w-8 h-8 bg-nutri-primary/20 rounded-lg flex items-center justify-center mr-2">
           📷

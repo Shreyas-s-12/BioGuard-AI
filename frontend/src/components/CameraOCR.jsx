@@ -28,7 +28,16 @@ function CameraOCR({ onScanComplete, onClose }) {
       });
 
       if (!response.ok) {
-        throw new Error('OCR processing failed');
+        let detail = 'OCR processing failed';
+        try {
+          const errorData = await response.json();
+          if (errorData?.detail) {
+            detail = errorData.detail;
+          }
+        } catch (_) {
+          // Keep generic fallback detail.
+        }
+        throw new Error(detail);
       }
 
       const data = await response.json();
@@ -48,7 +57,7 @@ function CameraOCR({ onScanComplete, onClose }) {
       });
     } catch (err) {
       console.error('OCR error:', err);
-      setError('Unable to read label. Please try again.');
+      setError(err?.message || 'Unable to read label. Please try again.');
     } finally {
       setLoading(false);
     }

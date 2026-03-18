@@ -8,7 +8,7 @@ function Sidebar() {
 
   const navItems = [
     { 
-      path: '/', 
+      path: '/home', 
       label: 'Home', 
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -22,6 +22,15 @@ function Sidebar() {
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+        </svg>
+      )
+    },
+    {
+      path: '/daily-tracker',
+      label: 'Daily Tracker',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 3v18m0 0l-4-4m4 4l4-4M5 7h14" />
         </svg>
       )
     },
@@ -67,7 +76,7 @@ function Sidebar() {
 
   return (
     <aside 
-      className={`flex flex-col fixed left-0 top-0 h-screen bg-slate-900/80 backdrop-blur-xl border-r border-white/10 transition-all duration-300 z-40 overflow-hidden ${
+      className={`flex flex-col fixed left-0 top-[78px] h-[calc(100vh-78px)] bg-slate-900/80 backdrop-blur-xl border-r border-white/10 transition-all duration-300 z-40 overflow-hidden ${
         collapsed ? 'w-20' : 'w-64'
       }`}
     >
@@ -77,7 +86,7 @@ function Sidebar() {
       <div className="relative z-10 flex flex-col h-full">
         {/* Logo Section */}
       <div className="h-20 flex items-center px-4 border-b border-white/10">
-        <Link to="/" className="flex items-center space-x-3">
+        <Link to="/home" className="flex items-center space-x-3">
           <div className="p-2 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 backdrop-blur border border-cyan-500/20">
             <img
               src={logo}
@@ -152,3 +161,4 @@ function Sidebar() {
 }
 
 export default Sidebar;
+

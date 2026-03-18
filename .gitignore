@@ -40,3 +40,4 @@ dist-ssr/
 # Misc
 *.tmp
 *.temp
+"*.exe" 
