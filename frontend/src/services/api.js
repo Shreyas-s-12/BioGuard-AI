@@ -106,11 +106,16 @@ export const getDailyNutritionGoals = async (age = null, weight = null, goal = '
 };
 
 /**
- * Get weekly meal plan based on user goal.
+ * Get weekly meal plan based on user goal, diet type, and budget.
+ * @param {string} goal - 'weight loss', 'weight gain', or 'maintain'
+ * @param {string} dietType - 'veg', 'non-veg', or 'eggetarian'
+ * @param {string} budget - 'low', 'medium', or 'high'
  */
-export const getWeeklyMealPlan = async (goal = 'maintain') => {
+export const getWeeklyMealPlan = async (goal = 'maintain', dietType = 'veg', budget = 'medium') => {
   const response = await api.post('/weekly-meal-plan', {
-    goal
+    goal,
+    diet_type: dietType,
+    budget
   });
 
   return response.data;

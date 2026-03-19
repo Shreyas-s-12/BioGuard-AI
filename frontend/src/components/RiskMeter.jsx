@@ -1,8 +1,14 @@
+import { motion } from 'framer-motion';
+import { useTheme } from '../context/ThemeContext';
+
 function RiskMeter({ score, showLabel = true, size = 'default' }) {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+
   const getColor = () => {
-    if (score >= 70) return '#ef4444';
-    if (score >= 40) return '#eab308';
-    return '#22c55e';
+    if (score >= 70) return '#DC2626'; // Red
+    if (score >= 40) return '#D97706'; // Amber
+    return '#16A34A'; // Green
   };
 
   const getLabel = () => {
@@ -11,22 +17,10 @@ function RiskMeter({ score, showLabel = true, size = 'default' }) {
     return 'Low Risk';
   };
 
-  const getBgClass = () => {
-    if (score >= 70) return 'bg-red-500/20';
-    if (score >= 40) return 'bg-yellow-500/20';
-    return 'bg-green-500/20';
-  };
-
-  const getTextClass = () => {
-    if (score >= 70) return 'text-red-400';
-    if (score >= 40) return 'text-yellow-400';
-    return 'text-green-400';
-  };
-
-  const getGradient = () => {
-    if (score >= 70) return 'from-red-500 to-red-600';
-    if (score >= 40) return 'from-yellow-500 to-yellow-600';
-    return 'from-green-500 to-green-600';
+  const getBgColor = () => {
+    if (score >= 70) return '#FEE2E2';
+    if (score >= 40) return '#FEF3C7';
+    return '#DCFCE7';
   };
 
   const sizeClasses = size === 'small' 
@@ -43,16 +37,33 @@ function RiskMeter({ score, showLabel = true, size = 'default' }) {
     <div className="w-full">
       {showLabel && (
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium text-slate-300">Health Risk Score</span>
-          <span className={`text-sm font-bold ${getTextClass()}`}>{getLabel()}</span>
+          <span className={`text-sm font-medium ${isDark ? 'text-slate-300' : 'text-[#0F172A]'}`}>
+            Health Risk Score
+          </span>
+          <motion.span 
+            key={getLabel()}
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-sm font-bold"
+            style={{ color: getColor() }}
+          >
+            {getLabel()}
+          </motion.span>
         </div>
       )}
       
       {/* Progress Bar Style */}
-      <div className={`w-full ${sizeClasses} bg-slate-700/50 rounded-full overflow-hidden`}>
-        <div 
-          className={`h-full bg-gradient-to-r ${getGradient()} transition-all duration-1000 ease-out rounded-full`}
-          style={{ width: `${score}%` }}
+      <div className={`w-full ${sizeClasses} rounded-full overflow-hidden ${
+        isDark ? 'bg-slate-700/50' : 'bg-[#E5E7EB]'
+      }`}>
+        <motion.div 
+          className="h-full rounded-full"
+          style={{ 
+            backgroundColor: getColor(),
+          }}
+          initial={{ width: 0 }}
+          animate={{ width: `${score}%` }}
+          transition={{ duration: 1, ease: "easeOut" }}
         />
       </div>
 
@@ -60,24 +71,28 @@ function RiskMeter({ score, showLabel = true, size = 'default' }) {
       <div className="flex items-center justify-between mt-2">
         <div className="flex gap-0.5">
           {[...Array(10)].map((_, i) => (
-            <span 
+            <motion.span 
               key={i} 
-              className={`w-2 h-4 transition-colors ${
-                i < filledBlocks 
-                  ? score >= 70 
-                    ? 'bg-red-500' 
-                    : score >= 40 
-                    ? 'bg-yellow-500' 
-                    : 'bg-green-500'
-                  : 'bg-slate-700'
-              }`}
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: i * 0.05, type: "spring" }}
+              className="w-2 h-4 transition-colors"
               style={{ 
+                backgroundColor: i < filledBlocks ? getColor() : (isDark ? '#334155' : '#E5E7EB'),
                 borderRadius: i === 0 ? '4px 0 0 4px' : i === 9 ? '0 4px 4px 0' : '2px' 
               }}
             />
           ))}
         </div>
-        <span className={`text-lg font-bold ${getTextClass()}`}>{score}%</span>
+        <motion.span 
+          key={score}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-2xl font-bold"
+          style={{ color: getColor() }}
+        >
+          {score}%
+        </motion.span>
       </div>
     </div>
   );

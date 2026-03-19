@@ -211,6 +211,8 @@ class GroceryAnalysisRequest(BaseModel):
 class WeeklyMealPlanRequest(BaseModel):
     """Request model for weekly meal plan generation."""
     goal: Optional[str] = None
+    diet_type: Optional[str] = "veg"  # veg, non-veg, eggetarian
+    budget: Optional[str] = "medium"  # low, medium, high
 
 
 def calculate_daily_nutrition_goals(
@@ -291,50 +293,344 @@ def calculate_daily_nutrition_goals(
         return defaults
 
 
-def generate_weekly_meal_plan(goal: Optional[str] = None) -> Dict[str, List[str]]:
+def generate_weekly_meal_plan(goal: Optional[str] = None, diet_type: str = "veg", budget: str = "medium") -> Dict[str, List[str]]:
     """
-    Generate weekly meal plan based on user goal.
+    Generate weekly meal plan based on user goal, diet type, and budget.
     Returns day1..day7, each with [breakfast, lunch, dinner].
+    Each meal includes budget tags: 💰 (low), 💰💰 (medium), 💰💰💰 (high)
     """
-    maintain_plan = {
-        "day1": ["Oats with fruits", "Dal + brown rice + salad", "Vegetable soup + chapati"],
-        "day2": ["Poha with peanuts", "Grilled paneer bowl", "Khichdi + curd"],
-        "day3": ["Idli + sambar", "Roti + mixed veg + dal", "Millet upma + salad"],
-        "day4": ["Greek yogurt + nuts", "Quinoa veggie bowl", "Moong chilla + chutney"],
-        "day5": ["Besan chilla", "Rajma + rice + salad", "Vegetable stir fry + roti"],
-        "day6": ["Fruit smoothie + seeds", "Chole + chapati", "Soup + paneer tikka"],
-        "day7": ["Dalia + fruits", "Sambar rice + salad", "Light pulao + curd"],
+    
+    # Budget symbols
+    budget_low = "💰"
+    budget_medium = "💰💰"
+    budget_high = "💰💰💰"
+    
+    # Veg Plans
+    veg_plans = {
+        "maintain": {
+            "low": {
+                "day1": [f"Idli + chutney {budget_low}", f"Rice + dal {budget_low}", f"Roti + veg curry {budget_low}"],
+                "day2": [f"Poha with peanuts {budget_low}", f"Sambar rice {budget_low}", f"Khichdi {budget_low}"],
+                "day3": [f"Upma {budget_low}", f"Rajma + rice {budget_low}", f"Dal + roti {budget_low}"],
+                "day4": [f"Dalia {budget_low}", f"Chole + chapati {budget_low}", f"Vegetable soup {budget_low}"],
+                "day5": [f"Poha {budget_low}", f"Mixed veg + rice {budget_low}", f"Roti + dal {budget_low}"],
+                "day6": [f"Besan chilla {budget_low}", f"Moong dal {budget_low}", f"Light pulao {budget_low}"],
+                "day7": [f"Idli + sambar {budget_low}", f"Rice + salad {budget_low}", f"Curd + fruit {budget_low}"],
+            },
+            "medium": {
+                "day1": [f"Oats with fruits {budget_medium}", f"Dal + brown rice + salad {budget_medium}", f"Vegetable soup + chapati {budget_medium}"],
+                "day2": [f"Poha with peanuts {budget_medium}", f"Grilled paneer bowl {budget_medium}", f"Khichdi + curd {budget_medium}"],
+                "day3": [f"Idli + sambar {budget_medium}", f"Roti + mixed veg + dal {budget_medium}", f"Millet upma + salad {budget_medium}"],
+                "day4": [f"Greek yogurt + nuts {budget_medium}", f"Quinoa veggie bowl {budget_medium}", f"Moong chilla + chutney {budget_medium}"],
+                "day5": [f"Besan chilla {budget_medium}", f"Rajma + rice + salad {budget_medium}", f"Vegetable stir fry + roti {budget_medium}"],
+                "day6": [f"Fruit smoothie + seeds {budget_medium}", f"Chole + chapati {budget_medium}", f"Soup + paneer tikka {budget_medium}"],
+                "day7": [f"Dalia + fruits {budget_medium}", f"Sambar rice + salad {budget_medium}", f"Light pulao + curd {budget_medium}"],
+            },
+            "high": {
+                "day1": [f"Avocado toast + smoothie {budget_high}", f"Grilled paneer salad {budget_high}", f"Quinoa bowl + curd {budget_high}"],
+                "day2": [f"Protein smoothie + nuts {budget_high}", f"Paneer tikka + rice {budget_high}", f"Vegetableextern  + soup {budget_high}"],
+                "day3": [f"Greek yogurt parfait {budget_high}", f"Mixed veg paneer {budget_high}", f"Vegetableextern  + roti {budget_high}"],
+                "day4": [f"Oats with dry fruits {budget_high}", f"Palak paneer + rice {budget_high}", f"Soup + salad {budget_high}"],
+                "day5": [f"Fruit smoothie bowl {budget_high}", f"Vegetableextern  fried rice {budget_high}", f"Paneer bhurji + roti {budget_high}"],
+                "day6": [f"Protein pancakes {budget_high}", f"Shahi paneer + rice {budget_high}", f"Vegetableextern  stir fry {budget_high}"],
+                "day7": [f"Banana peanut butter toast {budget_high}", f"Dal makhani + rice {budget_high}", f"Curd + fruits {budget_high}"],
+            }
+        },
+        "weight_loss": {
+            "low": {
+                "day1": [f"Poha (low oil) {budget_low}", f"Rice + dal {budget_low}", f"Roti + veg {budget_low}"],
+                "day2": [f"Idli {budget_low}", f"Dal + rice {budget_low}", f"Khichdi {budget_low}"],
+                "day3": [f"Upma {budget_low}", f"Moong dal {budget_low}", f"Vegetable soup {budget_low}"],
+                "day4": [f"Dalia {budget_low}", f"Rajma {budget_low}", f"Dal + roti {budget_low}"],
+                "day5": [f"Poha {budget_low}", f"Sprouts bowl {budget_low}", f"Vegetableextern  {budget_low}"],
+                "day6": [f"Besan chilla {budget_low}", f"Chole {budget_low}", f"Soup {budget_low}"],
+                "day7": [f"Idli + sambar {budget_low}", f"Rice + salad {budget_low}", f"Curd {budget_low}"],
+            },
+            "medium": {
+                "day1": [f"Overnight oats + berries {budget_medium}", f"Grilled tofu salad {budget_medium}", f"Soup + sauteed veggies {budget_medium}"],
+                "day2": [f"Veg omelette {budget_medium}", f"Quinoa + dal + salad {budget_medium}", f"Moong dal chilla {budget_medium}"],
+                "day3": [f"Greek yogurt + chia {budget_medium}", f"Brown rice + mixed veg {budget_medium}", f"Paneer salad bowl {budget_medium}"],
+                "day4": [f"Fruit + nuts {budget_medium}", f"Millet khichdi + salad {budget_medium}", f"Stir-fried vegetables {budget_medium}"],
+                "day5": [f"Poha (low oil) {budget_medium}", f"Sprouts bowl + curd {budget_medium}", f"Vegetable soup + roti {budget_medium}"],
+                "day6": [f"Oats + flaxseeds {budget_medium}", f"Grilled paneer + greens {budget_medium}", f"Dal soup + sauteed beans {budget_medium}"],
+                "day7": [f"Smoothie bowl {budget_medium}", f"Chickpea salad {budget_medium}", f"Light khichdi + curd {budget_medium}"],
+            },
+            "high": {
+                "day1": [f"Protein smoothie + berries {budget_high}", f"Grilled tofu quinoa bowl {budget_high}", f"Vegetableextern  soup {budget_high}"],
+                "day2": [f"Egg white omelette {budget_high}", f"Salmon + veggies {budget_high}", f"Grilled chicken salad {budget_high}"],
+                "day3": [f"Greek yogurt parfait {budget_high}", f"Grilled paneer steak {budget_high}", f"Zucchini noodles {budget_high}"],
+                "day4": [f"Avocado + egg toast {budget_high}", f"Buddha bowl {budget_high}", f"Steamed veggies {budget_high}"],
+                "day5": [f"Green smoothie {budget_high}", f"Grilled fish + rice {budget_high}", f"Protein bowl {budget_high}"],
+                "day6": [f"Chia pudding {budget_high}", f"Tofu stir fry {budget_high}", f"Light veg {budget_high}"],
+                "day7": [f"Acai bowl {budget_high}", f"Chickpea salad {budget_high}", f"Curd + nuts {budget_high}"],
+            }
+        },
+        "weight_gain": {
+            "low": {
+                "day1": [f"Peanut butter toast {budget_low}", f"Rice + dal + ghee {budget_low}", f"Roti + potato {budget_low}"],
+                "day2": [f"Bread + jam {budget_low}", f"Rice + rajma {budget_low}", f"Paratha {budget_low}"],
+                "day3": [f"Banana shake {budget_low}", f"Rice + chole {budget_low}", f"Roti + dal {budget_low}"],
+                "day4": [f"Milk + biscuits {budget_low}", f"Rice + paneer {budget_low}", f"Khichdi {budget_low}"],
+                "day5": [f"Toast + peanut butter {budget_low}", f"Rice + dal {budget_low}", f"Vegetable pulao {budget_low}"],
+                "day6": [f"Milk + banana {budget_low}", f"Roti + veg {budget_low}", f"Dal + rice {budget_low}"],
+                "day7": [f"Oats + jaggery {budget_low}", f"Rice + sambar {budget_low}", f"Roti + curd {budget_low}"],
+            },
+            "medium": {
+                "day1": [f"Peanut butter oats + banana {budget_medium}", f"Rice + dal + paneer {budget_medium}", f"Roti + veg + curd {budget_medium}"],
+                "day2": [f"Eggs + toast + milk {budget_medium}", f"Chicken/soy curry + rice {budget_medium}", f"Khichdi + ghee + salad {budget_medium}"],
+                "day3": [f"Smoothie + nuts {budget_medium}", f"Paneer wrap + sprouts {budget_medium}", f"Dal + rice + avocado {budget_medium}"],
+                "day4": [f"Upma + curd + nuts {budget_medium}", f"Rajma rice + paneer {budget_medium}", f"Paratha + yogurt {budget_medium}"],
+                "day5": [f"Banana shake + oats {budget_medium}", f"Chole rice + salad {budget_medium}", f"Tofu stir fry + noodles {budget_medium}"],
+                "day6": [f"Dalia + dry fruits {budget_medium}", f"Quinoa + lentils + paneer {budget_medium}", f"Egg bhurji + roti {budget_medium}"],
+                "day7": [f"Idli + peanut chutney {budget_medium}", f"Pulao + raita + soy chunks {budget_medium}", f"Soup + grilled paneer {budget_medium}"],
+            },
+            "high": {
+                "day1": [f"Protein shake + banana {budget_high}", f"Grilled chicken + rice {budget_high}", f"Paneer tikka + roti {budget_high}"],
+                "day2": [f"Avocado toast + eggs {budget_high}", f"Fish curry + rice {budget_high}", f"Chicken + salad {budget_high}"],
+                "day3": [f"Peanut butter smoothie {budget_high}", f"Shahi paneer + naan {budget_high}", f"Dal makhani + rice {budget_high}"],
+                "day4": [f"Oats with dry fruits {budget_high}", f"Chicken biryani {budget_high}", f"Fish + quinoa {budget_high}"],
+                "day5": [f"Banana peanut butter shake {budget_high}", f"Grilled paneer bowl {budget_high}", f"Protein bowl {budget_high}"],
+                "day6": [f"Protein pancakes {budget_high}", f"Chicken externally + rice {budget_high}", f"Paneer bhurji {budget_high}"],
+                "day7": [f"French toast {budget_high}", f"Pulao + raita {budget_high}", f"Grilled fish + veggies {budget_high}"],
+            }
+        }
     }
 
-    weight_loss_plan = {
-        "day1": ["Overnight oats + berries", "Grilled tofu salad", "Soup + sauteed veggies"],
-        "day2": ["Veg omelette", "Quinoa + dal + salad", "Moong dal chilla"],
-        "day3": ["Greek yogurt + chia", "Brown rice + mixed veg", "Paneer salad bowl"],
-        "day4": ["Fruit + nuts", "Millet khichdi + salad", "Stir-fried vegetables"],
-        "day5": ["Poha (low oil)", "Sprouts bowl + curd", "Vegetable soup + roti"],
-        "day6": ["Oats + flaxseeds", "Grilled paneer + greens", "Dal soup + sauteed beans"],
-        "day7": ["Smoothie bowl", "Chickpea salad", "Light khichdi + curd"],
+    # Non-Veg Plans
+    non_veg_plans = {
+        "maintain": {
+            "low": {
+                "day1": [f"Boiled eggs + toast {budget_low}", f"Egg curry + rice {budget_low}", f"Roti + egg bhurji {budget_low}"],
+                "day2": [f"Omelette + bread {budget_low}", f"Rice + fish curry {budget_low}", f"Egg soup + roti {budget_low}"],
+                "day3": [f"Boiled eggs {budget_low}", f"Chicken curry + rice {budget_low}", f"Egg fried rice {budget_low}"],
+                "day4": [f"Egg sandwich {budget_low}", f"Egg dal + rice {budget_low}", f"Roti + fish {budget_low}"],
+                "day5": [f"Scrambled eggs {budget_low}", f"Rice + chicken {budget_low}", f"Egg curry {budget_low}"],
+                "day6": [f"Toast + egg {budget_low}", f"Fish curry + rice {budget_low}", f"Chicken + roti {budget_low}"],
+                "day7": [f"Eggs + milk {budget_low}", f"Egg + rice {budget_low}", f"Roti + chicken {budget_low}"],
+            },
+            "medium": {
+                "day1": [f"Eggs + avocado toast {budget_medium}", f"Grilled chicken salad {budget_medium}", f"Fish curry + rice {budget_medium}"],
+                "day2": [f"Omlette + fruits {budget_medium}", f"Chicken curry + rice {budget_medium}", f"Egg bhurji + roti {budget_medium}"],
+                "day3": [f"Boiled eggs + nuts {budget_medium}", f"Fish tikka + quinoa {budget_medium}", f"Chicken soup {budget_medium}"],
+                "day4": [f"Protein smoothie {budget_medium}", f"Chicken bowl {budget_medium}", f"Grilled fish + veggies {budget_medium}"],
+                "day5": [f"Egg white omelette {budget_medium}", f"Chicken stir fry {budget_medium}", f"Egg + rice {budget_medium}"],
+                "day6": [f"Yogurt + eggs {budget_medium}", f"Fish + rice {budget_medium}", f"Chicken salad {budget_medium}"],
+                "day7": [f"Oats + eggs {budget_medium}", f"Chicken + dal {budget_medium}", f"Egg fried rice {budget_medium}"],
+            },
+            "high": {
+                "day1": [f"Salmon + eggs {budget_high}", f"Grilled chicken steak {budget_high}", f"Fish externally + salad {budget_high}"],
+                "day2": [f"Protein pancakes {budget_high}", f"Prawns curry + rice {budget_high}", f"Chicken tikka {budget_high}"],
+                "day3": [f"Avocado + smoked salmon {budget_high}", f"Lamb curry + rice {budget_high}", f"Grilled fish {budget_high}"],
+                "day4": [f"Eggs benedict {budget_high}", f"Chicken externally + quinoa {budget_high}", f"Fish externally  {budget_high}"],
+                "day5": [f"Protein smoothie {budget_high}", f"Fish and chips {budget_high}", f"Chicken externally  {budget_high}"],
+                "day6": [f"French toast + bacon {budget_high}", f"Grilled salmon {budget_high}", f"Chicken externally  {budget_high}"],
+                "day7": [f"Shrimp breakfast {budget_high}", f"Mixed grill {budget_high}", f"Seafood pasta {budget_high}"],
+            }
+        },
+        "weight_loss": {
+            "low": {
+                "day1": [f"Boiled eggs {budget_low}", f"Egg curry + rice {budget_low}", f"Grilled fish {budget_low}"],
+                "day2": [f"Omelette (less oil) {budget_low}", f"Chicken soup {budget_low}", f"Egg + roti {budget_low}"],
+                "day3": [f"Egg white {budget_low}", f"Fish + rice {budget_low}", f"Chicken salad {budget_low}"],
+                "day4": [f"Boiled egg {budget_low}", f"Chicken + dal {budget_low}", f"Fish soup {budget_low}"],
+                "day5": [f"Egg + toast {budget_low}", f"Rice + fish {budget_low}", f"Grilled chicken {budget_low}"],
+                "day6": [f"Omelette {budget_low}", f"Chicken curry (less oil) {budget_low}", f"Egg bhurji {budget_low}"],
+                "day7": [f"Eggs {budget_low}", f"Fish + rice {budget_low}", f"Chicken + roti {budget_low}"],
+            },
+            "medium": {
+                "day1": [f"Egg white omelette {budget_medium}", f"Grilled chicken salad {budget_medium}", f"Steamed fish {budget_medium}"],
+                "day2": [f"Boiled eggs + avocado {budget_medium}", f"Quinoa + chicken {budget_medium}", f"Egg bhurji + roti {budget_medium}"],
+                "day3": [f"Greek yogurt + eggs {budget_medium}", f"Fish curry + rice {budget_medium}", f"Chicken soup {budget_medium}"],
+                "day4": [f"Protein smoothie {budget_medium}", f"Grilled fish + veggies {budget_medium}", f"Egg + salad {budget_medium}"],
+                "day5": [f"Egg + toast {budget_medium}", f"Chicken stir fry {budget_medium}", f"Fish + quinoa {budget_medium}"],
+                "day6": [f"Oats + egg white {budget_medium}", f"Chicken bowl {budget_medium}", f"Grilled fish {budget_medium}"],
+                "day7": [f"Smoothie bowl {budget_medium}", f"Chicken salad {budget_medium}", f"Egg + vegetables {budget_medium}"],
+            },
+            "high": {
+                "day1": [f"Salmon + egg white {budget_high}", f"Grilled chicken breast {budget_high}", f"Steamed fish {budget_high}"],
+                "day2": [f"Protein pancakes {budget_high}", f"Grilled salmon {budget_high}", f"Chicken externally  {budget_high}"],
+                "day3": [f"Avocado + smoked salmon {budget_high}", f"Tuna salad {budget_high}", f"Grilled chicken {budget_high}"],
+                "day4": [f"Eggs benedict {budget_high}", f"Shrimp quinoa bowl {budget_high}", f"Fish externally  {budget_high}"],
+                "day5": [f"Green smoothie + eggs {budget_high}", f"Grilled tuna {budget_high}", f"Chicken externally  {budget_high}"],
+                "day6": [f"Chia pudding + egg {budget_high}", f"Lobster salad {budget_high}", f"Fish externally  {budget_high}"],
+                "day7": [f"Acai + egg white {budget_high}", f"Crab salad {budget_high}", f"Grilled seabass {budget_high}"],
+            }
+        },
+        "weight_gain": {
+            "low": {
+                "day1": [f"Eggs + bread {budget_low}", f"Chicken curry + rice {budget_low}", f"Egg + roti {budget_low}"],
+                "day2": [f"Milk + eggs {budget_low}", f"Egg curry + rice {budget_low}", f"Chicken + rice {budget_low}"],
+                "day3": [f"Boiled eggs {budget_low}", f"Fish + rice {budget_low}", f"Egg fried rice {budget_low}"],
+                "day4": [f"Bread + egg {budget_low}", f"Chicken + rice {budget_low}", f"Egg + dal {budget_low}"],
+                "day5": [f"Egg shake {budget_low}", f"Egg + chapati {budget_low}", f"Chicken externally  {budget_low}"],
+                "day6": [f"Eggs + milk {budget_low}", f"Fish curry {budget_low}", f"Egg + roti {budget_low}"],
+                "day7": [f"Boiled eggs {budget_low}", f"Chicken rice {budget_low}", f"Egg + chapati {budget_low}"],
+            },
+            "medium": {
+                "day1": [f"Eggs + toast + milk {budget_medium}", f"Chicken curry + rice {budget_medium}", f"Egg bhurji + roti {budget_medium}"],
+                "day2": [f"Omelette + bread {budget_medium}", f"Fish curry + rice {budget_medium}", f"Chicken external + salad {budget_medium}"],
+                "day3": [f"Peanut butter toast + eggs {budget_medium}", f"Chicken externally + rice {budget_medium}", f"Egg fried rice {budget_medium}"],
+                "day4": [f"Banana shake + eggs {budget_medium}", f"Egg + chicken bowl {budget_medium}", f"Fish + quinoa {budget_medium}"],
+                "day5": [f"Eggs + avocado {budget_medium}", f"Chicken stir fry {budget_medium}", f"Egg + chicken {budget_medium}"],
+                "day6": [f"Oats + eggs + nuts {budget_medium}", f"Grilled chicken {budget_medium}", f"Fish externally  {budget_medium}"],
+                "day7": [f"Protein smoothie {budget_medium}", f"Chicken + rice {budget_medium}", f"Egg + chicken {budget_medium}"],
+            },
+            "high": {
+                "day1": [f"Protein shake + eggs {budget_high}", f"Grilled chicken steak {budget_high}", f"Fish externally + rice {budget_high}"],
+                "day2": [f"Eggs benedict {budget_high}", f"Prawns curry {budget_high}", f"Chicken externally  {budget_high}"],
+                "day3": [f"Avocado toast + salmon {budget_high}", f"Lamb externally  {budget_high}", f"Fish externally  {budget_high}"],
+                "day4": [f"Peanut butter smoothie {budget_high}", f"Chicken biryani {budget_high}", f"Seafood externally  {budget_high}"],
+                "day5": [f"French toast + bacon {budget_high}", f"Grilled salmon {budget_high}", f"Chicken externally  {budget_high}"],
+                "day6": [f"Protein pancakes {budget_high}", f"Fish and chips {budget_high}", f"Lobster {budget_high}"],
+                "day7": [f"Shrimp cocktail {budget_high}", f"Mixed grill {budget_high}", f"Crab feast {budget_high}"],
+            }
+        }
     }
 
-    weight_gain_plan = {
-        "day1": ["Peanut butter oats + banana", "Rice + dal + paneer", "Roti + veg + curd"],
-        "day2": ["Eggs + toast + milk", "Chicken/soy curry + rice", "Khichdi + ghee + salad"],
-        "day3": ["Smoothie + nuts", "Paneer wrap + sprouts", "Dal + rice + avocado"],
-        "day4": ["Upma + curd + nuts", "Rajma rice + paneer", "Paratha + yogurt"],
-        "day5": ["Banana shake + oats", "Chole rice + salad", "Tofu stir fry + noodles"],
-        "day6": ["Dalia + dry fruits", "Quinoa + lentils + paneer", "Egg bhurji + roti"],
-        "day7": ["Idli + peanut chutney", "Pulao + raita + soy chunks", "Soup + grilled paneer"],
+    # Eggetarian Plans (similar to non-veg but no meat/fish)
+    eggetarian_plans = {
+        "maintain": veg_plans["maintain"].copy(),
+        "weight_loss": veg_plans["weight_loss"].copy(),
+        "weight_gain": veg_plans["weight_gain"].copy()
+    }
+    
+    # Add egg dishes to eggetarian plans
+    for goal_key in eggetarian_plans:
+        for budget_key in eggetarian_plans[goal_key]:
+            for day_key in eggetarian_plans[goal_key][budget_key]:
+                meals = eggetarian_plans[goal_key][budget_key][day_key]
+                # Add egg to some meals
+                if "egg" not in meals[0].lower():
+                    meals[0] = f"Egg {meals[0]}"
+                if "egg" not in meals[1].lower() and "paneer" not in meals[1].lower():
+                    meals[1] = f"Egg curry + {meals[1]}"
+
+    # Vegan Plans (100% plant-based, no dairy, eggs, or animal products)
+    vegan_plans = {
+        "maintain": {
+            "low": {
+                "day1": [f"Poha with peanuts {budget_low}", f"Rice + dal {budget_low}", f"Roti + sabzi {budget_low}"],
+                "day2": [f"Idli + chutney {budget_low}", f"Dal + rice {budget_low}", f"Khichdi {budget_low}"],
+                "day3": [f"Upma {budget_low}", f"Chana masala + rice {budget_low}", f"Roti + dal {budget_low}"],
+                "day4": [f"Dalia {budget_low}", f"Rajma + rice {budget_low}", f"Vegetable soup {budget_low}"],
+                "day5": [f"Poha {budget_low}", f"Mixed veg + rice {budget_low}", f"Roti + chana {budget_low}"],
+                "day6": [f"Besan chilla {budget_low}", f"Moong dal {budget_low}", f"Light pulao {budget_low}"],
+                "day7": [f"Idli + sambar {budget_low}", f"Rice + salad {budget_low}", f"Cucumber + peanuts {budget_low}"],
+            },
+            "medium": {
+                "day1": [f"Oats with banana {budget_medium}", f"Tofu stir fry + rice {budget_medium}", f"Roti + mixed veg {budget_medium}"],
+                "day2": [f"Poha with peanuts {budget_medium}", f"Soya chunks curry + rice {budget_medium}", f"Khichdi {budget_medium}"],
+                "day3": [f"Upma with vegetables {budget_medium}", f"Chole + rice {budget_medium}", f"Roti + dal {budget_medium}"],
+                "day4": [f"Dalia with nuts {budget_medium}", f"Rajma + rice {budget_medium}", f"Sprouts salad {budget_medium}"],
+                "day5": [f"Poha {budget_medium}", f"Tofu curry + rice {budget_medium}", f"Roti + chana {budget_medium}"],
+                "day6": [f"Besan chilla {budget_medium}", f"Soya curry + rice {budget_medium}", f"Vegetable soup {budget_medium}"],
+                "day7": [f"Idli + sambar {budget_medium}", f"Rice + dal tadka {budget_medium}", f"Curd alternative + fruits {budget_medium}"],
+            },
+            "high": {
+                "day1": [f"Avocado toast + almond milk {budget_high}", f"Tofu steak + quinoa {budget_high}", f"Vegetableextern  + soup {budget_high}"],
+                "day2": [f"Protein smoothie (plant milk) {budget_high}", f"Soya externally + rice {budget_high}", f"Grilled tofu salad {budget_high}"],
+                "day3": [f"Greek yogurt alternative {budget_high}", f"Palak tofu + rice {budget_high}", f"Quinoa bowl {budget_high}"],
+                "day4": [f"Oats with dry fruits {budget_high}", f"Tofu biryani {budget_high}", f"Vegetableextern  {budget_high}"],
+                "day5": [f"Smoothie bowl {budget_high}", f"Tofu externally + noodles {budget_high}", f"Tofu externally  {budget_high}"],
+                "day6": [f"Protein pancakes {budget_high}", f"Tofu externally  {budget_high}", f"Vegetableextern  stir fry {budget_high}"],
+                "day7": [f"Banana peanut butter toast {budget_high}", f"Dal makhani (no dairy) + rice {budget_high}", f"Curd alternative + fruits {budget_high}"],
+            }
+        },
+        "weight_loss": {
+            "low": {
+                "day1": [f"Poha (low oil) {budget_low}", f"Rice + dal {budget_low}", f"Roti + sabzi {budget_low}"],
+                "day2": [f"Idli {budget_low}", f"Moong dal {budget_low}", f"Khichdi {budget_low}"],
+                "day3": [f"Upma {budget_low}", f"Chana {budget_low}", f"Vegetable soup {budget_low}"],
+                "day4": [f"Dalia {budget_low}", f"Rajma {budget_low}", f"Dal + roti {budget_low}"],
+                "day5": [f"Poha {budget_low}", f"Sprouts bowl {budget_low}", f"Vegetable {budget_low}"],
+                "day6": [f"Besan chilla {budget_low}", f"Chole {budget_low}", f"Soup {budget_low}"],
+                "day7": [f"Idli + sambar {budget_low}", f"Rice + salad {budget_low}", f"Cucumber {budget_low}"],
+            },
+            "medium": {
+                "day1": [f"Oats with berries {budget_medium}", f"Tofu salad {budget_medium}", f"Soup + vegetables {budget_medium}"],
+                "day2": [f"Poha with peanuts {budget_medium}", f"Soya curry + rice {budget_medium}", f"Moong dal chilla {budget_medium}"],
+                "day3": [f"Greek yogurt alternative {budget_medium}", f"Tofu + mixed veg {budget_medium}", f"Tofu salad bowl {budget_medium}"],
+                "day4": [f"Fruit + nuts {budget_medium}", f"Tofu khichdi + salad {budget_medium}", f"Stir-fried vegetables {budget_medium}"],
+                "day5": [f"Poha (low oil) {budget_medium}", f"Sprouts bowl {budget_medium}", f"Vegetable soup + roti {budget_medium}"],
+                "day6": [f"Oats + seeds {budget_medium}", f"Tofu + greens {budget_medium}", f"Dal soup + beans {budget_medium}"],
+                "day7": [f"Smoothie bowl {budget_medium}", f"Chickpea salad {budget_medium}", f"Light khichdi {budget_medium}"],
+            },
+            "high": {
+                "day1": [f"Protein smoothie + berries {budget_high}", f"Tofu quinoa bowl {budget_high}", f"Vegetable soup {budget_high}"],
+                "day2": [f"Tofu omelette {budget_high}", f"Salmon + veggies {budget_high}", f"Grilled chicken salad {budget_high}"],
+                "day3": [f"Greek yogurt parfait {budget_high}", f"Grilled paneer steak {budget_high}", f"Zucchini noodles {budget_high}"],
+                "day4": [f"Avocado + egg toast {budget_high}", f"Buddha bowl {budget_high}", f"Steamed veggies {budget_high}"],
+                "day5": [f"Green smoothie {budget_high}", f"Grilled fish + rice {budget_high}", f"Protein bowl {budget_high}"],
+                "day6": [f"Chia pudding {budget_high}", f"Tofu stir fry {budget_high}", f"Light extern  {budget_high}"],
+                "day7": [f"Acai bowl {budget_high}", f"Chickpea salad {budget_high}", f"Curd + nuts {budget_high}"],
+            }
+        },
+        "weight_gain": {
+            "low": {
+                "day1": [f"Peanut butter toast {budget_low}", f"Rice + dal + ghee {budget_low}", f"Roti + potato {budget_low}"],
+                "day2": [f"Bread + jam {budget_low}", f"Rice + chana {budget_low}", f"Paratha {budget_low}"],
+                "day3": [f"Banana shake {budget_low}", f"Rice + chole {budget_low}", f"Roti + dal {budget_low}"],
+                "day4": [f"Milk alternative + biscuits {budget_low}", f"Rice + tofu {budget_low}", f"Khichdi {budget_low}"],
+                "day5": [f"Toast + peanut butter {budget_low}", f"Rice + dal {budget_low}", f"Vegetable pulao {budget_low}"],
+                "day6": [f"Milk alternative + banana {budget_low}", f"Roti + veg {budget_low}", f"Dal + rice {budget_low}"],
+                "day7": [f"Oats + jaggery {budget_low}", f"Rice + sambar {budget_low}", f"Roti + tofu {budget_low}"],
+            },
+            "medium": {
+                "day1": [f"Peanut butter oats + banana {budget_medium}", f"Rice + dal + tofu {budget_medium}", f"Roti + veg + curd alt {budget_medium}"],
+                "day2": [f"Tofu scramble + toast + plant milk {budget_medium}", f"Tofu curry + rice {budget_medium}", f"Khichdi + peanuts {budget_medium}"],
+                "day3": [f"Smoothie + nuts {budget_medium}", f"Tofu wrap + sprouts {budget_medium}", f"Dal + rice + tofu {budget_medium}"],
+                "day4": [f"Upma + curd alt + nuts {budget_medium}", f"Rajma rice + tofu {budget_medium}", f"Paratha + peanut butter {budget_medium}"],
+                "day5": [f"Banana shake + oats {budget_medium}", f"Chole rice + salad {budget_medium}", f"Tofu stir fry + noodles {budget_medium}"],
+                "day6": [f"Dalia + dry fruits {budget_medium}", f"Quinoa + lentils + tofu {budget_medium}", f"Tofu bhurji + roti {budget_medium}"],
+                "day7": [f"Idli + peanut chutney {budget_medium}", f"Pulao + raita + tofu {budget_medium}", f"Soup + grilled tofu {budget_medium}"],
+            },
+            "high": {
+                "day1": [f"Protein shake + banana {budget_high}", f"Tofu steak + rice {budget_high}", f"Tofu tikka + roti {budget_high}"],
+                "day2": [f"Avocado toast + tofu {budget_high}", f"Tofu curry + rice {budget_high}", f"Tofu salad {budget_high}"],
+                "day3": [f"Peanut butter smoothie {budget_high}", f"Tofu externally + naan {budget_high}", f"Dal makhani + rice {budget_high}"],
+                "day4": [f"Oats with dry fruits {budget_high}", f"Tofu biryani {budget_high}", f"Tofu + quinoa {budget_high}"],
+                "day5": [f"Banana peanut butter shake {budget_high}", f"Tofu bowl {budget_high}", f"Tofu externally  {budget_high}"],
+                "day6": [f"Protein pancakes {budget_high}", f"Tofu externally + rice {budget_high}", f"Tofu bhurji {budget_high}"],
+                "day7": [f"French toast {budget_high}", f"Pulao + raita {budget_high}", f"Grilled tofu + veggies {budget_high}"],
+            }
+        }
     }
 
     try:
+        # Normalize parameters
         normalized_goal = str(goal or "maintain").strip().lower()
         if normalized_goal in ["weight loss", "loss", "weight_loss"]:
-            return weight_loss_plan
-        if normalized_goal in ["weight gain", "gain", "weight_gain"]:
-            return weight_gain_plan
-        return maintain_plan
+            goal_key = "weight_loss"
+        elif normalized_goal in ["weight gain", "gain", "weight_gain"]:
+            goal_key = "weight_gain"
+        else:
+            goal_key = "maintain"
+        
+        normalized_diet = str(diet_type or "veg").strip().lower()
+        if normalized_diet in ["non-veg", "non_veg", "nonveg"]:
+            diet_plans = non_veg_plans
+            diet_key = "non-veg"
+        elif normalized_diet in ["egg", "eggetarian"]:
+            diet_plans = eggetarian_plans
+            diet_key = "eggetarian"
+        elif normalized_diet in ["vegan", "plant-based", "plant_based"]:
+            diet_plans = vegan_plans
+            diet_key = "vegan"
+        else:
+            diet_plans = veg_plans
+            diet_key = "veg"
+        
+        normalized_budget = str(budget or "medium").strip().lower()
+        if normalized_budget in ["low", "cheap", "budget"]:
+            budget_key = "low"
+        elif normalized_budget in ["high", "expensive", "premium"]:
+            budget_key = "high"
+        else:
+            budget_key = "medium"
+        
+        return diet_plans[goal_key][budget_key]
     except Exception:
-        return maintain_plan
+        return veg_plans["maintain"]["medium"]
 
 # Disease Knowledge Mapping Dictionary
 DISEASE_MAPPING = {
@@ -2547,17 +2843,24 @@ async def daily_goals(request: DailyGoalsRequest):
 @app.post("/weekly-meal-plan")
 async def weekly_meal_plan(request: WeeklyMealPlanRequest):
     """
-    Generate weekly meal plan based on user goal.
+    Generate weekly meal plan based on user goal, diet type, and budget.
 
     Input:
     {
-      "goal": "weight loss" | "weight gain" | "maintain"
+      "goal": "weight loss" | "weight gain" | "maintain",
+      "diet_type": "veg" | "non-veg" | "eggetarian",
+      "budget": "low" | "medium" | "high"
     }
     """
     try:
-        plan = generate_weekly_meal_plan(request.goal)
+        # Get parameters with defaults
+        goal = request.goal or "maintain"
+        diet_type = request.diet_type or "veg"
+        budget = request.budget or "medium"
+        
+        plan = generate_weekly_meal_plan(goal, diet_type, budget)
         if not isinstance(plan, dict) or not plan:
-            plan = generate_weekly_meal_plan("maintain")
+            plan = generate_weekly_meal_plan("maintain", "veg", "medium")
 
         # Guarantee stable day keys and 3 meals per day.
         stable_plan: Dict[str, List[str]] = {}
@@ -2571,10 +2874,24 @@ async def weekly_meal_plan(request: WeeklyMealPlanRequest):
                 safe_meals.append("Balanced meal")
             stable_plan[key] = safe_meals[:3]
 
-        return {"weekly_plan": stable_plan}
+        return {
+            "weekly_plan": stable_plan,
+            "metadata": {
+                "goal": goal,
+                "diet_type": diet_type,
+                "budget": budget
+            }
+        }
     except Exception:
-        fallback = generate_weekly_meal_plan("maintain")
-        return {"weekly_plan": fallback}
+        fallback = generate_weekly_meal_plan("maintain", "veg", "medium")
+        return {
+            "weekly_plan": fallback,
+            "metadata": {
+                "goal": "maintain",
+                "diet_type": "veg",
+                "budget": "medium"
+            }
+        }
 
 # ============================================
 # AI CHATBOT ENDPOINT

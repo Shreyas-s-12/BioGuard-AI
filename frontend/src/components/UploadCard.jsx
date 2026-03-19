@@ -39,16 +39,16 @@ function UploadCard({ onUpload, loading }) {
   };
 
   return (
-    <div className="bg-slate-900/60 backdrop-blur-xl border border-slate-800 rounded-2xl p-6 hover:shadow-[0_0_30px_rgba(34,211,238,0.3)] hover:border-cyan-400 transition-all duration-300">
-      <h2 className="text-xl font-semibold mb-4 flex items-center">
-        <span className="w-8 h-8 bg-nutri-primary/20 rounded-lg flex items-center justify-center mr-2">
+    <div className="bg-slate-900/60 backdrop-blur-xl border border-slate-800 rounded-xl p-4 hover:shadow-[0_0_30px_rgba(34,211,238,0.3)] hover:border-cyan-400 transition-all duration-300">
+      <h2 className="text-lg font-semibold mb-3 flex items-center">
+        <span className="w-7 h-7 bg-nutri-primary/20 rounded-lg flex items-center justify-center mr-2">
           📷
         </span>
         Upload Food Label
       </h2>
       
       <div 
-        className={`upload-zone rounded-xl p-8 text-center ${dragActive ? 'dragging' : ''}`}
+        className={`upload-zone rounded-lg p-4 text-center ${dragActive ? 'dragging' : ''}`}
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}
         onDragOver={handleDrag}
@@ -61,19 +61,18 @@ function UploadCard({ onUpload, loading }) {
           </div>
         ) : preview ? (
           <div className="flex flex-col items-center">
-            <img src={preview} alt="Preview" className="max-h-48 rounded-lg mb-4" />
-            <p className="text-nutri-primary font-medium">✓ Image uploaded successfully!</p>
-            <p className="text-slate-400 text-sm mt-1">Click "Analyze Food" to start analysis</p>
+            <img src={preview} alt="Preview" className="max-h-32 rounded-lg mb-3" />
+            <p className="text-nutri-primary font-medium text-sm">✓ Image uploaded!</p>
           </div>
         ) : (
           <>
-            <div className="w-16 h-16 mx-auto mb-4 bg-slate-700/50 rounded-full flex items-center justify-center">
-              <svg className="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-12 h-12 mx-auto mb-3 bg-slate-700/50 rounded-full flex items-center justify-center">
+              <svg className="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
             </div>
-            <p className="text-lg font-medium mb-2">Drop your food label image here</p>
-            <p className="text-slate-400 text-sm mb-4">or click to browse</p>
+            <p className="text-base font-medium mb-1">Drop your food label image here</p>
+            <p className="text-slate-400 text-xs mb-3">or click to browse</p>
             <label className="inline-flex items-center px-4 py-2 bg-nutri-primary hover:bg-nutri-primary/80 text-white rounded-lg cursor-pointer transition">
               <span>Select Image</span>
               <input 

@@ -7,17 +7,40 @@ function RiskBadge({ level, size = 'default' }) {
     switch (level?.toLowerCase()) {
       case 'high':
       case 'high risk':
-        return `${baseClasses} bg-red-500/20 text-red-400 border border-red-500/30`;
+        // High Risk - Strong red background and text
+        return `${baseClasses} border-none`;
       case 'moderate':
-        return `${baseClasses} bg-yellow-500/20 text-yellow-400 border border-yellow-500/30`;
+        // Moderate Risk - Strong amber/yellow background and text
+        return `${baseClasses} border-none`;
       case 'low':
       case 'low risk':
-        return `${baseClasses} bg-green-500/20 text-green-400 border border-green-500/30`;
+        // Low Risk - Strong green background and text
+        return `${baseClasses} border-none`;
       case 'minimal':
       case 'minimal risk':
-        return `${baseClasses} bg-blue-500/20 text-blue-400 border border-blue-500/30`;
+        // Minimal Risk - Blue background and text
+        return `${baseClasses} border-none`;
       default:
-        return `${baseClasses} bg-slate-500/20 text-slate-400 border border-slate-500/30`;
+        // Unknown - Grey background and text
+        return `${baseClasses} border-none`;
+    }
+  };
+
+  const getColors = () => {
+    switch (level?.toLowerCase()) {
+      case 'high':
+      case 'high risk':
+        return { bg: '#FEE2E2', text: '#DC2626', dot: '#DC2626' };
+      case 'moderate':
+        return { bg: '#FEF3C7', text: '#D97706', dot: '#D97706' };
+      case 'low':
+      case 'low risk':
+        return { bg: '#DCFCE7', text: '#16A34A', dot: '#16A34A' };
+      case 'minimal':
+      case 'minimal risk':
+        return { bg: '#DBEAFE', text: '#2563EB', dot: '#2563EB' };
+      default:
+        return { bg: '#F1F5F9', text: '#475569', dot: '#475569' };
     }
   };
 
@@ -39,19 +62,20 @@ function RiskBadge({ level, size = 'default' }) {
     }
   };
 
+  const colors = getColors();
+
   return (
-    <span className={`inline-flex items-center rounded-full font-medium ${getBadgeStyles()}`}>
-      <span className={`w-1.5 h-1.5 rounded-full mr-2 ${
-        level?.toLowerCase() === 'high' || level?.toLowerCase() === 'high risk'
-          ? 'bg-red-400'
-          : level?.toLowerCase() === 'moderate'
-          ? 'bg-yellow-400'
-          : level?.toLowerCase() === 'low' || level?.toLowerCase() === 'low risk'
-          ? 'bg-green-400'
-          : level?.toLowerCase() === 'minimal' || level?.toLowerCase() === 'minimal risk'
-          ? 'bg-blue-400'
-          : 'bg-slate-400'
-      }`}></span>
+    <span 
+      className={`inline-flex items-center rounded-full font-medium ${getBadgeStyles()}`}
+      style={{ 
+        backgroundColor: colors.bg, 
+        color: colors.text 
+      }}
+    >
+      <span 
+        className="w-1.5 h-1.5 rounded-full mr-2"
+        style={{ backgroundColor: colors.dot }}
+      ></span>
       {getLabel()}
     </span>
   );

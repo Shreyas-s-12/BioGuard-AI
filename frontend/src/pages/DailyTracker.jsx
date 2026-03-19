@@ -160,7 +160,7 @@ function DailyTracker() {
         <div className="bg-white/5 border border-white/10 rounded-2xl p-6 mb-6">
           <h2 className="text-xl font-semibold text-white mb-4">Set Your Profile</h2>
           <form onSubmit={handleProfileSubmit} className="grid md:grid-cols-4 gap-4">
-            <label className="text-sm text-slate-300">
+            <label className="text-sm text-slate-700 dark:text-slate-300">
               Age
               <input
                 type="number"
@@ -168,11 +168,11 @@ function DailyTracker() {
                 max="120"
                 value={profile.age}
                 onChange={(e) => setProfile((prev) => ({ ...prev, age: e.target.value }))}
-                className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                className="mt-1 w-full rounded-lg border bg-white dark:border-slate-700 dark:bg-slate-900/70 px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
               />
             </label>
 
-            <label className="text-sm text-slate-300">
+            <label className="text-sm text-slate-700 dark:text-slate-300">
               Weight (kg)
               <input
                 type="number"
@@ -181,16 +181,16 @@ function DailyTracker() {
                 step="0.1"
                 value={profile.weight}
                 onChange={(e) => setProfile((prev) => ({ ...prev, weight: e.target.value }))}
-                className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                className="mt-1 w-full rounded-lg border bg-white dark:border-slate-700 dark:bg-slate-900/70 px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
               />
             </label>
 
-            <label className="text-sm text-slate-300">
+            <label className="text-sm text-slate-700 dark:text-slate-300">
               Goal
               <select
                 value={profile.goal}
                 onChange={(e) => setProfile((prev) => ({ ...prev, goal: e.target.value }))}
-                className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                className="mt-1 w-full rounded-lg border bg-white dark:border-slate-700 dark:bg-slate-900/70 px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
               >
                 <option value="weight loss">Weight Loss</option>
                 <option value="weight gain">Weight Gain</option>

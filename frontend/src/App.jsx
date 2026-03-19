@@ -16,6 +16,7 @@ import DailyTracker from "./pages/DailyTracker";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ChatAssistant from "./components/ChatAssistant";
 import { AuthProvider } from "./context/AuthContext";
+import { ThemeProvider } from "./context/ThemeContext";
 
 function Layout() {
   const location = useLocation();
@@ -54,9 +55,11 @@ function Layout() {
 export default function App() {
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <Layout />
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <Layout />
+        </AuthProvider>
+      </ThemeProvider>
     </BrowserRouter>
   );
 }

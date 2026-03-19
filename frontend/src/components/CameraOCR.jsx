@@ -97,9 +97,9 @@ function CameraOCR({ onScanComplete, onClose }) {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-slate-900 border border-white/10 rounded-3xl max-w-lg w-full max-h-[90vh] overflow-hidden">
+      <div className="bg-slate-900 border border-white/10 rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-white/10">
+        <div className="flex-shrink-0 flex items-center justify-between p-4 border-b border-white/10">
           <div className="flex items-center">
             <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center mr-3">
               <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -122,7 +122,7 @@ function CameraOCR({ onScanComplete, onClose }) {
         </div>
 
         {/* Content */}
-        <div className="p-6">
+        <div className="flex-1 overflow-y-auto p-4">
           {error && (
             <div className="mb-4 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
               {error}
@@ -138,15 +138,15 @@ function CameraOCR({ onScanComplete, onClose }) {
 
           {/* Upload UI - shown when no image is selected */}
           {!ocrResult && !loading && !previewUrl && (
-            <div className="glass rounded-xl p-6 text-center">
-              <div className="w-24 h-24 mx-auto mb-4 bg-white/5 rounded-full flex items-center justify-center">
-                <svg className="w-12 h-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="glass rounded-xl p-4 text-center">
+              <div className="w-16 h-16 mx-auto mb-3 bg-white/5 rounded-full flex items-center justify-center">
+                <svg className="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
               </div>
               
-              <h3 className="text-lg font-medium text-white mb-2">Upload Food Label</h3>
-              <p className="text-slate-400 text-sm mb-6">
+              <h3 className="text-base font-medium text-white mb-2">Upload Food Label</h3>
+              <p className="text-slate-400 text-xs mb-4">
                 Upload a food label image to extract ingredients
               </p>
 
@@ -161,7 +161,7 @@ function CameraOCR({ onScanComplete, onClose }) {
 
               <label
                 htmlFor="ingredientUpload"
-                className="inline-block px-6 py-3 bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-400 hover:to-purple-400 text-white rounded-lg cursor-pointer transition-all"
+                className="inline-block px-4 py-2 bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-400 hover:to-purple-400 text-white rounded-lg cursor-pointer transition-all text-sm"
               >
                 Upload Food Label Image
               </label>

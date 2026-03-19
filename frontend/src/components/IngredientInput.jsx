@@ -31,29 +31,29 @@ function IngredientInput({ onAnalyze, loading, hasImage = false }) {
   ];
 
   return (
-    <div className="glass rounded-2xl p-6">
-      <h2 className="text-xl font-semibold mb-4 flex items-center">
-        <span className="w-8 h-8 bg-nutri-secondary/20 rounded-lg flex items-center justify-center mr-2">
+    <div className="glass rounded-xl p-4">
+      <h2 className="text-lg font-semibold mb-3 flex items-center">
+        <span className="w-7 h-7 bg-nutri-secondary/20 rounded-lg flex items-center justify-center mr-2">
           📝
         </span>
         Manual Input
       </h2>
       
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-3">
         <div>
-          <label className="block text-sm font-medium mb-2 text-slate-300">
-            Ingredients (comma-separated)
+          <label className="block text-sm font-medium mb-1 text-slate-300">
+            Ingredients
           </label>
           <textarea
             value={ingredients}
             onChange={(e) => setIngredients(e.target.value)}
-            placeholder="e.g., water, sugar, sodium benzoate, artificial flavor..."
-            className="w-full px-4 py-3 bg-slate-800/50 border border-slate-600 rounded-lg focus:border-nutri-primary focus:ring-1 focus:ring-nutri-primary outline-none transition resize-none"
-            rows={3}
+            placeholder="e.g., water, sugar, sodium benzoate..."
+            className="w-full px-3 py-2 bg-slate-800/50 border border-slate-600 rounded-lg focus:border-nutri-primary focus:ring-1 focus:ring-nutri-primary outline-none transition resize-none text-sm"
+            rows={2}
           />
         </div>
         
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
           {nutritionFields.map((field) => (
             <div key={field.key}>
               <label className="block text-xs text-slate-400 mb-1">
@@ -73,7 +73,7 @@ function IngredientInput({ onAnalyze, loading, hasImage = false }) {
         <button
           type="submit"
           disabled={!canSubmit}
-          className="w-full py-3 bg-gradient-to-r from-nutri-primary to-nutri-secondary hover:from-nutri-primary/80 hover:to-nutri-secondary/80 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition flex items-center justify-center"
+          className="w-full py-2 bg-gradient-to-r from-nutri-primary to-nutri-secondary hover:from-nutri-primary/80 hover:to-nutri-secondary/80 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition flex items-center justify-center text-sm"
         >
           {loading ? (
             <>

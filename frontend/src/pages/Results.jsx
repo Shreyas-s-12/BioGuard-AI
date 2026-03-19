@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
-import { getWeeklyMealPlan } from '../services/api';
+import MealPlanner from '../components/MealPlanner';
 import {
   LineChart,
   Line,
@@ -12,15 +12,6 @@ import {
   ResponsiveContainer
 } from 'recharts';
 
-const FALLBACK_WEEKLY_PLAN = {
-  day1: ['Oats with fruits', 'Dal + brown rice + salad', 'Vegetable soup + chapati'],
-  day2: ['Poha with peanuts', 'Grilled paneer bowl', 'Khichdi + curd'],
-  day3: ['Idli + sambar', 'Roti + mixed veg + dal', 'Millet upma + salad'],
-  day4: ['Greek yogurt + nuts', 'Quinoa veggie bowl', 'Moong chilla + chutney'],
-  day5: ['Besan chilla', 'Rajma + rice + salad', 'Vegetable stir fry + roti'],
-  day6: ['Fruit smoothie + seeds', 'Chole + chapati', 'Soup + paneer tikka'],
-  day7: ['Dalia + fruits', 'Sambar rice + salad', 'Light pulao + curd']
-};
 const SUGAR_HYDRATION_KEY = 'sugar_hydration_tracker';
 
 function RiskMeter({ score }) {
@@ -52,7 +43,6 @@ function Results() {
   const navigate = useNavigate();
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [weeklyPlan, setWeeklyPlan] = useState(FALLBACK_WEEKLY_PLAN);
   const [dailySugarHydration, setDailySugarHydration] = useState({
     date: new Date().toISOString().slice(0, 10),
     sugar_counter: 0,
@@ -98,45 +88,6 @@ function Results() {
 
     localStorage.setItem(SUGAR_HYDRATION_KEY, JSON.stringify(tracker));
     setDailySugarHydration(tracker);
-  }, []);
-
-  useEffect(() => {
-    const fetchWeeklyPlan = async () => {
-      try {
-        let goal = 'maintain';
-        try {
-          const rawProfile = localStorage.getItem('nutrition_goals_profile');
-          if (rawProfile) {
-            const parsed = JSON.parse(rawProfile);
-            if (parsed && typeof parsed.goal === 'string' && parsed.goal.trim()) {
-              goal = parsed.goal.trim().toLowerCase();
-            }
-          }
-        } catch (_profileErr) {
-          goal = 'maintain';
-        }
-
-        const response = await getWeeklyMealPlan(goal);
-        const plan = response?.weekly_plan;
-        if (plan && typeof plan === 'object') {
-          const safePlan = {};
-          for (let i = 1; i <= 7; i += 1) {
-            const key = `day${i}`;
-            const meals = Array.isArray(plan[key])
-              ? plan[key].filter((item) => typeof item === 'string').map((item) => item.trim()).filter(Boolean)
-              : [];
-            safePlan[key] = meals.length > 0 ? meals.slice(0, 3) : FALLBACK_WEEKLY_PLAN[key];
-          }
-          setWeeklyPlan(safePlan);
-          return;
-        }
-        setWeeklyPlan(FALLBACK_WEEKLY_PLAN);
-      } catch (_err) {
-        setWeeklyPlan(FALLBACK_WEEKLY_PLAN);
-      }
-    };
-
-    fetchWeeklyPlan();
   }, []);
 
   const handleNewAnalysis = () => {
@@ -474,8 +425,8 @@ function Results() {
           </button>
         </div>
 
-        <div className="bg-cyan-500/10 border border-cyan-500/30 rounded-xl p-4 mb-8">
-          <p className="text-cyan-100 font-medium">{topSummary}</p>
+        <div className="dark:bg-cyan-500/10 dark:border-cyan-500/30 bg-cyan-50 border-cyan-200 rounded-xl p-4 mb-8">
+          <p className="dark:text-cyan-100 text-cyan-900 font-medium">{topSummary}</p>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -614,8 +565,8 @@ function Results() {
         )}
 
         <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-5 mb-8">
-          <h3 className="text-lg font-semibold text-red-300 mb-2">Health Impact</h3>
-          <p className="text-red-100">{impact}</p>
+          <h3 className="text-lg font-semibold dark:text-red-300 text-red-800 mb-2">Health Impact</h3>
+          <p className="dark:text-red-100 text-red-700">{impact}</p>
         </div>
 
         {was_translated && translated_ingredients && (
@@ -779,30 +730,12 @@ function Results() {
           )}
         </div>
 
-        <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6 mt-6">
-          <h3 className="text-lg font-semibold text-cyan-300 mb-4">Weekly Meal Calendar</h3>
-          <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {Array.from({ length: 7 }, (_, idx) => idx + 1).map((dayNum) => {
-              const key = `day${dayNum}`;
-              const meals = Array.isArray(weeklyPlan[key]) ? weeklyPlan[key] : FALLBACK_WEEKLY_PLAN[key];
-              return (
-                <div key={key} className="rounded-xl border border-white/10 bg-slate-900/45 p-4">
-                  <p className="text-sm font-semibold text-cyan-200 mb-3">Day {dayNum}</p>
-                  <div className="space-y-2 text-sm text-slate-200">
-                    <p><span className="text-slate-400">Breakfast:</span> {meals[0] || 'Balanced meal'}</p>
-                    <p><span className="text-slate-400">Lunch:</span> {meals[1] || 'Balanced meal'}</p>
-                    <p><span className="text-slate-400">Dinner:</span> {meals[2] || 'Balanced meal'}</p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+        <MealPlanner />
 
         {deficiencies.length > 0 && (
-          <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-6 mt-6">
-            <h3 className="text-lg font-semibold text-amber-300 mb-3">Nutrient Deficiency Alerts</h3>
-            <ul className="space-y-2 text-amber-100">
+          <div className="dark:bg-amber-500/10 dark:border-amber-500/30 bg-amber-100 border-amber-300 rounded-xl p-6 mt-6">
+            <h3 className="text-lg font-semibold dark:text-amber-300 text-amber-800 mb-3">Nutrient Deficiency Alerts</h3>
+            <ul className="space-y-2 dark:text-amber-100 text-amber-900">
               {deficiencies.map((item, index) => (
                 <li key={index}>- {item}</li>
               ))}
@@ -813,7 +746,7 @@ function Results() {
         <div className="mt-6 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
           <h2 className="text-lg font-semibold text-white mb-4">Detailed Analysis</h2>
           <div className="bg-slate-800/30 rounded-xl p-5">
-            <p className="text-slate-300 leading-relaxed">
+            <p className="dark:text-slate-300 text-slate-700 leading-relaxed">
               {simplified || displaySummary}
             </p>
           </div>

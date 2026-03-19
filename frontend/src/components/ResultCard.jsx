@@ -1,61 +1,124 @@
+import { motion } from 'framer-motion';
+import { useTheme } from '../context/ThemeContext';
+
 function ResultCard({ title, icon, children, className = '' }) {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+
   return (
-    <div className={`bg-slate-900/60 backdrop-blur-xl border border-slate-800 rounded-2xl p-6 ${className} hover:shadow-[0_0_30px_rgba(34,211,238,0.3)] hover:border-cyan-400 transition-all duration-300`}>
-      <h2 className="text-xl font-semibold mb-4 flex items-center">
-        <span className="w-8 h-8 bg-nutri-primary/20 rounded-lg flex items-center justify-center mr-2">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+      whileHover={{ y: -2 }}
+      className={`border rounded-2xl p-6 ${className} transition-all duration-300 ${
+        isDark 
+          ? 'bg-slate-900 border-slate-800 hover:border-blue-400 hover:shadow-lg' 
+          : 'bg-white border-[#E5E7EB] hover:border-[#4F8CFF] hover:shadow-lg'
+      }`}
+      style={!isDark ? { boxShadow: '0 2px 8px rgba(0,0,0,0.05)' } : {}}
+    >
+      <h2 className={`text-xl font-semibold mb-4 flex items-center ${
+        isDark ? 'text-slate-200' : 'text-[#0F172A]'
+      }`}>
+        <span className={`w-8 h-8 rounded-lg flex items-center justify-center mr-2 ${
+          isDark 
+            ? 'bg-blue-500/20' 
+            : 'bg-[#EEF4FF]'
+        }`}>
           {icon}
         </span>
         {title}
       </h2>
       {children}
-    </div>
+    </motion.div>
   );
 }
 
 function ChemicalCard({ chemical }) {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+
   const getRiskColor = (level) => {
     switch(level?.toLowerCase()) {
-      case 'high': return 'text-high-risk bg-high-risk/20';
-      case 'moderate': return 'text-moderate bg-moderate/20';
-      case 'low': return 'text-blue-400 bg-blue-400/20';
-      default: return 'text-safe bg-safe/20';
+      case 'high': 
+        return { bg: '#FEE2E2', text: '#DC2626', border: '#FECACA' };
+      case 'moderate': 
+        return { bg: '#FEF3C7', text: '#D97706', border: '#FDE68A' };
+      case 'low': 
+        return { bg: '#DCFCE7', text: '#16A34A', border: '#BBF7D0' };
+      default: 
+        return { bg: '#DBEAFE', text: '#2563EB', border: '#BFDBFE' };
     }
   };
 
+  const colors = getRiskColor(chemical.risk_level);
+
   return (
-    <div className="bg-slate-900/60 backdrop-blur-xl border border-slate-800 rounded-2xl shadow-lg hover:shadow-[0_0_25px_rgba(56,189,248,0.3)] transition p-4">
+    <motion.div
+      initial={{ opacity: 0, x: -10 }}
+      animate={{ opacity: 1, x: 0 }}
+      whileHover={{ scale: 1.02 }}
+      className={`border rounded-2xl transition-all p-4 ${
+        isDark 
+          ? 'bg-slate-900 border-slate-800 shadow-lg' 
+          : 'bg-white border-[#E5E7EB] shadow-md'
+      }`}
+    >
       <div className="flex items-start justify-between mb-2">
         <div>
-          <h3 className="font-semibold text-white">{chemical.chemical_name}</h3>
-          <span className="text-xs text-slate-400">{chemical.e_number}</span>
+          <h3 className={`font-semibold ${isDark ? 'text-white' : 'text-[#0F172A]'}`}>
+            {chemical.chemical_name}
+          </h3>
+          <span className={`text-xs ${isDark ? 'text-slate-400' : 'text-[#475569]'}`}>
+            {chemical.e_number}
+          </span>
         </div>
-        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRiskColor(chemical.risk_level)}`}>
+        <span 
+          className="px-2 py-1 rounded-full text-xs font-medium"
+          style={{ 
+            backgroundColor: colors.bg, 
+            color: colors.text 
+          }}
+        >
           {chemical.risk_level}
         </span>
       </div>
       
       <div className="space-y-2 text-sm">
-        <p className="text-slate-300">
-          <span className="text-slate-400">Category:</span> {chemical.category}
+        <p className={isDark ? 'text-slate-300' : 'text-[#475569]'}>
+          <span className={isDark ? 'text-slate-400' : 'text-[#475569]'}>Category:</span> {chemical.category}
         </p>
-        <p className="text-slate-300">
-          <span className="text-slate-400">Purpose:</span> {chemical.purpose}
+        <p className={isDark ? 'text-slate-300' : 'text-[#475569]'}>
+          <span className={isDark ? 'text-slate-400' : 'text-[#475569]'}>Purpose:</span> {chemical.purpose}
         </p>
         {chemical.health_concerns && (
-          <p className="text-slate-300">
-            <span className="text-slate-400">Concerns:</span> {chemical.health_concerns}
+          <p className={isDark ? 'text-slate-300' : 'text-[#475569]'}>
+            <span className={isDark ? 'text-slate-400' : 'text-[#475569]'}>Concerns:</span> {chemical.health_concerns}
           </p>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }
 
 function ChemicalsList({ chemicals }) {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+
   if (!chemicals || chemicals.length === 0) {
     return (
       <ResultCard title="Detected Chemicals" icon="✅">
-        <p className="text-slate-400 text-center py-4">No harmful chemicals detected!</p>
+        <div className="text-center py-8">
+          <motion.div
+            animate={{ scale: [1, 1.1, 1] }}
+            transition={{ duration: 2, repeat: Infinity }}
+            className="w-16 h-16 mx-auto mb-4 rounded-full bg-[#DCFCE7] flex items-center justify-center"
+          >
+            <span className="text-3xl">✅</span>
+          </motion.div>
+          <p className={isDark ? 'text-slate-400' : 'text-[#475569]'}>No harmful chemicals detected!</p>
+        </div>
       </ResultCard>
     );
   }
@@ -64,9 +127,15 @@ function ChemicalsList({ chemicals }) {
     <ResultCard title={`Detected Chemicals (${chemicals.length})`} icon="🧪">
       <div className="grid gap-4 max-h-96 overflow-y-auto pr-2">
         {chemicals.map((chem, idx) => (
-          <div key={idx} className="chemical-tag" style={{ animationDelay: `${idx * 0.1}s` }}>
+          <motion.div
+            key={idx}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: idx * 0.1 }}
+            className="chemical-tag"
+          >
             <ChemicalCard chemical={chem} />
-          </div>
+          </motion.div>
         ))}
       </div>
     </ResultCard>
@@ -74,119 +143,49 @@ function ChemicalsList({ chemicals }) {
 }
 
 function HiddenSugars({ sugars }) {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+
   if (!sugars || sugars.length === 0) {
     return (
       <ResultCard title="Hidden Sugars" icon="🍬">
-        <p className="text-slate-400 text-center py-4">No hidden sugars detected!</p>
+        <div className="text-center py-8">
+          <motion.div
+            animate={{ scale: [1, 1.1, 1] }}
+            transition={{ duration: 2, repeat: Infinity }}
+            className="w-16 h-16 mx-auto mb-4 rounded-full bg-[#DCFCE7] flex items-center justify-center"
+          >
+            <span className="text-3xl">✅</span>
+          </motion.div>
+          <p className={isDark ? 'text-slate-400' : 'text-[#475569]'}>No hidden sugars detected!</p>
+        </div>
       </ResultCard>
     );
   }
 
   return (
-    <ResultCard title={`Hidden Sugars Detected (${sugars.length})`} icon="🍬">
-      <div className="flex flex-wrap gap-2">
+    <ResultCard title={`Hidden Sugars (${sugars.length})`} icon="🍬">
+      <div className="space-y-2">
         {sugars.map((sugar, idx) => (
-          <span 
+          <motion.div
             key={idx}
-            className="px-3 py-1 bg-pink-500/20 text-pink-400 rounded-full text-sm chemical-tag"
-            style={{ animationDelay: `${idx * 0.05}s` }}
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: idx * 0.05 }}
+            className="flex items-center justify-between p-2 rounded-lg"
+            style={{ 
+              backgroundColor: '#FEE2E2',
+              border: '1px solid #FECACA'
+            }}
           >
-            {sugar}
-          </span>
+            <span className="text-sm font-medium" style={{ color: '#DC2626' }}>{sugar}</span>
+            <span className="text-xs" style={{ color: '#B91C1C' }}>Hidden Sugar</span>
+          </motion.div>
         ))}
       </div>
     </ResultCard>
   );
 }
 
-function NutritionIssues({ issues }) {
-  if (!issues || issues.length === 0) {
-    return (
-      <ResultCard title="Nutrition Analysis" icon="🥗">
-        <p className="text-slate-400 text-center py-4">No nutrition concerns detected!</p>
-      </ResultCard>
-    );
-  }
-
-  const getRiskColor = (level) => {
-    switch(level?.toLowerCase()) {
-      case 'high': return 'text-high-risk bg-high-risk/20 border-high-risk/30';
-      case 'moderate': return 'text-moderate bg-moderate/20 border-moderate/30';
-      default: return 'text-safe bg-safe/20 border-safe/30';
-    }
-  };
-
-  return (
-    <ResultCard title={`Nutrition Concerns (${issues.length})`} icon="🥗">
-      <div className="space-y-3">
-        {issues.map((issue, idx) => (
-          <div 
-            key={idx}
-            className={`p-4 rounded-lg border ${getRiskColor(issue.risk_level)}`}
-          >
-            <div className="flex items-center justify-between mb-1">
-              <span className="font-medium capitalize">{issue.nutrient.replace('_', ' ')}</span>
-              <span className="text-sm font-semibold">
-                {issue.value}{issue.unit}
-              </span>
-            </div>
-            <p className="text-sm opacity-80">{issue.concern}</p>
-          </div>
-        ))}
-      </div>
-    </ResultCard>
-  );
-}
-
-function RiskBreakdown({ scores }) {
-  const items = [
-    { label: 'Sugar Risk', value: scores.sugar_risk_score, color: 'bg-pink-500' },
-    { label: 'Fat Risk', value: scores.fat_risk_score, color: 'bg-orange-500' },
-    { label: 'Sodium Risk', value: scores.sodium_risk_score, color: 'bg-purple-500' },
-    { label: 'Chemical Risk', value: scores.chemical_risk_score, color: 'bg-red-500' }
-  ];
-
-  return (
-    <ResultCard title="Risk Breakdown" icon="📊">
-      <div className="space-y-4">
-        {items.map((item) => (
-          <div key={item.label} className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-slate-300">{item.label}</span>
-              <span className="font-medium">{item.value}%</span>
-            </div>
-            <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
-              <div 
-                className={`h-full ${item.color} rounded-full transition-all duration-1000`}
-                style={{ width: `${item.value}%` }}
-              />
-            </div>
-          </div>
-        ))}
-      </div>
-    </ResultCard>
-  );
-}
-
-function Recommendations({ recommendation, processingLevel }) {
-  return (
-    <ResultCard title="Recommendations" icon="💡">
-      <div className="space-y-4">
-        {recommendation && (
-          <p className="text-slate-300">{recommendation}</p>
-        )}
-        {processingLevel && (
-          <div className="flex items-center space-x-2">
-            <span className="text-slate-400">Processing Level:</span>
-            <span className="px-3 py-1 bg-nutri-secondary/20 text-nutri-secondary rounded-full text-sm">
-              {processingLevel}
-            </span>
-          </div>
-        )}
-      </div>
-    </ResultCard>
-  );
-}
-
-export { ResultCard, ChemicalCard, ChemicalsList, HiddenSugars, NutritionIssues, RiskBreakdown, Recommendations };
 export default ResultCard;
+export { ChemicalCard, ChemicalsList, HiddenSugars };
