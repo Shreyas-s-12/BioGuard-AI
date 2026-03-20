@@ -36,9 +36,9 @@ html {
   --border-light: #F1F5F9;
   
   /* Brand Colors */
-  --primary: #4F8CFF;
-  --primary-hover: #3A78F2;
-  --secondary: #6AA8FF;
+  --primary: #3b82f6;
+  --primary-hover: #2563eb;
+  --secondary: #6366f1;
   
   /* Semantic Colors */
   --success: #16A34A;
@@ -47,8 +47,8 @@ html {
   --danger-bg: #FEE2E2;
   --warning: #D97706;
   --warning-bg: #FEF3C7;
-  --info: #4F8CFF;
-  --info-bg: #EEF4FF;
+  --info: #3b82f6;
+  --info-bg: #DBEAFE;
   
   /* Shadows */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
@@ -66,40 +66,41 @@ html {
   --glass-border: rgba(0, 0, 0, 0.08);
   
   /* Accent */
-  --accent: #4F8CFF;
+  --accent: #3b82f6;
 }
 
-/* Dark Theme - Consistent Layered Depth */
+/* Dark Theme - Premium Layered Depth */
 [data-theme="dark"] {
   /* Layered backgrounds - darkest to lightest */
-  --bg-primary: #0B1220;      /* Deepest - body */
-  --bg-secondary: #0F172A;    /* Slightly lighter - main container */
-  --bg-tertiary: #111827;     /* Section backgrounds */
-  --card-bg: #1F2937;         /* Cards - lighter for depth */
+  --bg-primary: #020617;      /* Main background - deepest */
+  --bg-secondary: #0f172a;    /* Secondary background */
+  --bg-tertiary: #0f172a;     /* Section backgrounds */
+  --card-bg: #1e293b;         /* Cards */
+  --hover-bg: #334155;        /* Hover states */
   
-  /* Text Colors */
-  --text-primary: #F9FAFB;    /* Primary text - white */
-  --text-secondary: #D1D5DB; /* Secondary text - light grey */
-  --text-muted: #9CA3AF;      /* Muted text - grey */
+  /* Text Colors - Modern, readable */
+  --text-primary: #f8fafc;    /* Primary text */
+  --text-secondary: #cbd5f5; /* Secondary text */
+  --text-muted: #94a3b8;      /* Muted text */
   
   /* Border */
-  --border-color: #374151;    /* Borders */
-  --border-light: #1F2937;   /* Subtle borders */
+  --border-color: #334155;    /* Borders */
+  --border-light: #1e293b;   /* Subtle borders */
   
-  /* Brand Colors */
-  --primary: #4F8CFF;         /* Primary blue - matches gradient */
-  --primary-hover: #3A78F2;  /* Darker blue for hover */
-  --secondary: #6AA8FF;      /* Light blue */
+  /* Brand Colors - Single accent (#3b82f6) */
+  --primary: #3b82f6;         /* Primary blue */
+  --primary-hover: #2563eb;  /* Darker blue for hover */
+  --secondary: #6366f1;      /* Accent purple for variety */
   
-  /* Semantic Colors */
-  --success: #22C55E;
-  --success-bg: rgba(34, 197, 94, 0.2);
-  --danger: #EF4444;
-  --danger-bg: rgba(239, 68, 68, 0.2);
-  --warning: #F59E0B;
-  --warning-bg: rgba(245, 158, 11, 0.2);
-  --info: #4F8CFF;
-  --info-bg: rgba(79, 140, 255, 0.2);
+  /* Semantic Colors - Risk levels */
+  --success: #22c55e;        /* Low risk - green */
+  --success-bg: rgba(34, 197, 94, 0.15);
+  --danger: #ef4444;         /* High risk - red */
+  --danger-bg: rgba(239, 68, 68, 0.15);
+  --warning: #f59e0b;        /* Moderate risk - amber */
+  --warning-bg: rgba(245, 158, 11, 0.15);
+  --info: #3b82f6;
+  --info-bg: rgba(59, 130, 246, 0.15);
   
   /* Shadows with blue tint for premium feel */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
@@ -108,16 +109,16 @@ html {
   --shadow-xl: 0 8px 30px rgba(0, 0, 0, 0.6);
   
   /* Scrollbar */
-  --scrollbar-track: #1F2937;
-  --scrollbar-thumb: #4B5563;
-  --scrollbar-thumb-hover: #6B7280;
+  --scrollbar-track: #0f172a;
+  --scrollbar-thumb: #334155;
+  --scrollbar-thumb-hover: #475569;
   
   /* Glass Effect */
-  --glass-bg: rgba(31, 41, 55, 0.85);
+  --glass-bg: rgba(30, 41, 59, 0.85);
   --glass-border: rgba(255, 255, 255, 0.08);
   
   /* Accent */
-  --accent: #4F8CFF;
+  --accent: #3b82f6;
 }
 
 /* ============================================================================
@@ -201,8 +202,8 @@ small, label, .label {
 
 /* Dark mode card glow effect */
 [data-theme="dark"] .card:hover {
-  box-shadow: 0 0 20px rgba(79, 140, 255, 0.15), var(--shadow-lg);
-  border-color: rgba(79, 140, 255, 0.3);
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.15), var(--shadow-lg);
+  border-color: rgba(59, 130, 246, 0.3);
 }
 
 .card-header {
@@ -317,7 +318,7 @@ small, label, .label {
 
 /* Dark mode button glow */
 [data-theme="dark"] .btn-primary:hover {
-  box-shadow: 0 0 20px rgba(79, 140, 255, 0.4);
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
 }
 
 /* ============================================================================
@@ -487,7 +488,7 @@ select option {
 
 /* Selection */
 ::selection {
-  background: rgba(79, 140, 255, 0.3);
+  background: rgba(59, 130, 246, 0.3);
   color: white;
 }
 
@@ -500,7 +501,7 @@ select option {
   position: fixed;
   width: 600px;
   height: 600px;
-  background: radial-gradient(circle, rgba(79, 140, 255, 0.08), transparent);
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.06), transparent);
   top: -200px;
   left: -200px;
   filter: blur(120px);
@@ -512,7 +513,7 @@ select option {
   position: fixed;
   width: 600px;
   height: 600px;
-  background: radial-gradient(circle, rgba(106, 168, 255, 0.08), transparent);
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.06), transparent);
   bottom: -200px;
   right: -200px;
   filter: blur(120px);

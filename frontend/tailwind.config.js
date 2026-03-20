@@ -8,25 +8,28 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Semantic colors
-        'safe': '#22c55e',
-        'moderate': '#eab308',
-        'high-risk': '#ef4444',
+        // Risk colors
+        'risk': {
+          'high': '#ef4444',
+          'moderate': '#f59e0b',
+          'low': '#22c55e',
+        },
         
         // Brand colors
         'bioguard': {
-          'primary': '#4F8CFF',
-          'secondary': '#6AA8FF',
-          'accent': '#8B5CF6'
+          'primary': '#3b82f6',
+          'secondary': '#6366f1',
+          'accent': '#6366f1'
         },
         
-        // Dark theme specific
+        // Dark theme - Premium layered backgrounds
         dark: {
-          'base': '#0B1220',      // Deepest - body
-          'container': '#0F172A', // Main container
-          'section': '#111827',   // Section
-          'card': '#1F2937',      // Cards
-          'border': '#374151',    // Borders
+          'base': '#020617',        // Main background - deepest
+          'container': '#0f172a',   // Secondary background
+          'section': '#0f172a',     // Section
+          'card': '#1e293b',        // Cards
+          'hover': '#334155',       // Hover states
+          'border': '#334155',      // Borders
         },
         
         light: {
@@ -53,8 +56,8 @@ export default {
           '100%': { opacity: '1' }
         },
         glow: {
-          '0%': { boxShadow: '0 0 20px rgba(79, 140, 255, 0.1)' },
-          '100%': { boxShadow: '0 0 30px rgba(79, 140, 255, 0.25)' }
+          '0%': { boxShadow: '0 0 20px rgba(59, 130, 246, 0.1)' },
+          '100%': { boxShadow: '0 0 30px rgba(59, 130, 246, 0.25)' }
         }
       },
       
@@ -62,8 +65,9 @@ export default {
       boxShadow: {
         'dark': '0 4px 20px rgba(0, 0, 0, 0.4)',
         'dark-lg': '0 8px 30px rgba(0, 0, 0, 0.5)',
-        'glow': '0 0 20px rgba(79, 140, 255, 0.2)',
-        'glow-lg': '0 0 30px rgba(79, 140, 255, 0.3)',
+        'glow': '0 0 20px rgba(59, 130, 246, 0.2)',
+        'glow-lg': '0 0 30px rgba(59, 130, 246, 0.3)',
+        'glow-accent': '0 0 20px rgba(99, 102, 241, 0.2)',
       }
     },
   },

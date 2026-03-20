@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useTheme } from "../../context/ThemeContext";
+import ExposureScore from "../../components/ExposureScore";
 
 export default function PersonalCareHome() {
   const { theme } = useTheme();
@@ -21,6 +22,16 @@ export default function PersonalCareHome() {
             <h2 className="text-xl font-semibold text-purple-500">
               Personal Care Analysis
             </h2>
+          </motion.div>
+
+          {/* Daily Exposure Score */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="mb-8"
+          >
+            <ExposureScore showFullDetails={true} />
           </motion.div>
 
           {/* Features Section */}

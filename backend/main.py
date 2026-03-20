@@ -14,12 +14,29 @@ from pathlib import Path
 from typing import List, Dict, Optional, Any
 from datetime import datetime
 
-from fastapi import FastAPI, HTTPException, Query, Form, UploadFile, File
+import logging
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI, HTTPException, Query, Form, UploadFile, File, Request
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from fastapi.responses import JSONResponse
 import pytesseract
 from PIL import Image
 import cv2
 import numpy as np
 from deep_translator import GoogleTranslator
+
+# Configure secure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+# Security: Environment variables
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173,http://localhost:3000").split(",")
+DEBUG_MODE = os.getenv("DEBUG", "false").lower() == "true"
+MAX_REQUEST_SIZE = int(os.getenv("MAX_REQUEST_SIZE", "1048576"))  # 1MB default
 
 
 def configure_tesseract() -> Optional[str]:
@@ -151,8 +168,7 @@ def load_chemicals_csv():
 # Load chemicals on module import
 load_chemicals_csv()
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator
 
 # Load configuration
 CONFIG_PATH = Path(__file__).parent / "config.yaml"
@@ -162,57 +178,121 @@ with open(CONFIG_PATH, 'r') as f:
 app = FastAPI(
     title="BioGuard AI API",
     description="AI-powered Food Ingredient Risk Detection Platform",
-    version="3.0.0"
+    version="3.0.0",
+    debug=DEBUG_MODE
 )
 
-# Configure CORS
+# Configure CORS with restricted origins
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization"],
 )
 
-# Models
+# Security: Add security headers middleware
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    return response
+
+# Security: Request size limit middleware
+@app.middleware("http")
+async def limit_request_size(request: Request, call_next):
+    content_length = request.headers.get("content-length")
+    if content_length and int(content_length) > MAX_REQUEST_SIZE:
+        return JSONResponse(
+            status_code=413,
+            content={"error": "Request too large. Maximum size is 1MB."}
+        )
+    return await call_next(request)
+
+# Security: Global exception handler
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    logger.error(f"Unhandled exception: {str(exc)}", exc_info=True)
+    return JSONResponse(
+        status_code=500,
+        content={"error": "Internal server error. Please try again later."}
+    )
+
+# Valid enums
+VALID_GOALS = {"loss", "gain", "maintain", "diabetes", "hypertension", "heart_disease", "kidney_disease", "obesity", "fatty_liver", "pcos", "thyroid_disorder", "digestive_disorder", "pregnancy"}
+VALID_DIET_TYPES = {"veg", "non-veg", "eggetarian"}
+VALID_BUDGETS = {"low", "medium", "high"}
+
+# Models with validation
 class NutritionAnalysisRequest(BaseModel):
-    nutrition_text: str
+    nutrition_text: str = Field(..., min_length=1, max_length=5000)
 
 class FoodAnalysisRequest(BaseModel):
     """Request model for comprehensive food analysis."""
-    ingredients: str
-    nutrition_text: Optional[str] = ""
-    language: Optional[str] = "auto"  # Source language for translation (auto-detect by default)
-    health_condition: Optional[str] = None  # Personal health mode: diabetes, hypertension, heart_disease, kidney_disease, obesity, fatty_liver, pcos, thyroid_disorder, digestive_disorder, pregnancy
+    ingredients: str = Field(..., min_length=1, max_length=10000)
+    nutrition_text: Optional[str] = Field(default="", max_length=5000)
+    language: Optional[str] = Field(default="auto", max_length=10)
+    health_condition: Optional[str] = Field(default=None, max_length=50)
+    
+    @field_validator('health_condition')
+    @classmethod
+    def validate_health_condition(cls, v):
+        if v is not None and v not in VALID_GOALS:
+            raise ValueError(f'Invalid health_condition. Must be one of: {VALID_GOALS}')
+        return v
 
 
 class NutritionValues(BaseModel):
-    calories: Optional[float] = None
-    sodium: Optional[float] = None
-    fat: Optional[float] = None
-    sugar: Optional[float] = None
-    protein: Optional[float] = None
+    calories: Optional[float] = Field(default=None, ge=0, le=10000)
+    sodium: Optional[float] = Field(default=None, ge=0, le=10000)
+    fat: Optional[float] = Field(default=None, ge=0, le=1000)
+    sugar: Optional[float] = Field(default=None, ge=0, le=1000)
+    protein: Optional[float] = Field(default=None, ge=0, le=500)
 
 
 class DailyGoalsRequest(BaseModel):
     """Request model for personalized daily nutrition goals."""
-    age: Optional[int] = None
-    weight: Optional[float] = None
-    goal: Optional[str] = None
+    age: Optional[int] = Field(default=None, ge=0, le=120)
+    weight: Optional[float] = Field(default=None, ge=20, le=200)
+    goal: Optional[str] = Field(default=None, max_length=20)
+    
+    @field_validator('goal')
+    @classmethod
+    def validate_goal(cls, v):
+        if v is not None and v not in VALID_GOALS:
+            raise ValueError(f'Invalid goal. Must be one of: {VALID_GOALS}')
+        return v
 
 
 class GroceryAnalysisRequest(BaseModel):
     """Request model for multi-item grocery analysis."""
-    items: List[str]
-    health_condition: Optional[str] = None
-    health_mode: Optional[str] = None
+    items: List[str] = Field(..., min_length=1, max_length=50)
+    health_condition: Optional[str] = Field(default=None, max_length=50)
+    health_mode: Optional[str] = Field(default=None, max_length=50)
 
 
 class WeeklyMealPlanRequest(BaseModel):
     """Request model for weekly meal plan generation."""
-    goal: Optional[str] = None
-    diet_type: Optional[str] = "veg"  # veg, non-veg, eggetarian
-    budget: Optional[str] = "medium"  # low, medium, high
+    goal: Optional[str] = Field(default=None, max_length=20)
+    diet_type: Optional[str] = Field(default="veg", max_length=20)
+    budget: Optional[str] = Field(default="medium", max_length=20)
+    
+    @field_validator('diet_type')
+    @classmethod
+    def validate_diet_type(cls, v):
+        if v is not None and v not in VALID_DIET_TYPES:
+            raise ValueError(f'Invalid diet_type. Must be one of: {VALID_DIET_TYPES}')
+        return v
+    
+    @field_validator('budget')
+    @classmethod
+    def validate_budget(cls, v):
+        if v is not None and v not in VALID_BUDGETS:
+            raise ValueError(f'Invalid budget. Must be one of: {VALID_BUDGETS}')
+        return v
 
 
 def calculate_daily_nutrition_goals(
@@ -2898,7 +2978,7 @@ async def weekly_meal_plan(request: WeeklyMealPlanRequest):
 # ============================================
 
 class ChatRequest(BaseModel):
-    question: str
+    question: str = Field(..., min_length=1, max_length=500)
 
 @app.post("/chat")
 async def chat_query(request: ChatRequest):
@@ -3293,21 +3373,47 @@ def load_personal_care_csv():
 load_personal_care_csv()
 
 
+# Valid enums for personal care
+VALID_PRODUCT_TYPES = {"skincare", "haircare", "makeup", "bodycare", "sunscreen", "soap", "toothpaste", "deodorant"}
+VALID_SKIN_TYPES = {"normal", "dry", "oily", "combination", "sensitive"}
+VALID_HAIR_TYPES = {"normal", "dry", "oily", "colored", "curly", "straight", "fine", "thick"}
+
 # =============================================================================
 # PERSONAL CARE MODELS
 # =============================================================================
 
 class PersonalCareAnalysisRequest(BaseModel):
     """Request model for personal care product analysis."""
-    ingredients: str
-    product_type: Optional[str] = ""
-    skin_type: Optional[str] = ""
-    hair_type: Optional[str] = ""
+    ingredients: str = Field(..., min_length=1, max_length=10000)
+    product_type: Optional[str] = Field(default="", max_length=30)
+    skin_type: Optional[str] = Field(default="", max_length=30)
+    hair_type: Optional[str] = Field(default="", max_length=30)
+    
+    @field_validator('product_type')
+    @classmethod
+    def validate_product_type(cls, v):
+        if v and v not in VALID_PRODUCT_TYPES:
+            raise ValueError(f'Invalid product_type. Must be one of: {VALID_PRODUCT_TYPES}')
+        return v
+    
+    @field_validator('skin_type')
+    @classmethod
+    def validate_skin_type(cls, v):
+        if v and v not in VALID_SKIN_TYPES:
+            raise ValueError(f'Invalid skin_type. Must be one of: {VALID_SKIN_TYPES}')
+        return v
+    
+    @field_validator('hair_type')
+    @classmethod
+    def validate_hair_type(cls, v):
+        if v and v not in VALID_HAIR_TYPES:
+            raise ValueError(f'Invalid hair_type. Must be one of: {VALID_HAIR_TYPES}')
+        return v
 
 
 class PersonalCareChatRequest(BaseModel):
     """Request model for personal care chatbot."""
-    question: str
+    question: str = Field(..., min_length=1, max_length=1000)
 
 
 # =============================================================================
@@ -4093,13 +4199,13 @@ async def analyze_grocery(request: GroceryAnalysisRequest):
 # ============================================================================
 class FoodComparisonRequest(BaseModel):
     """Request model for food comparison."""
-    food1_name: Optional[str] = "Food A"
-    food1_ingredients: str
-    food1_nutrition: Optional[str] = ""
-    food2_name: Optional[str] = "Food B"
-    food2_ingredients: str
-    food2_nutrition: Optional[str] = ""
-    health_condition: Optional[str] = None
+    food1_name: Optional[str] = Field(default="Food A", max_length=100)
+    food1_ingredients: str = Field(..., min_length=1, max_length=10000)
+    food1_nutrition: Optional[str] = Field(default="", max_length=5000)
+    food2_name: Optional[str] = Field(default="Food B", max_length=100)
+    food2_ingredients: str = Field(..., min_length=1, max_length=10000)
+    food2_nutrition: Optional[str] = Field(default="", max_length=5000)
+    health_condition: Optional[str] = Field(default=None, max_length=50)
 
 
 @app.post("/compare-foods")

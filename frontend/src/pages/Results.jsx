@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 import MealPlanner from '../components/MealPlanner';
+import ExposureScore, { saveFoodRisk } from '../components/ExposureScore';
 import {
   LineChart,
   Line,
@@ -56,6 +57,23 @@ function Results() {
       try {
         const parsedResults = JSON.parse(storedResults);
         setResults(parsedResults);
+        
+        // Save risks to localStorage for daily exposure tracking
+        if (parsedResults && parsedResults.chemicals) {
+          parsedResults.chemicals.forEach((chemical) => {
+            const riskLevel = String(chemical.risk_level || '').toLowerCase().trim();
+            let score = 1; // Low default
+            if (riskLevel === 'moderate') score = 2;
+            else if (riskLevel === 'high') score = 3;
+            
+            saveFoodRisk({
+              name: chemical.chemical_name || chemical.name || 'Unknown',
+              riskLevel: riskLevel,
+              score: score,
+              productName: parsedResults.product_name || 'Unknown Product'
+            });
+          });
+        }
       } catch (err) {
         console.error('Failed to parse results:', err);
       }
@@ -423,6 +441,11 @@ function Results() {
             </svg>
             New Analysis
           </button>
+        </div>
+
+        {/* Daily Exposure Score */}
+        <div className="mb-8">
+          <ExposureScore showFullDetails={true} />
         </div>
 
         <div className="dark:bg-cyan-500/10 dark:border-cyan-500/30 bg-cyan-50 border-cyan-200 rounded-xl p-4 mb-8">

@@ -1,6 +1,7 @@
 import Layout from '../components/Layout';
 import { motion } from 'framer-motion';
 import { useTheme } from '../context/ThemeContext';
+import ExposureScore from '../components/ExposureScore';
 
 function Home() {
   const { theme } = useTheme();
@@ -24,6 +25,16 @@ function Home() {
             <h2 className="text-xl font-semibold text-cyan-500">
               Food Safety Analysis
             </h2>
+          </motion.div>
+
+          {/* Daily Exposure Score */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="mb-8"
+          >
+            <ExposureScore showFullDetails={true} />
           </motion.div>
 
           {/* Features Section */}

@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../../context/ThemeContext';
 import { analyzePersonalCare } from '../../services/api';
 import CameraOCR from '../../components/CameraOCR';
+import { savePersonalCareRisk } from '../../components/ExposureScore';
 
 const MAX_INPUT_CHARS = 5000;
 
@@ -73,6 +74,29 @@ export default function PersonalCareAnalyze() {
         hairType
       );
       setResults(data);
+      
+      // Save personal care risks to localStorage
+      if (data && data.detected_chemicals) {
+        const riskLevel = String(data.risk_level || '').toLowerCase().trim();
+        let totalScore = 0;
+        if (riskLevel === 'moderate') totalScore = 2;
+        else if (riskLevel === 'high') totalScore = 3;
+        else totalScore = 1;
+        
+        data.detected_chemicals.forEach((chemical) => {
+          const chemRiskLevel = String(chemical.risk_level || '').toLowerCase().trim();
+          let score = 1;
+          if (chemRiskLevel === 'moderate') score = 2;
+          else if (chemRiskLevel === 'high') score = 3;
+          
+          savePersonalCareRisk({
+            name: chemical.chemical_name || chemical.name || 'Unknown',
+            riskLevel: chemRiskLevel,
+            score: score,
+            productName: productType || 'Personal Care Product'
+          });
+        });
+      }
     } catch (err) {
       console.error('Analysis error:', err);
       setError('Failed to analyze. Please try again.');
