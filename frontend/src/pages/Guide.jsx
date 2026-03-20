@@ -304,7 +304,7 @@ function Guide() {
           <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8">
             <h2 className="text-2xl font-bold mb-4">Ready to Analyze Your Food?</h2>
             <p className="text-slate-400 mb-6">
-              Use NutriDetect AI to scan food labels and identify harmful additives.
+              Use BioGuard AI to scan food labels and identify harmful additives.
             </p>
             <Link
               to="/analyze"

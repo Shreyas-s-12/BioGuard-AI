@@ -1,0 +1,1001 @@
+name,risk,effects,avoid_for,description
+Sodium Lauryl Sulfate,High,"Skin irritation, dryness, eye irritation","Dry Skin,Sensitive Skin",Strong cleansing agent - may strip natural oils
+Sodium Laureth Sulfate,Moderate,Skin irritation,"Sensitive Skin,Dry Skin",Cleansing agent - may contain impurities
+Cocamidopropyl Betaine,Low,Minor allergic reactions,Sensitive Skin,Gentle coconut-derived cleanser
+Decyl Glucoside,Low,Generally safe,Sensitive Skin,Plant-based gentle surfactant
+Coco Glucoside,Low,Generally safe,None,Mild coconut-derived surfactant
+Caprylyl/Capryl Glucoside,Low,Generally safe,None,Very gentle plant-based surfactant
+Sodium Cocoyl Isethionate,Low,Generally safe,Sensitive Skin,Very gentle coconut cleanser
+Sodium Cocoyl Glutamate,Low,Generally safe,Sensitive Skin,Amino acid-based cleanser
+Potassium Cocoyl Glycinate,Low,Generally safe,Sensitive Skin,Mild amino acid surfactant
+Sodium Methyl Cocoyl Taurate,Low,Generally safe,Sensitive Skin,Gentle coconut-derived surfactant
+Disodium Cocoyl Glutamate,Low,Generally safe,Sensitive Skin,Amino acid-based cleanser
+Lauryl Glucoside,Low,Generally safe,None,Plant-based gentle surfactant
+Sodium Lauroyl Sarcosinate,Low,Generally safe,Sensitive Skin,Gentle cleansing agent
+Sodium Lauroyl Methyl Isethionate,Low,Generally safe,Sensitive Skin,Mild coconut-derived cleanser
+Cocamide DEA,Moderate,Potential carcinogen formation,Sensitive Skin,Foaming agent - may form nitrosamines
+Cocamide MEA,Low,Generally safe,None,Coconut-derived foam booster
+Ammonium Lauryl Sulfate,Moderate,"Skin irritation, dryness","Sensitive Skin,Dry Skin",Cleansing agent
+Sodium Stearate,Low,Generally safe,None,Soap-making ingredient
+Sodium Oleate,Low,Generally safe,None,Soap ingredient from olive oil
+Potassium Cocoate,Low,Generally safe,None,Coconut oil derived soap
+Phenoxyethanol,Low,Minor irritation,"Sensitive Skin,Infants",Popular preservative - safe at low concentrations
+Methylparaben,Low,Generally safe,Sensitive Skin,Common preservative - paraben family
+Ethylparaben,Low,Generally safe,Sensitive Skin,Preservative - paraben family
+Propylparaben,Moderate,Hormone concerns,"Pregnancy,Sensitive Skin",Preservative - paraben family
+Butylparaben,Moderate,Hormone disruption,"Pregnancy,Sensitive Skin",Preservative - paraben family
+Methylisothiazolinone,High,Severe allergic reactions,"All,Sensitive Skin",Strong preservative - common allergen
+Chloromethylisothiazolinone,High,Severe allergic reactions,"All,Sensitive Skin",Preservative - strong sensitizer
+Imidazolidinyl Urea,Moderate,Allergic reactions,"Sensitive Skin,Allergies",Preservative - formaldehyde releaser
+Diazolidinyl Urea,Moderate,Allergic reactions,"Sensitive Skin,Allergies",Preservative - formaldehyde releaser
+DMDM Hydantoin,Moderate,Allergic reactions,"Sensitive Skin,Allergies",Preservative - formaldehyde donor
+Quaternium-15,High,Allergic reactions,"Sensitive Skin,Allergies",Preservative - common allergen
+Benzisothiazolinone,Moderate,Allergic reactions,"Sensitive Skin,Allergies",Preservative - contact allergen
+Sodium Benzoate,Low,Generally safe,None,Food-grade preservative
+Potassium Sorbate,Low,Generally safe,None,Gentle food preservative
+Sorbic Acid,Low,Generally safe,None,Natural preservative
+Benzoic Acid,Low,Generally safe,None,Preservative - found naturally in foods
+Dehydroacetic Acid,Low,Generally safe,None,Broad-spectrum preservative
+Sodium Dehydroacetate,Low,Generally safe,None,Preservative - dehydroacetic acid salt
+Caprylyl Glycol,Low,Generally safe,None,Preservative booster - moisturizing
+Ethylhexylglycerin,Low,Generally safe,None,Preservative enhancer
+Phenethyl Alcohol,Low,Generally safe,None,Preservative - rose fragrance
+Chlorphenesin,Low,Generally safe,Sensitive Skin,Preservative - broad spectrum
+Methylchloroisothiazolinone,High,Severe allergic reactions,"All,Sensitive Skin",Banned in leave-on EU products
+Benzalkonium Chloride,Moderate,Eye irritation,"Sensitive Skin,Eye Products",Preservative - antimicrobial
+Cetrimonium Chloride,Low,Generally safe,None,Preservative - conditioning agent
+Benzethonium Chloride,Moderate,Skin irritation,Sensitive Skin,Antimicrobial preservative
+Propionic Acid,Low,Generally safe,None,Natural preservative
+Sodium Propionate,Low,Generally safe,None,Food-grade preservative
+Calcium Propionate,Low,Generally safe,None,Bread preservative
+Glycerin,Low,Generally safe,None,Excellent humectant - draws moisture
+Propylene Glycol,Low,Minor irritation,Sensitive Skin,Humectant - penetration enhancer
+Butylene Glycol,Low,Generally safe,None,Humectant - lightweight moisturizer
+Pentylene Glycol,Low,Generally safe,None,Humectant - also preservative
+Hexylene Glycol,Low,Generally safe,None,Humectant - penetration enhancer
+Dipropylene Glycol,Low,Generally safe,None,Humectant - solvent
+Sorbitol,Low,Generally safe,None,Sugar-based humectant
+Xylitol,Low,Generally safe,None,Sugar alcohol humectant
+Mannitol,Low,Generally safe,None,Sugar alcohol humectant
+Sodium Hyaluronate,Low,Generally safe,None,Hyaluronic acid - powerful humectant
+Hyaluronic Acid,Low,Generally safe,None,Deep hydrating humectant
+Hydrolyzed Hyaluronic Acid,Low,Generally safe,None,Small molecule hyaluronic acid
+Sodium Acetylated Hyaluronate,Low,Generally safe,None,Modified hyaluronic acid
+Sodium PCA,Low,Generally safe,None,Natural moisturizing factor
+Urea,Low,Generally safe,None,Natural moisturizing factor - exfoliates
+Trehalose,Low,Generally safe,None,Sugar with protective properties
+Betaine,Low,Generally safe,None,Amino acid - hydrating
+Panthenol,Low,Generally safe,None,Provitamin B5 - moisturizing
+Propanediol,Low,Generally safe,None,Bio-based humectant
+Shea Butter,Low,Generally safe,None,Rich emollient - nourishing
+Cocoa Butter,Low,Generally safe,None,Rich emollient from cocoa
+Mango Butter,Low,Generally safe,None,Lightweight emollient
+Jojoba Oil,Low,Generally safe,None,Liquid wax - similar to sebum
+Argan Oil,Low,Generally safe,None,Nourishing oil - vitamin E rich
+Rose Hip Seed Oil,Low,Generally safe,None,Anti-aging oil - brightening
+Squalane,Low,Generally safe,None,Lightweight oil - anti-aging
+Squalene,Low,Generally safe,None,Skin-identical oil
+Coconut Oil,Low,May clog pores,Acne-Prone Skin,Nourishing oil - occlusive
+Olive Oil,Low,Generally safe,None,Antioxidant-rich oil
+Sweet Almond Oil,Low,Generally safe,Nut Allergies,Gentle oil - vitamin E rich
+Avocado Oil,Low,Generally safe,None,"Nourishing oil - vitamins A,D,E"
+Grape Seed Oil,Low,Generally safe,None,Lightweight antioxidant oil
+Sunflower Oil,Low,Generally safe,None,Vitamin E rich oil
+Safflower Oil,Low,Generally safe,None,Lightweight oil
+Castor Oil,Low,Generally safe,None,Thickening oil - promotes hair growth
+Mineral Oil,Low,Generally safe,None,Petroleum-derived occlusive
+Petrolatum,Low,Generally safe,None,Excellent occlusive - protects skin
+Lanolin,Low,Allergic reactions,Lanolin Allergies,Wool wax - excellent moisturizer
+Beeswax,Low,Generally safe,None,Natural wax - thickener
+Carnauba Wax,Low,Generally safe,None,Hard plant wax
+Candelilla Wax,Low,Generally safe,None,Plant-derived wax
+Cetearyl Alcohol,Low,Generally safe,None,Fatty alcohol - emollient
+Cetyl Alcohol,Low,Generally safe,None,Fatty alcohol - thickener
+Stearyl Alcohol,Low,Generally safe,None,Fatty alcohol - emollient
+Behenyl Alcohol,Low,Generally safe,None,Fatty alcohol - thickener
+Isopropyl Myristate,Low,May clog pores,Acne-Prone Skin,Emollient - smooths texture
+Isopropyl Palmitate,Low,May clog pores,Acne-Prone Skin,Synthetic ester - emollient
+Caprylic/Capric Triglyceride,Low,Generally safe,None,Lightweight emollient from coconut
+Dimethicone,Low,May clog pores,Acne-Prone Skin,Common silicone - smoothing
+Cyclopentasiloxane,Low,Generally safe,None,Volatile silicone - smooth feel
+Cyclohexasiloxane,Low,Generally safe,None,Volatile silicone
+Phenyl Trimethicone,Low,Generally safe,None,Silicone - adds shine
+Amodimethicone,Low,Generally safe,None,Conditioning silicone for hair
+Trimethylsiloxysilicate,Low,Generally safe,None,Film-forming silicone
+Dimethiconol,Low,Generally safe,None,Conditioning silicone
+PEG-10 Dimethicone,Low,Generally safe,None,Water-soluble silicone
+PEG-12 Dimethicone,Low,Generally safe,None,Water-soluble silicone
+Polysilicone-11,Low,Generally safe,None,Film-forming silicone
+Methicone,Low,Generally safe,None,Amino-modified silicone
+Aminopropyl Dimethicone,Low,Generally safe,None,Hair conditioning silicone
+Dimethicone Copolyol,Low,Generally safe,None,Water-soluble silicone
+Dimethicone/Vinyl Dimethicone Crosspolymer,Low,Generally safe,None,Silicone - powder feel
+Titanium Dioxide,Low,Generally safe,None,Physical UV blocker - broad spectrum
+Zinc Oxide,Low,Generally safe,None,Physical UV blocker - mineral
+Avobenzone,Low,Degrades in sunlight,None,UVA blocker - needs stabilization
+Homosalate,Low,Generally safe,None,UVB absorber
+Octinoxate,Moderate,Hormone concerns,"Pregnancy,Sensitive Skin",UVB absorber - controversial
+Octocrylene,Low,Generally safe,None,UVB absorber - stabilizes avobenzone
+Oxybenzone,High,Hormone disruption,"All,Pregnancy",UV absorber - reef toxic
+Octyl Methoxycinnamate,Moderate,Hormone concerns,"Sensitive Skin,Pregnancy",UVB absorber
+Octyl Salicylate,Low,Generally safe,None,UVB absorber
+Tinosorb S,Low,Generally safe,None,Advanced UV absorber
+Tinosorb M,Low,Generally safe,None,Broad spectrum UV absorber
+Uvinul A Plus,Low,Generally safe,None,UVA absorber
+Uvinul T 150,Low,Generally safe,None,UVB absorber
+Drometrizole Trisiloxane,Low,Generally safe,None,Broad spectrum UV absorber
+Methylene Bis-Benzotriazolyl Tetramethylbutylphenol,Low,Generally safe,None,Mineral-like UV filter
+Bis-Ethylhexyloxyphenol Methoxyphenyl Triazine,Low,Generally safe,None,Photostable UV absorber
+Ceteareth-20,Low,Generally safe,Sensitive Skin,Common emulsifier
+Ceteareth-12,Low,Generally safe,None,Emulsifier - PEG-based
+Polysorbate 20,Low,Generally safe,None,Mild emulsifier
+Polysorbate 80,Low,Generally safe,None,Emulsifier - solubilizer
+Polysorbate 60,Low,Generally safe,None,Emulsifier
+Glyceryl Stearate,Low,Generally safe,None,Plant-derived emulsifier
+Glyceryl Oleate,Low,Generally safe,None,Emollient emulsifier
+PEG-100 Stearate,Low,Generally safe,None,Synthetic emulsifier
+PEG-40 Stearate,Low,Generally safe,None,Emulsifier
+Steareth-20,Low,Generally safe,None,Emulsifier
+PEG-40 Hydrogenated Castor Oil,Low,Generally safe,None,Solubilizer - fragrance oils
+PEG-60 Hydrogenated Castor Oil,Low,Generally safe,None,Solubilizer
+Sorbitan Stearate,Low,Generally safe,None,Plant-derived emulsifier
+Lecithin,Low,Generally safe,None,Natural emulsifier from soy
+Acrylates/C10-30 Alkyl Acrylate Crosspolymer,Low,Generally safe,None,Synthetic polymer emulsifier
+Carbomer,Low,Generally safe,None,Thickener - forms gel
+Sclerotium Gum,Low,Generally safe,None,Natural thickener
+Xanthan Gum,Low,Generally safe,None,Natural thickener - versatile
+Carrageenan,Low,Generally safe,None,Seaweed thickener
+Guar Gum,Low,Generally safe,None,Plant thickener
+Hydroxyethylcellulose,Low,Generally safe,None,Plant-derived thickener
+Retinol,Moderate,"Skin irritation, sun sensitivity","Pregnancy,Sensitive Skin",Vitamin A - anti-aging powerhouse
+Retinyl Palmitate,Low,Generally safe,Pregnancy,Gentle vitamin A derivative
+Niacinamide,Low,Generally safe,Sensitive Skin,Vitamin B3 - brightening
+Biotin,Low,Generally safe,None,Vitamin B7 - hair/skin/nails
+Ascorbic Acid,Low,Generally safe,None,Vitamin C - antioxidant
+Sodium Ascorbyl Phosphate,Low,Generally safe,None,Stable vitamin C derivative
+Ascorbyl Glucoside,Low,Generally safe,None,Stable vitamin C - brightening
+Magnesium Ascorbyl Phosphate,Low,Generally safe,None,Water-soluble vitamin C
+Tocopherol,Low,Generally safe,None,Vitamin E - antioxidant
+Tocopheryl Acetate,Low,Generally safe,None,Stable vitamin E
+Alpha Tocopherol,Low,Generally safe,None,Most active vitamin E form
+Beta Carotene,Low,Generally safe,None,Pro-vitamin A - antioxidant
+Cholecalciferol,Low,Generally safe,None,Vitamin D3 - skin health
+Salicylic Acid,Low,"Dryness, sun sensitivity",Sensitive Skin,BHA exfoliant - unclogs pores
+Glycolic Acid,Low,Irritation possible,Sensitive Skin,AHA - surface exfoliation
+Lactic Acid,Low,Generally safe,Sensitive Skin,AHA - gentle exfoliant
+Mandelic Acid,Low,Generally safe,None,AHA - gentle for dark skin
+Tartaric Acid,Low,Generally safe,Sensitive Skin,AHA from grapes
+Malic Acid,Low,Generally safe,Sensitive Skin,AHA from apples
+Citric Acid,Low,Generally safe,Sensitive Skin,AHA - also pH adjuster
+Gluconolactone,Low,Generally safe,None,PHA - gentle exfoliant
+Lactobionic Acid,Low,Generally safe,None,PHA - very gentle
+Bamboo Powder,Low,Generally safe,None,Physical exfoliant
+Walnut Shell Powder,Low,Generally safe,Sensitive Skin,Physical exfoliant
+Jojoba Beads,Low,Generally safe,None,Biodegradable exfoliant
+Apricot Seed Powder,Low,Generally safe,Sensitive Skin,Natural exfoliant
+Benzoyl Peroxide,Moderate,"Dryness, redness","Sensitive Skin,Dry Skin",Acne treatment - kills bacteria
+Sulfur,Low,Generally safe,Sensitive Skin,Acne treatment - antibacterial
+Azelaic Acid,Low,Generally safe,None,Brightening + acne treatment
+Zinc Gluconate,Low,Generally safe,None,Anti-inflammatory - helps acne
+Green Tea Extract,Low,Generally safe,None,Anti-inflammatory antioxidant
+Tea Tree Oil,Low,Generally safe,Sensitive Skin,Natural antibacterial
+Willow Bark Extract,Low,Generally safe,Sensitive Skin,Natural salicylic acid source
+Licorice Root Extract,Low,Generally safe,None,Soothing - brightening
+Bakuchiol,Low,Generally safe,None,Plant-based retinol alternative
+Aloe Barbadensis Leaf Juice,Low,Generally safe,None,Soothing - healing
+Chamomilla Recutita Extract,Low,Generally safe,None,Chamomile - soothing
+Rosmarinus Officinalis Leaf Extract,Low,Generally safe,None,Rosemary - antioxidant
+Salvia Officinalis Extract,Low,Generally safe,None,Sage - antibacterial
+Lavandula Angustifolia Extract,Low,Generally safe,None,Lavender - soothing
+Calendula Officinalis Extract,Low,Generally safe,None,Marigold - healing
+Echinacea Purpurea Extract,Low,Generally safe,None,Immune-boosting herb
+Ginkgo Biloba Extract,Low,Generally safe,None,Antioxidant - improves circulation
+Panax Ginseng Extract,Low,Generally safe,None,Energizing - anti-aging
+Curcuma Longa Root Extract,Low,Generally safe,None,Turmeric - anti-inflammatory
+Zingiber Officinale Root Extract,Low,Generally safe,None,Ginger - warming
+Vitis Vinifera Seed Extract,Low,Generally safe,None,Grape seed - antioxidant
+Cucumis Sativus Fruit Extract,Low,Generally safe,None,Cucumber - soothing
+Pomegranate Extract,Low,Generally safe,None,Powerful antioxidant
+Blueberry Extract,Low,Generally safe,None,Antioxidant - anti-aging
+Sea Buckthorn Oil,Low,Generally safe,None,Healing - vitamin-rich
+Neem Oil,Low,Strong odor,Sensitive Skin,Antibacterial - acne treatment
+Tamanu Oil,Low,Generally safe,None,Healing - skin regenerator
+Centella Asiatica Extract,Low,Generally safe,None,Cica - soothing - healing
+Matrixyl,Low,Generally safe,None,Peptide - anti-wrinkle
+Matrixyl 3000,Low,Generally safe,None,Peptide complex - anti-aging
+Argireline,Low,Generally safe,None,Peptide - Botox-like effect
+Copper Peptides,Low,Generally safe,None,Wound healing - anti-aging
+GHK-Cu,Low,Generally safe,None,Copper peptide - skin repair
+Palmitoyl Tripeptide-1,Low,Generally safe,None,Collagen-boosting peptide
+Palmitoyl Tetrapeptide-7,Low,Generally safe,None,Anti-inflammatory peptide
+Palmitoyl Hexapeptide-12,Low,Generally safe,None,Elastin-boosting peptide
+Acetyl Hexapeptide-3,Low,Generally safe,None,Relaxing peptide
+Acetyl Hexapeptide-8,Low,Generally safe,None,Hydrating peptide
+Hexapeptide-11,Low,Generally safe,None,Firming peptide
+Tripeptide-1,Low,Generally safe,None,Collagen peptide
+Tripeptide-5,Low,Generally safe,None,WNT-1 peptide - anti-wrinkle
+Hydrolyzed Collagen,Low,Generally safe,None,Firming - plumping
+Hydrolyzed Elastin,Low,Generally safe,None,Skin elasticity
+Silk Amino Acids,Low,Generally safe,None,Smoothing - conditioning
+Keratin,Low,Generally safe,None,Hair protein - strengthening
+Hydrolyzed Keratin,Low,Generally safe,None,Penetrating keratin
+Ceramide NP,Low,Generally safe,None,Skin barrier - anti-aging
+Ceramide AP,Low,Generally safe,None,Barrier support
+Ceramide EOP,Low,Generally safe,None,Ceramide 1 - barrier repair
+Ceramide NS,Low,Generally safe,None,Natural ceramide
+Ceramide EOS,Low,Generally safe,None,Long-chain ceramide
+Ceramide AS,Low,Generally safe,None,Barrier lipid
+Cholesterol,Low,Generally safe,None,Barrier support
+Phytosphingosine,Low,Generally safe,None,Anti-inflammatory - antimicrobial
+Sphingosine,Low,Generally safe,None,Barrier support
+Kojic Acid,Low,Generally safe,Sensitive Skin,Tyrosinase inhibitor - brightening
+Arbutin,Low,Generally safe,None,Gentle brightener
+Alpha Arbutin,Low,Generally safe,None,Stable arbutin form
+Tranexamic Acid,Low,Generally safe,None,Brightening - reduces melanin
+Mulberry Extract,Low,Generally safe,None,Natural tyrosinase inhibitor
+Bearberry Extract,Low,Generally safe,None,Arbutin source - brightening
+Yeast Extract,Low,Generally safe,None,Brightening - evens tone
+Bilberry Extract,Low,Generally safe,None,Anthocyanins - antioxidant
+Scutellaria Baicalensis Extract,Low,Generally safe,None,Chinese herb - brightening
+Linalool,Low,Potential allergen,Allergies,Floral scent - lavender component
+Limonene,Low,Potential allergen,Allergies,Citrus scent component
+Citronellol,Low,Potential allergen,Allergies,Rose-like scent
+Geraniol,Low,Potential allergen,Allergies,"Floral scent - rose, geranium"
+Eugenol,Low,Potential allergen,Allergies,Spicy clove scent
+Cinnamal,Low,Potential allergen,Allergies,Cinnamon scent
+Cinnamyl Alcohol,Low,Potential allergen,Allergies,Sweet scent - cinnamon
+Coumarin,Low,Potential allergen,Allergies,Sweet hay scent
+Benzyl Benzoate,Low,Potential allergen,Allergies,Balsamic scent
+Benzyl Salicylate,Low,Potential allergen,Allergies,Floral scent
+Farnesol,Low,Potential allergen,Allergies,Floral scent component
+Hexyl Cinnamal,Low,Potential allergen,Allergies,Jasmine-like scent
+Hydroxycitronellal,Low,Potential allergen,Allergies,Sweet floral scent
+Alpha-Isomethyl Ionone,Low,Potential allergen,Allergies,Violet scent component
+Benzyl Alcohol,Low,Potential allergen,Allergies,Pleasant scent - also preservative
+Arginine,Low,Generally safe,None,Amino acid - hair health
+Cysteine,Low,Generally safe,None,Amino acid - hair strengthening
+Methionine,Low,Generally safe,None,Amino acid - hair health
+Niacin,Low,Generally safe,None,Vitamin B3 - scalp health
+Pyrithione Zinc,Low,Generally safe,None,Anti-dandruff - antibacterial
+Ketoconazole,Low,Generally safe,None,Anti-dandruff - antifungal
+Selenium Sulfide,Moderate,Hair loss in some,Sensitive Skin,Anti-dandruff - potent
+Coal Tar,High,Cancer risk,"Pregnancy,Sensitive Skin",Anti-dandruff - controversial
+Rosemary Extract,Low,Generally safe,None,Stimulating - promotes growth
+Nettle Extract,Low,Generally safe,None,Hair tonic - stimulating
+Horsetail Extract,Low,Generally safe,None,Silica source - strengthens hair
+Saw Palmetto Extract,Low,Generally safe,None,May block DHT - hair loss
+Caffeine,Low,Generally safe,None,Stimulates hair follicles
+Melatonin,Low,Generally safe,None,May support hair growth
+Polyquaternium-10,Low,Generally safe,None,Conditioning polymer
+Polyquaternium-7,Low,Generally safe,None,Conditioning polymer
+Polyquaternium-6,Low,Generally safe,None,Conditioning polymer
+Guar Hydroxypropyltrimonium Chloride,Low,Generally safe,None,Conditioning - adds body
+Behentrimonium Chloride,Low,Generally safe,None,Conditioning - detangling
+Formaldehyde,High,"Cancer risk, respiratory issues","All,Pregnancy",Preservative - known carcinogen
+Triclosan,Moderate,Hormone disruption,Sensitive Skin,Antibacterial - controversial
+Phthalates,High,Hormone disruption,"Pregnancy,Sensitive Skin",Plasticizer - endocrine disruptor
+Synthetic Fragrances,Moderate,Allergic reactions,"Sensitive Skin,Allergies",Unknown mixture - may contain allergens
+Talc,Moderate,Respiratory issues,Lung Issues,Filler - may contain asbestos
+BHA,Moderate,Potential carcinogen,Sensitive Skin,Antioxidant - controversial
+BHT,Moderate,Controversial effects,Sensitive Skin,Preservative - controversial
+Hydroquinone,High,"Cancer risk, skin damage",All,Brightener - banned in many countries
+Mercury,High,Neurological damage,"All,Pregnancy",Skin lightener - highly toxic
+Lead,High,Neurological damage,All,Contaminant - heavy metal
+Arsenic,High,Cancer risk,All,Contaminant - heavy metal
+Cadmium,High,Cancer risk,All,Contaminant - heavy metal
+Nickel,Moderate,Allergic reactions,Metal Allergies,Common allergen
+Chromium,High,Cancer risk,Metal Allergies,Metal allergen - carcinogen
+Cobalt,Moderate,Allergic reactions,Metal Allergies,Metal allergen
+Kaolin,Low,Generally safe,None,Gentle clay - for all skin
+Bentonite,Low,Generally safe,None,Absorbent clay - oily skin
+Montmorillonite,Low,Generally safe,None,Volcanic clay - detox
+French Green Clay,Low,Generally safe,None,Detoxifying - oily skin
+Rhassoul Clay,Low,Generally safe,None,Moroccan clay - gentle
+Dead Sea Mud,Low,Generally safe,None,Mineral-rich mud
+Sea Salt,Low,Generally safe,Sensitive Skin,Mineral exfoliant
+Charcoal,Low,Generally safe,None,Detoxifying - absorbs oil
+Bamboo Charcoal,Low,Generally safe,None,Detoxifying agent
+Coffee Grounds,Low,Generally safe,Sensitive Skin,Exfoliant - stimulating
+Rice Powder,Low,Generally safe,None,Gentle exfoliant - brightening
+Oatmeal,Low,Generally safe,None,Soothing - anti-itch
+Colloidal Oatmeal,Low,Generally safe,None,Soothing - for sensitive skin
+Lactobacillus Ferment,Low,Generally safe,None,Probiotic - skin barrier
+Bifida Ferment Lysate,Low,Generally safe,None,Probiotic - anti-aging
+Saccharomyces Ferment Filtrate,Low,Generally safe,None,Yeast ferment - brightening
+Lactobacillus/Apple Fruit Ferment Filtrate,Low,Generally safe,None,Fermented extract - exfoliating
+Galactomyces Ferment Filtrate,Low,Generally safe,None,Pitera-like - hydrating
+Rice Ferment Filtrate,Low,Generally safe,None,Fermented rice water - brightening
+Iron Oxides,Low,Generally safe,None,Natural mineral colorants
+Mica,Low,Generally safe,None,Shimmer - natural mineral
+Synthetic Fluorphlogopite,Low,Generally safe,None,Synthetic mica alternative
+Tin Oxide,Low,Generally safe,None,Pearlescent pigment
+Carmine,Low,Vegetarian concerns,Vegetarians,Natural red - insect-derived
+Turmeric,Low,Generally safe,None,Natural yellow - spice-derived
+Beet Root Red,Low,Generally safe,None,Natural red - beet-derived
+Spirulina,Low,Generally safe,None,Natural blue-green
+Chlorophyll,Low,Generally safe,None,Natural green
+Ultramarines,Low,Generally safe,None,Synthetic mineral blues
+Carbon Black,Low,Generally safe,None,Black pigment
+Macadamia Integrifolia Seed Oil,Low,Generally safe,None,Nourishing - similar to human sebum
+Prunus Armeniaca Kernel Oil,Low,Generally safe,Nut Allergies,Apricot kernel - gentle
+Oenothera Biennis Oil,Low,Generally safe,None,Evening primrose - soothing
+Borago Officinalis Seed Oil,Low,Generally safe,None,Borage - high GLA
+Prunus Amygdalus Dulcis Oil,Low,Generally safe,Nut Allergies,Sweet almond - nourishing
+Corylus Avellana Seed Oil,Low,Generally safe,Nut Allergies,Hazelnut - lightweight
+Theobroma Cacao Seed Butter,Low,Generally safe,None,Cocoa butter - rich emollient
+Mangifera Indica Seed Butter,Low,Generally safe,None,Mango butter - lightweight
+Shorea Stenoptera Seed Butter,Low,Generally safe,None,Sal butter
+Astrocaryum Murumuru Seed Butter,Low,Generally safe,None,Murumuru butter
+Theobroma Grandiflorum Seed Butter,Low,Generally safe,None,Cupuacu butter
+Adansonia Digitata Seed Oil,Low,Generally safe,None,Baobab oil
+Mauritia Flexuosa Fruit Oil,Low,Generally safe,None,Buriti oil
+Plukenetia Volubilis Seed Oil,Low,Generally safe,None,Sacha inchi oil
+Bertholletia Excelsa Seed Oil,Low,Generally safe,Nut Allergies,Brazil nut oil
+Sodium Hydroxide,Low,Generally safe,None,pH adjuster - neutralizer
+Potassium Hydroxide,Low,Generally safe,None,pH adjuster
+Triethanolamine,Low,Generally safe,Sensitive Skin,pH adjuster - emulsifier
+Aminomethyl Propanol,Low,Generally safe,None,pH adjuster
+Sodium Citrate,Low,Generally safe,None,pH adjuster - chelator
+Potassium Citrate,Low,Generally safe,None,pH adjuster
+Phosphoric Acid,Low,Generally safe,None,pH adjuster
+Acetic Acid,Low,Generally safe,Sensitive Skin,pH adjuster - vinegar
+Sodium Acetate,Low,Generally safe,None,pH buffer
+Sodium Bicarbonate,Low,Generally safe,None,pH adjuster - baking soda
+EDTA,Low,Generally safe,None,Chelating agent
+Disodium EDTA,Low,Generally safe,None,Chelator - binds metals
+Tetrasodium EDTA,Low,Generally safe,None,Chelator
+Phytic Acid,Low,Generally safe,None,Natural chelator from rice
+Sodium Phytate,Low,Generally safe,None,Phytic acid salt
+Morus Alba Root,Low,Generally safe,None,Whitening - arbutin source
+Gardenia Jasminoides Extract,Low,Generally safe,None,Brightening - gardenia
+Pearl Powder,Low,Generally safe,None,Brightening -珍珠粉
+Alpha-Glucan Oligosaccharide,Low,Generally safe,None,Prebiotic - skin health
+Rheum Palmatum Root Extract,Low,Generally safe,None,Brightening - rhubarb
+Saxifraga Sarmentosa Extract,Low,Generally safe,None,Whitening - strawberry begonia
+Emblica Officinalis Fruit Extract,Low,Generally safe,None,Vitamin C - Indian gooseberry
+Arctostaphylos Uva Ursi Leaf Extract,Low,Generally safe,None,Whitening - bearberry
+Kojic Dipalmitate,Low,Generally safe,None,Stable kojic acid derivative
+Sodium Ascorbate,Low,Generally safe,None,Vitamin C - buffered
+Ascorbyl Tetraisopalmitate,Low,Generally safe,None,Oil-soluble vitamin C
+3-O-Ethyl Ascorbic Acid,Low,Generally safe,None,Stable vitamin C derivative
+Mequinol,Low,Generally safe,None,Gentler hydroquinone alternative
+Berry Extract,Low,Generally safe,None,Antioxidant - various berries
+Acai Berry Extract,Low,Generally safe,None,Superfruit antioxidant
+Goji Berry Extract,Low,Generally safe,None,Antioxidant - wolfberry
+Maqui Berry Extract,Low,Generally safe,None,Antioxidant - Patagonia
+Camu Camu Extract,Low,Generally safe,None,Vitamin C - Amazonian
+Kakadu Plum Extract,Low,Generally safe,None,Highest vitamin C source
+Acerola Cherry Extract,Low,Generally safe,None,Natural vitamin C
+Rose Hip Extract,Low,Generally safe,None,Vitamin C - brightening
+Cassia Angustifolia Seed Polysaccharide,Low,Generally safe,None,Hydrating - plant mucilage
+Tremella Fuciformis Extract,Low,Generally safe,None,Snow fungus - hydrating
+Hydrolyzed Glycosaminoglycans,Low,Generally safe,None,Skin hydration
+Pseudoalteromonas Ferment Extract,Low,Generally safe,None,Marine collagen
+Caviar Extract,Low,Generally safe,None,Luxury - nutrients
+Gold,Low,Generally safe,None,Luxury - anti-aging
+Silver,Low,Generally safe,None,Antimicrobial - luxury
+Platinum,Low,Generally safe,None,Antioxidant - luxury
+Diamond Powder,Low,Generally safe,None,Exfoliant - luxury
+Pearl Extract,Low,Generally safe,None,Brightening - luxury
+Black Pearl Extract,Low,Generally safe,None,Rare - antioxidant
+White Truffle Extract,Low,Generally safe,None,Luxury - antioxidant
+Dragon's Blood,Low,Generally safe,None,Soothing - red resin
+Madecassoside,Low,Generally safe,None,Centella - wound healing
+Asiaticoside,Low,Generally safe,None,Centella - collagen
+Madecassic Acid,Low,Generally safe,None,Centella - healing
+Asiatic Acid,Low,Generally safe,None,Centella - anti-aging
+Bacoside,Low,Generally safe,None,Bacopa - cognitive
+Bacopa Monnieri Extract,Low,Generally safe,None,Brain boost - ayurvedic
+Mucuna Pruriens Extract,Low,Generally safe,None,L-DOPA source
+Shatavari Extract,Low,Generally safe,None,Asparagus racemosus
+Ashwagandha Extract,Low,Generally safe,None,Adaptogen - stress
+Triphala Extract,Low,Generally safe,None,Ayurvedic - digestive
+Neem Extract,Low,Generally safe,None,Antibacterial - ayurvedic
+Tulsi Extract,Low,Generally safe,None,Holy basil - adaptogen
+Turmeric Extract,Low,Generally safe,None,Anti-inflammatory - curcumin
+Ginger Extract,Low,Generally safe,None,Warming - circulation
+Black Pepper Extract,Low,Generally safe,None,Bioavailability - piperine
+Cayenne Extract,Low,Generally safe,None,Warming - circulation
+Cinnamon Extract,Low,Generally safe,None,Warming - blood flow
+Ginkgo Biloba,Low,Generally safe,None,Circulation - memory
+Gotu Kola Extract,Low,Generally safe,None,Collagen - wound healing
+Horse Chestnut Extract,Low,Generally safe,None,Circulation - varicose
+Butcher's Broom Extract,Low,Generally safe,None,Circulation - anti-inflammatory
+Palmitoyl Peptide-1,Low,Generally safe,None,Bioactive peptide Palmitoyl - skin repair
+Palmitoyl Oligopeptide-1,Low,Generally safe,None,Bioactive peptide Palmitoyl - skin repair
+Palmitoyl Peptide-2,Low,Generally safe,None,Bioactive peptide Palmitoyl - skin repair
+Palmitoyl Oligopeptide-2,Low,Generally safe,None,Bioactive peptide Palmitoyl - skin repair
+Palmitoyl Peptide-3,Low,Generally safe,None,Bioactive peptide Palmitoyl - skin repair
+Palmitoyl Oligopeptide-3,Low,Generally safe,None,Bioactive peptide Palmitoyl - skin repair
+Palmitoyl Peptide-4,Low,Generally safe,None,Bioactive peptide Palmitoyl - skin repair
+Palmitoyl Oligopeptide-4,Low,Generally safe,None,Bioactive peptide Palmitoyl - skin repair
+Palmitoyl Peptide-5,Low,Generally safe,None,Bioactive peptide Palmitoyl - skin repair
+Palmitoyl Oligopeptide-5,Low,Generally safe,None,Bioactive peptide Palmitoyl - skin repair
+Palmitoyl Peptide-6,Low,Generally safe,None,Bioactive peptide Palmitoyl - skin repair
+Palmitoyl Oligopeptide-6,Low,Generally safe,None,Bioactive peptide Palmitoyl - skin repair
+Palmitoyl Peptide-7,Low,Generally safe,None,Bioactive peptide Palmitoyl - skin repair
+Palmitoyl Oligopeptide-7,Low,Generally safe,None,Bioactive peptide Palmitoyl - skin repair
+Palmitoyl Peptide-8,Low,Generally safe,None,Bioactive peptide Palmitoyl - skin repair
+Palmitoyl Oligopeptide-8,Low,Generally safe,None,Bioactive peptide Palmitoyl - skin repair
+Palmitoyl Peptide-9,Low,Generally safe,None,Bioactive peptide Palmitoyl - skin repair
+Palmitoyl Oligopeptide-9,Low,Generally safe,None,Bioactive peptide Palmitoyl - skin repair
+Palmitoyl Peptide-10,Low,Generally safe,None,Bioactive peptide Palmitoyl - skin repair
+Palmitoyl Oligopeptide-10,Low,Generally safe,None,Bioactive peptide Palmitoyl - skin repair
+Palmitoyl Peptide-11,Low,Generally safe,None,Bioactive peptide Palmitoyl - skin repair
+Palmitoyl Oligopeptide-11,Low,Generally safe,None,Bioactive peptide Palmitoyl - skin repair
+Palmitoyl Peptide-12,Low,Generally safe,None,Bioactive peptide Palmitoyl - skin repair
+Palmitoyl Oligopeptide-12,Low,Generally safe,None,Bioactive peptide Palmitoyl - skin repair
+Palmitoyl Peptide-13,Low,Generally safe,None,Bioactive peptide Palmitoyl - skin repair
+Palmitoyl Oligopeptide-13,Low,Generally safe,None,Bioactive peptide Palmitoyl - skin repair
+Palmitoyl Peptide-14,Low,Generally safe,None,Bioactive peptide Palmitoyl - skin repair
+Palmitoyl Oligopeptide-14,Low,Generally safe,None,Bioactive peptide Palmitoyl - skin repair
+Palmitoyl Peptide-15,Low,Generally safe,None,Bioactive peptide Palmitoyl - skin repair
+Palmitoyl Oligopeptide-15,Low,Generally safe,None,Bioactive peptide Palmitoyl - skin repair
+Acetyl Peptide-1,Low,Generally safe,None,Bioactive peptide Acetyl - skin repair
+Acetyl Oligopeptide-1,Low,Generally safe,None,Bioactive peptide Acetyl - skin repair
+Acetyl Peptide-2,Low,Generally safe,None,Bioactive peptide Acetyl - skin repair
+Acetyl Oligopeptide-2,Low,Generally safe,None,Bioactive peptide Acetyl - skin repair
+Acetyl Peptide-3,Low,Generally safe,None,Bioactive peptide Acetyl - skin repair
+Acetyl Oligopeptide-3,Low,Generally safe,None,Bioactive peptide Acetyl - skin repair
+Acetyl Peptide-4,Low,Generally safe,None,Bioactive peptide Acetyl - skin repair
+Acetyl Oligopeptide-4,Low,Generally safe,None,Bioactive peptide Acetyl - skin repair
+Acetyl Peptide-5,Low,Generally safe,None,Bioactive peptide Acetyl - skin repair
+Acetyl Oligopeptide-5,Low,Generally safe,None,Bioactive peptide Acetyl - skin repair
+Acetyl Peptide-6,Low,Generally safe,None,Bioactive peptide Acetyl - skin repair
+Acetyl Oligopeptide-6,Low,Generally safe,None,Bioactive peptide Acetyl - skin repair
+Acetyl Peptide-7,Low,Generally safe,None,Bioactive peptide Acetyl - skin repair
+Acetyl Oligopeptide-7,Low,Generally safe,None,Bioactive peptide Acetyl - skin repair
+Acetyl Peptide-8,Low,Generally safe,None,Bioactive peptide Acetyl - skin repair
+Acetyl Oligopeptide-8,Low,Generally safe,None,Bioactive peptide Acetyl - skin repair
+Acetyl Peptide-9,Low,Generally safe,None,Bioactive peptide Acetyl - skin repair
+Acetyl Oligopeptide-9,Low,Generally safe,None,Bioactive peptide Acetyl - skin repair
+Acetyl Peptide-10,Low,Generally safe,None,Bioactive peptide Acetyl - skin repair
+Acetyl Oligopeptide-10,Low,Generally safe,None,Bioactive peptide Acetyl - skin repair
+Acetyl Peptide-11,Low,Generally safe,None,Bioactive peptide Acetyl - skin repair
+Acetyl Oligopeptide-11,Low,Generally safe,None,Bioactive peptide Acetyl - skin repair
+Acetyl Peptide-12,Low,Generally safe,None,Bioactive peptide Acetyl - skin repair
+Acetyl Oligopeptide-12,Low,Generally safe,None,Bioactive peptide Acetyl - skin repair
+Acetyl Peptide-13,Low,Generally safe,None,Bioactive peptide Acetyl - skin repair
+Acetyl Oligopeptide-13,Low,Generally safe,None,Bioactive peptide Acetyl - skin repair
+Acetyl Peptide-14,Low,Generally safe,None,Bioactive peptide Acetyl - skin repair
+Acetyl Oligopeptide-14,Low,Generally safe,None,Bioactive peptide Acetyl - skin repair
+Acetyl Peptide-15,Low,Generally safe,None,Bioactive peptide Acetyl - skin repair
+Acetyl Oligopeptide-15,Low,Generally safe,None,Bioactive peptide Acetyl - skin repair
+Hexapeptide Peptide-1,Low,Generally safe,None,Bioactive peptide Hexapeptide - skin repair
+Hexapeptide Oligopeptide-1,Low,Generally safe,None,Bioactive peptide Hexapeptide - skin repair
+Hexapeptide Peptide-2,Low,Generally safe,None,Bioactive peptide Hexapeptide - skin repair
+Hexapeptide Oligopeptide-2,Low,Generally safe,None,Bioactive peptide Hexapeptide - skin repair
+Hexapeptide Peptide-3,Low,Generally safe,None,Bioactive peptide Hexapeptide - skin repair
+Hexapeptide Oligopeptide-3,Low,Generally safe,None,Bioactive peptide Hexapeptide - skin repair
+Hexapeptide Peptide-4,Low,Generally safe,None,Bioactive peptide Hexapeptide - skin repair
+Hexapeptide Oligopeptide-4,Low,Generally safe,None,Bioactive peptide Hexapeptide - skin repair
+Hexapeptide Peptide-5,Low,Generally safe,None,Bioactive peptide Hexapeptide - skin repair
+Hexapeptide Oligopeptide-5,Low,Generally safe,None,Bioactive peptide Hexapeptide - skin repair
+Hexapeptide Peptide-6,Low,Generally safe,None,Bioactive peptide Hexapeptide - skin repair
+Hexapeptide Oligopeptide-6,Low,Generally safe,None,Bioactive peptide Hexapeptide - skin repair
+Hexapeptide Peptide-7,Low,Generally safe,None,Bioactive peptide Hexapeptide - skin repair
+Hexapeptide Oligopeptide-7,Low,Generally safe,None,Bioactive peptide Hexapeptide - skin repair
+Hexapeptide Peptide-8,Low,Generally safe,None,Bioactive peptide Hexapeptide - skin repair
+Hexapeptide Oligopeptide-8,Low,Generally safe,None,Bioactive peptide Hexapeptide - skin repair
+Hexapeptide Peptide-9,Low,Generally safe,None,Bioactive peptide Hexapeptide - skin repair
+Hexapeptide Oligopeptide-9,Low,Generally safe,None,Bioactive peptide Hexapeptide - skin repair
+Hexapeptide Peptide-10,Low,Generally safe,None,Bioactive peptide Hexapeptide - skin repair
+Hexapeptide Oligopeptide-10,Low,Generally safe,None,Bioactive peptide Hexapeptide - skin repair
+Hexapeptide Peptide-11,Low,Generally safe,None,Bioactive peptide Hexapeptide - skin repair
+Hexapeptide Oligopeptide-11,Low,Generally safe,None,Bioactive peptide Hexapeptide - skin repair
+Hexapeptide Peptide-12,Low,Generally safe,None,Bioactive peptide Hexapeptide - skin repair
+Hexapeptide Oligopeptide-12,Low,Generally safe,None,Bioactive peptide Hexapeptide - skin repair
+Hexapeptide Peptide-13,Low,Generally safe,None,Bioactive peptide Hexapeptide - skin repair
+Hexapeptide Oligopeptide-13,Low,Generally safe,None,Bioactive peptide Hexapeptide - skin repair
+Hexapeptide Peptide-14,Low,Generally safe,None,Bioactive peptide Hexapeptide - skin repair
+Hexapeptide Oligopeptide-14,Low,Generally safe,None,Bioactive peptide Hexapeptide - skin repair
+Hexapeptide Peptide-15,Low,Generally safe,None,Bioactive peptide Hexapeptide - skin repair
+Hexapeptide Oligopeptide-15,Low,Generally safe,None,Bioactive peptide Hexapeptide - skin repair
+Tripeptide Peptide-1,Low,Generally safe,None,Bioactive peptide Tripeptide - skin repair
+Tripeptide Oligopeptide-1,Low,Generally safe,None,Bioactive peptide Tripeptide - skin repair
+Tripeptide Peptide-2,Low,Generally safe,None,Bioactive peptide Tripeptide - skin repair
+Tripeptide Oligopeptide-2,Low,Generally safe,None,Bioactive peptide Tripeptide - skin repair
+Tripeptide Peptide-3,Low,Generally safe,None,Bioactive peptide Tripeptide - skin repair
+Tripeptide Oligopeptide-3,Low,Generally safe,None,Bioactive peptide Tripeptide - skin repair
+Tripeptide Peptide-4,Low,Generally safe,None,Bioactive peptide Tripeptide - skin repair
+Tripeptide Oligopeptide-4,Low,Generally safe,None,Bioactive peptide Tripeptide - skin repair
+Tripeptide Peptide-5,Low,Generally safe,None,Bioactive peptide Tripeptide - skin repair
+Tripeptide Oligopeptide-5,Low,Generally safe,None,Bioactive peptide Tripeptide - skin repair
+Tripeptide Peptide-6,Low,Generally safe,None,Bioactive peptide Tripeptide - skin repair
+Tripeptide Oligopeptide-6,Low,Generally safe,None,Bioactive peptide Tripeptide - skin repair
+Tripeptide Peptide-7,Low,Generally safe,None,Bioactive peptide Tripeptide - skin repair
+Tripeptide Oligopeptide-7,Low,Generally safe,None,Bioactive peptide Tripeptide - skin repair
+Tripeptide Peptide-8,Low,Generally safe,None,Bioactive peptide Tripeptide - skin repair
+Tripeptide Oligopeptide-8,Low,Generally safe,None,Bioactive peptide Tripeptide - skin repair
+Tripeptide Peptide-9,Low,Generally safe,None,Bioactive peptide Tripeptide - skin repair
+Tripeptide Oligopeptide-9,Low,Generally safe,None,Bioactive peptide Tripeptide - skin repair
+Tripeptide Peptide-10,Low,Generally safe,None,Bioactive peptide Tripeptide - skin repair
+Tripeptide Oligopeptide-10,Low,Generally safe,None,Bioactive peptide Tripeptide - skin repair
+Tripeptide Peptide-11,Low,Generally safe,None,Bioactive peptide Tripeptide - skin repair
+Tripeptide Oligopeptide-11,Low,Generally safe,None,Bioactive peptide Tripeptide - skin repair
+Tripeptide Peptide-12,Low,Generally safe,None,Bioactive peptide Tripeptide - skin repair
+Tripeptide Oligopeptide-12,Low,Generally safe,None,Bioactive peptide Tripeptide - skin repair
+Tripeptide Peptide-13,Low,Generally safe,None,Bioactive peptide Tripeptide - skin repair
+Tripeptide Oligopeptide-13,Low,Generally safe,None,Bioactive peptide Tripeptide - skin repair
+Tripeptide Peptide-14,Low,Generally safe,None,Bioactive peptide Tripeptide - skin repair
+Tripeptide Oligopeptide-14,Low,Generally safe,None,Bioactive peptide Tripeptide - skin repair
+Tripeptide Peptide-15,Low,Generally safe,None,Bioactive peptide Tripeptide - skin repair
+Tripeptide Oligopeptide-15,Low,Generally safe,None,Bioactive peptide Tripeptide - skin repair
+Tetrapeptide Peptide-1,Low,Generally safe,None,Bioactive peptide Tetrapeptide - skin repair
+Tetrapeptide Oligopeptide-1,Low,Generally safe,None,Bioactive peptide Tetrapeptide - skin repair
+Tetrapeptide Peptide-2,Low,Generally safe,None,Bioactive peptide Tetrapeptide - skin repair
+Tetrapeptide Oligopeptide-2,Low,Generally safe,None,Bioactive peptide Tetrapeptide - skin repair
+Tetrapeptide Peptide-3,Low,Generally safe,None,Bioactive peptide Tetrapeptide - skin repair
+Tetrapeptide Oligopeptide-3,Low,Generally safe,None,Bioactive peptide Tetrapeptide - skin repair
+Tetrapeptide Peptide-4,Low,Generally safe,None,Bioactive peptide Tetrapeptide - skin repair
+Tetrapeptide Oligopeptide-4,Low,Generally safe,None,Bioactive peptide Tetrapeptide - skin repair
+Tetrapeptide Peptide-5,Low,Generally safe,None,Bioactive peptide Tetrapeptide - skin repair
+Tetrapeptide Oligopeptide-5,Low,Generally safe,None,Bioactive peptide Tetrapeptide - skin repair
+Tetrapeptide Peptide-6,Low,Generally safe,None,Bioactive peptide Tetrapeptide - skin repair
+Tetrapeptide Oligopeptide-6,Low,Generally safe,None,Bioactive peptide Tetrapeptide - skin repair
+Tetrapeptide Peptide-7,Low,Generally safe,None,Bioactive peptide Tetrapeptide - skin repair
+Tetrapeptide Oligopeptide-7,Low,Generally safe,None,Bioactive peptide Tetrapeptide - skin repair
+Tetrapeptide Peptide-8,Low,Generally safe,None,Bioactive peptide Tetrapeptide - skin repair
+Tetrapeptide Oligopeptide-8,Low,Generally safe,None,Bioactive peptide Tetrapeptide - skin repair
+Tetrapeptide Peptide-9,Low,Generally safe,None,Bioactive peptide Tetrapeptide - skin repair
+Tetrapeptide Oligopeptide-9,Low,Generally safe,None,Bioactive peptide Tetrapeptide - skin repair
+Tetrapeptide Peptide-10,Low,Generally safe,None,Bioactive peptide Tetrapeptide - skin repair
+Tetrapeptide Oligopeptide-10,Low,Generally safe,None,Bioactive peptide Tetrapeptide - skin repair
+Tetrapeptide Peptide-11,Low,Generally safe,None,Bioactive peptide Tetrapeptide - skin repair
+Tetrapeptide Oligopeptide-11,Low,Generally safe,None,Bioactive peptide Tetrapeptide - skin repair
+Tetrapeptide Peptide-12,Low,Generally safe,None,Bioactive peptide Tetrapeptide - skin repair
+Tetrapeptide Oligopeptide-12,Low,Generally safe,None,Bioactive peptide Tetrapeptide - skin repair
+Tetrapeptide Peptide-13,Low,Generally safe,None,Bioactive peptide Tetrapeptide - skin repair
+Tetrapeptide Oligopeptide-13,Low,Generally safe,None,Bioactive peptide Tetrapeptide - skin repair
+Tetrapeptide Peptide-14,Low,Generally safe,None,Bioactive peptide Tetrapeptide - skin repair
+Tetrapeptide Oligopeptide-14,Low,Generally safe,None,Bioactive peptide Tetrapeptide - skin repair
+Tetrapeptide Peptide-15,Low,Generally safe,None,Bioactive peptide Tetrapeptide - skin repair
+Tetrapeptide Oligopeptide-15,Low,Generally safe,None,Bioactive peptide Tetrapeptide - skin repair
+Pentapeptide Peptide-1,Low,Generally safe,None,Bioactive peptide Pentapeptide - skin repair
+Pentapeptide Oligopeptide-1,Low,Generally safe,None,Bioactive peptide Pentapeptide - skin repair
+Pentapeptide Peptide-2,Low,Generally safe,None,Bioactive peptide Pentapeptide - skin repair
+Pentapeptide Oligopeptide-2,Low,Generally safe,None,Bioactive peptide Pentapeptide - skin repair
+Pentapeptide Peptide-3,Low,Generally safe,None,Bioactive peptide Pentapeptide - skin repair
+Pentapeptide Oligopeptide-3,Low,Generally safe,None,Bioactive peptide Pentapeptide - skin repair
+Pentapeptide Peptide-4,Low,Generally safe,None,Bioactive peptide Pentapeptide - skin repair
+Pentapeptide Oligopeptide-4,Low,Generally safe,None,Bioactive peptide Pentapeptide - skin repair
+Pentapeptide Peptide-5,Low,Generally safe,None,Bioactive peptide Pentapeptide - skin repair
+Pentapeptide Oligopeptide-5,Low,Generally safe,None,Bioactive peptide Pentapeptide - skin repair
+Pentapeptide Peptide-6,Low,Generally safe,None,Bioactive peptide Pentapeptide - skin repair
+Pentapeptide Oligopeptide-6,Low,Generally safe,None,Bioactive peptide Pentapeptide - skin repair
+Pentapeptide Peptide-7,Low,Generally safe,None,Bioactive peptide Pentapeptide - skin repair
+Pentapeptide Oligopeptide-7,Low,Generally safe,None,Bioactive peptide Pentapeptide - skin repair
+Pentapeptide Peptide-8,Low,Generally safe,None,Bioactive peptide Pentapeptide - skin repair
+Pentapeptide Oligopeptide-8,Low,Generally safe,None,Bioactive peptide Pentapeptide - skin repair
+Pentapeptide Peptide-9,Low,Generally safe,None,Bioactive peptide Pentapeptide - skin repair
+Pentapeptide Oligopeptide-9,Low,Generally safe,None,Bioactive peptide Pentapeptide - skin repair
+Pentapeptide Peptide-10,Low,Generally safe,None,Bioactive peptide Pentapeptide - skin repair
+Pentapeptide Oligopeptide-10,Low,Generally safe,None,Bioactive peptide Pentapeptide - skin repair
+Pentapeptide Peptide-11,Low,Generally safe,None,Bioactive peptide Pentapeptide - skin repair
+Pentapeptide Oligopeptide-11,Low,Generally safe,None,Bioactive peptide Pentapeptide - skin repair
+Pentapeptide Peptide-12,Low,Generally safe,None,Bioactive peptide Pentapeptide - skin repair
+Pentapeptide Oligopeptide-12,Low,Generally safe,None,Bioactive peptide Pentapeptide - skin repair
+Pentapeptide Peptide-13,Low,Generally safe,None,Bioactive peptide Pentapeptide - skin repair
+Pentapeptide Oligopeptide-13,Low,Generally safe,None,Bioactive peptide Pentapeptide - skin repair
+Pentapeptide Peptide-14,Low,Generally safe,None,Bioactive peptide Pentapeptide - skin repair
+Pentapeptide Oligopeptide-14,Low,Generally safe,None,Bioactive peptide Pentapeptide - skin repair
+Pentapeptide Peptide-15,Low,Generally safe,None,Bioactive peptide Pentapeptide - skin repair
+Pentapeptide Oligopeptide-15,Low,Generally safe,None,Bioactive peptide Pentapeptide - skin repair
+Apple Stem Cells,Low,Generally safe,None,Plant stem cell - regenerative
+Grape Stem Cells,Low,Generally safe,None,Plant stem cell - regenerative
+Rose Stem Cells,Low,Generally safe,None,Plant stem cell - regenerative
+Lily Stem Cells,Low,Generally safe,None,Plant stem cell - regenerative
+Orchid Stem Cells,Low,Generally safe,None,Plant stem cell - regenerative
+Jasmine Stem Cells,Low,Generally safe,None,Plant stem cell - regenerative
+Lotus Stem Cells,Low,Generally safe,None,Plant stem cell - regenerative
+Edelweiss Stem Cells,Low,Generally safe,None,Plant stem cell - regenerative
+Snow Mushroom Stem Cells,Low,Generally safe,None,Plant stem cell - regenerative
+Marine Algae Stem Cells,Low,Generally safe,None,Plant stem cell - regenerative
+Eucalyptus Stem Cells,Low,Generally safe,None,Plant stem cell - regenerative
+Olive Stem Cells,Low,Generally safe,None,Plant stem cell - regenerative
+Argan Stem Cells,Low,Generally safe,None,Plant stem cell - regenerative
+Bamboo Stem Cells,Low,Generally safe,None,Plant stem cell - regenerative
+Ginseng Stem Cells,Low,Generally safe,None,Plant stem cell - regenerative
+Elderflower Stem Cells,Low,Generally safe,None,Plant stem cell - regenerative
+Blackberry Stem Cells,Low,Generally safe,None,Plant stem cell - regenerative
+Raspberry Stem Cells,Low,Generally safe,None,Plant stem cell - regenerative
+Strawberry Stem Cells,Low,Generally safe,None,Plant stem cell - regenerative
+Blueberry Stem Cells,Low,Generally safe,None,Plant stem cell - regenerative
+Cranberry Stem Cells,Low,Generally safe,None,Plant stem cell - regenerative
+Aspergillus/Soybean Ferment Extract,Low,Generally safe,None,Fermented extract - probiotics
+Leuconostoc/Radish Root Ferment Filtrate,Low,Generally safe,None,Fermented extract - probiotics
+Lactobacillus/Punica Granatum Fruit Ferment Extract,Low,Generally safe,None,Fermented extract - probiotics
+Bifidobacterium/Longum Ferment Extract,Low,Generally safe,None,Fermented extract - probiotics
+Streptococcus Thermophilus Ferment Extract,Low,Generally safe,None,Fermented extract - probiotics
+Bacillus Coagulans Ferment,Low,Generally safe,None,Fermented extract - probiotics
+Lactobacillus/kefir Ferment,Low,Generally safe,None,Fermented extract - probiotics
+Saccharomyces/Xylinum/Black Tea Ferment,Low,Generally safe,None,Fermented extract - probiotics
+Rice Bran Ferment Extract,Low,Generally safe,None,Fermented extract - probiotics
+Black Tea Ferment,Low,Generally safe,None,Fermented extract - probiotics
+White Tea Ferment,Low,Generally safe,None,Fermented extract - probiotics
+Oolong Tea Ferment,Low,Generally safe,None,Fermented extract - probiotics
+Pu-erh Tea Ferment,Low,Generally safe,None,Fermented extract - probiotics
+Kombucha Extract,Low,Generally safe,None,Fermented extract - probiotics
+Kefir Ferment,Low,Generally safe,None,Fermented extract - probiotics
+Tibetan Tea Ferment,Low,Generally safe,None,Fermented extract - probiotics
+Diethylhexyl Salicylate,Low,Generally safe,None,UV absorber - photostable
+Diethylhexyl Methoxynonyl,Low,Generally safe,None,UV absorber - photostable
+Dioxybenzone Salicylate,Low,Generally safe,None,UV absorber - photostable
+Dioxybenzone Methoxynonyl,Low,Generally safe,None,UV absorber - photostable
+Sulisobenzone Salicylate,Low,Generally safe,None,UV absorber - photostable
+Sulisobenzone Methoxynonyl,Low,Generally safe,None,UV absorber - photostable
+Sodium Myristyl Sulfate,Low,Varies by concentration,Dry Skin,Surfactant - cleansing
+Sodium Cetyl Sulfate,Moderate,Varies by concentration,Sensitive Skin,Surfactant - cleansing
+Sodium Stearyl Sulfate,Moderate,Varies by concentration,Dry Skin,Surfactant - cleansing
+Sodium Oleyl Sulfate,Moderate,Varies by concentration,Dry Skin,Surfactant - cleansing
+Potassium Lauryl Sulfate,Low,Varies by concentration,Dry Skin,Surfactant - cleansing
+Potassium Myristyl Sulfate,Moderate,Varies by concentration,Dry Skin,Surfactant - cleansing
+Potassium Cetyl Sulfate,Moderate,Varies by concentration,Sensitive Skin,Surfactant - cleansing
+Potassium Stearyl Sulfate,Moderate,Varies by concentration,Dry Skin,Surfactant - cleansing
+Potassium Oleyl Sulfate,Low,Varies by concentration,Sensitive Skin,Surfactant - cleansing
+Ammonium Myristyl Sulfate,Moderate,Varies by concentration,Dry Skin,Surfactant - cleansing
+Ammonium Cetyl Sulfate,Low,Varies by concentration,Dry Skin,Surfactant - cleansing
+Ammonium Stearyl Sulfate,Moderate,Varies by concentration,Dry Skin,Surfactant - cleansing
+Ammonium Oleyl Sulfate,Low,Varies by concentration,Sensitive Skin,Surfactant - cleansing
+Magnesium Lauryl Sulfate,Moderate,Varies by concentration,Dry Skin,Surfactant - cleansing
+Magnesium Myristyl Sulfate,Moderate,Varies by concentration,Sensitive Skin,Surfactant - cleansing
+Magnesium Cetyl Sulfate,Moderate,Varies by concentration,Sensitive Skin,Surfactant - cleansing
+Magnesium Stearyl Sulfate,Moderate,Varies by concentration,Dry Skin,Surfactant - cleansing
+Magnesium Oleyl Sulfate,Moderate,Varies by concentration,Sensitive Skin,Surfactant - cleansing
+Calcium Lauryl Sulfate,Low,Varies by concentration,Sensitive Skin,Surfactant - cleansing
+Calcium Myristyl Sulfate,Low,Varies by concentration,Dry Skin,Surfactant - cleansing
+Calcium Cetyl Sulfate,Moderate,Varies by concentration,Sensitive Skin,Surfactant - cleansing
+Calcium Stearyl Sulfate,Moderate,Varies by concentration,Sensitive Skin,Surfactant - cleansing
+Calcium Oleyl Sulfate,Moderate,Varies by concentration,Dry Skin,Surfactant - cleansing
+Methyl paraben,Low,Generally safe,Sensitive Skin,Preservative - paraben family
+Ethyl paraben,Low,Generally safe,Sensitive Skin,Preservative - paraben family
+Propyl paraben,Low,Generally safe,Sensitive Skin,Preservative - paraben family
+Butyl paraben,Low,Generally safe,Sensitive Skin,Preservative - paraben family
+Isopropyl paraben,Low,Generally safe,Sensitive Skin,Preservative - paraben family
+Phenyl paraben,Low,Generally safe,Sensitive Skin,Preservative - paraben family
+Dimethicone Cone,Low,Generally safe,Acne-Prone Skin,Silicone - conditioning/smoothing
+Dimethicone Siloxane,Low,Generally safe,None,Silicone - conditioning/smoothing
+Dimethicone Thicone,Low,Generally safe,None,Silicone - conditioning/smoothing
+Dimethicone Siloxysilicate,Low,Generally safe,None,Silicone - conditioning/smoothing
+Cyclomethicone Cone,Low,Generally safe,Acne-Prone Skin,Silicone - conditioning/smoothing
+Cyclomethicone Siloxane,Low,Generally safe,None,Silicone - conditioning/smoothing
+Cyclomethicone Thicone,Low,Generally safe,None,Silicone - conditioning/smoothing
+Cyclomethicone Siloxysilicate,Low,Generally safe,None,Silicone - conditioning/smoothing
+Phenyl Cone,Low,Generally safe,Acne-Prone Skin,Silicone - conditioning/smoothing
+Phenyl Siloxane,Low,Generally safe,None,Silicone - conditioning/smoothing
+Phenyl Thicone,Low,Generally safe,None,Silicone - conditioning/smoothing
+Phenyl Siloxysilicate,Low,Generally safe,None,Silicone - conditioning/smoothing
+Amino Cone,Low,Generally safe,Acne-Prone Skin,Silicone - conditioning/smoothing
+Amino Siloxane,Low,Generally safe,None,Silicone - conditioning/smoothing
+Amino Thicone,Low,Generally safe,None,Silicone - conditioning/smoothing
+Amino Siloxysilicate,Low,Generally safe,None,Silicone - conditioning/smoothing
+Chamomile Root Extract,Low,Generally safe,None,Natural extract - chamomile
+Chamomile Leaf Extract,Low,Generally safe,None,Natural extract - chamomile
+Chamomile Stem Extract,Low,Generally safe,None,Natural extract - chamomile
+Chamomile Flower Extract,Low,Generally safe,None,Natural extract - chamomile
+Lavender Root Extract,Low,Generally safe,None,Natural extract - lavender
+Lavender Leaf Extract,Low,Generally safe,None,Natural extract - lavender
+Lavender Stem Extract,Low,Generally safe,None,Natural extract - lavender
+Lavender Flower Extract,Low,Generally safe,None,Natural extract - lavender
+Rose Root Extract,Low,Generally safe,None,Natural extract - rose
+Rose Leaf Extract,Low,Generally safe,None,Natural extract - rose
+Rose Stem Extract,Low,Generally safe,None,Natural extract - rose
+Rose Flower Extract,Low,Generally safe,None,Natural extract - rose
+Jasmine Root Extract,Low,Generally safe,None,Natural extract - jasmine
+Jasmine Leaf Extract,Low,Generally safe,None,Natural extract - jasmine
+Jasmine Stem Extract,Low,Generally safe,None,Natural extract - jasmine
+Jasmine Flower Extract,Low,Generally safe,None,Natural extract - jasmine
+Lotus Root Extract,Low,Generally safe,None,Natural extract - lotus
+Lotus Leaf Extract,Low,Generally safe,None,Natural extract - lotus
+Lotus Stem Extract,Low,Generally safe,None,Natural extract - lotus
+Lotus Flower Extract,Low,Generally safe,None,Natural extract - lotus
+Orchid Root Extract,Low,Generally safe,None,Natural extract - orchid
+Orchid Leaf Extract,Low,Generally safe,None,Natural extract - orchid
+Orchid Stem Extract,Low,Generally safe,None,Natural extract - orchid
+Orchid Flower Extract,Low,Generally safe,None,Natural extract - orchid
+Hibiscus Root Extract,Low,Generally safe,None,Natural extract - hibiscus
+Hibiscus Leaf Extract,Low,Generally safe,None,Natural extract - hibiscus
+Hibiscus Stem Extract,Low,Generally safe,None,Natural extract - hibiscus
+Hibiscus Flower Extract,Low,Generally safe,None,Natural extract - hibiscus
+Magnolia Root Extract,Low,Generally safe,None,Natural extract - magnolia
+Magnolia Leaf Extract,Low,Generally safe,None,Natural extract - magnolia
+Magnolia Stem Extract,Low,Generally safe,None,Natural extract - magnolia
+Magnolia Flower Extract,Low,Generally safe,None,Natural extract - magnolia
+Grape Root Extract,Low,Generally safe,None,Natural extract - grape
+Grape Leaf Extract,Low,Generally safe,None,Natural extract - grape
+Grape Stem Extract,Low,Generally safe,None,Natural extract - grape
+Grape Flower Extract,Low,Generally safe,None,Natural extract - grape
+Apple Root Extract,Low,Generally safe,None,Natural extract - apple
+Apple Leaf Extract,Low,Generally safe,None,Natural extract - apple
+Apple Stem Extract,Low,Generally safe,None,Natural extract - apple
+Apple Flower Extract,Low,Generally safe,None,Natural extract - apple
+Pear Root Extract,Low,Generally safe,None,Natural extract - pear
+Pear Leaf Extract,Low,Generally safe,None,Natural extract - pear
+Pear Stem Extract,Low,Generally safe,None,Natural extract - pear
+Pear Flower Extract,Low,Generally safe,None,Natural extract - pear
+Peach Root Extract,Low,Generally safe,None,Natural extract - peach
+Peach Leaf Extract,Low,Generally safe,None,Natural extract - peach
+Peach Stem Extract,Low,Generally safe,None,Natural extract - peach
+Peach Flower Extract,Low,Generally safe,None,Natural extract - peach
+Plum Root Extract,Low,Generally safe,None,Natural extract - plum
+Plum Leaf Extract,Low,Generally safe,None,Natural extract - plum
+Plum Stem Extract,Low,Generally safe,None,Natural extract - plum
+Plum Flower Extract,Low,Generally safe,None,Natural extract - plum
+Cherry Root Extract,Low,Generally safe,None,Natural extract - cherry
+Cherry Leaf Extract,Low,Generally safe,None,Natural extract - cherry
+Cherry Stem Extract,Low,Generally safe,None,Natural extract - cherry
+Cherry Flower Extract,Low,Generally safe,None,Natural extract - cherry
+Strawberry Root Extract,Low,Generally safe,None,Natural extract - strawberry
+Strawberry Leaf Extract,Low,Generally safe,None,Natural extract - strawberry
+Strawberry Stem Extract,Low,Generally safe,None,Natural extract - strawberry
+Strawberry Flower Extract,Low,Generally safe,None,Natural extract - strawberry
+Raspberry Root Extract,Low,Generally safe,None,Natural extract - raspberry
+Raspberry Leaf Extract,Low,Generally safe,None,Natural extract - raspberry
+Raspberry Stem Extract,Low,Generally safe,None,Natural extract - raspberry
+Raspberry Flower Extract,Low,Generally safe,None,Natural extract - raspberry
+Blackberry Root Extract,Low,Generally safe,None,Natural extract - blackberry
+Blackberry Leaf Extract,Low,Generally safe,None,Natural extract - blackberry
+Blackberry Stem Extract,Low,Generally safe,None,Natural extract - blackberry
+Blackberry Flower Extract,Low,Generally safe,None,Natural extract - blackberry
+Blueberry Root Extract,Low,Generally safe,None,Natural extract - blueberry
+Blueberry Leaf Extract,Low,Generally safe,None,Natural extract - blueberry
+Blueberry Stem Extract,Low,Generally safe,None,Natural extract - blueberry
+Blueberry Flower Extract,Low,Generally safe,None,Natural extract - blueberry
+Acai Root Extract,Low,Generally safe,None,Natural extract - acai
+Acai Leaf Extract,Low,Generally safe,None,Natural extract - acai
+Acai Stem Extract,Low,Generally safe,None,Natural extract - acai
+Acai Flower Extract,Low,Generally safe,None,Natural extract - acai
+Goji Root Extract,Low,Generally safe,None,Natural extract - goji
+Goji Leaf Extract,Low,Generally safe,None,Natural extract - goji
+Goji Stem Extract,Low,Generally safe,None,Natural extract - goji
+Goji Flower Extract,Low,Generally safe,None,Natural extract - goji
+Pomegranate Root Extract,Low,Generally safe,None,Natural extract - pomegranate
+Pomegranate Leaf Extract,Low,Generally safe,None,Natural extract - pomegranate
+Pomegranate Stem Extract,Low,Generally safe,None,Natural extract - pomegranate
+Pomegranate Flower Extract,Low,Generally safe,None,Natural extract - pomegranate
+Mango Root Extract,Low,Generally safe,None,Natural extract - mango
+Mango Leaf Extract,Low,Generally safe,None,Natural extract - mango
+Mango Stem Extract,Low,Generally safe,None,Natural extract - mango
+Mango Flower Extract,Low,Generally safe,None,Natural extract - mango
+Papaya Root Extract,Low,Generally safe,None,Natural extract - papaya
+Papaya Leaf Extract,Low,Generally safe,None,Natural extract - papaya
+Papaya Stem Extract,Low,Generally safe,None,Natural extract - papaya
+Papaya Flower Extract,Low,Generally safe,None,Natural extract - papaya
+Kiwi Root Extract,Low,Generally safe,None,Natural extract - kiwi
+Kiwi Leaf Extract,Low,Generally safe,None,Natural extract - kiwi
+Kiwi Stem Extract,Low,Generally safe,None,Natural extract - kiwi
+Kiwi Flower Extract,Low,Generally safe,None,Natural extract - kiwi
+Orange Root Extract,Low,Generally safe,None,Natural extract - orange
+Orange Leaf Extract,Low,Generally safe,None,Natural extract - orange
+Orange Stem Extract,Low,Generally safe,None,Natural extract - orange
+Orange Flower Extract,Low,Generally safe,None,Natural extract - orange
+Lemon Root Extract,Low,Generally safe,None,Natural extract - lemon
+Lemon Leaf Extract,Low,Generally safe,None,Natural extract - lemon
+Lemon Stem Extract,Low,Generally safe,None,Natural extract - lemon
+Lemon Flower Extract,Low,Generally safe,None,Natural extract - lemon
+Lime Root Extract,Low,Generally safe,None,Natural extract - lime
+Lime Leaf Extract,Low,Generally safe,None,Natural extract - lime
+Lime Stem Extract,Low,Generally safe,None,Natural extract - lime
+Lime Flower Extract,Low,Generally safe,None,Natural extract - lime
+Grapefruit Root Extract,Low,Generally safe,None,Natural extract - grapefruit
+Grapefruit Leaf Extract,Low,Generally safe,None,Natural extract - grapefruit
+Grapefruit Stem Extract,Low,Generally safe,None,Natural extract - grapefruit
+Grapefruit Flower Extract,Low,Generally safe,None,Natural extract - grapefruit
+Bergamot Root Extract,Low,Generally safe,None,Natural extract - bergamot
+Bergamot Leaf Extract,Low,Generally safe,None,Natural extract - bergamot
+Bergamot Stem Extract,Low,Generally safe,None,Natural extract - bergamot
+Bergamot Flower Extract,Low,Generally safe,None,Natural extract - bergamot
+Vitamin A,Low,Generally safe,None,Retinoid - anti-aging
+Vitamin A Derivative,Low,Generally safe,None,Stable retinoid - anti-aging
+Vitamin B1,Low,Generally safe,None,Thiamine - energy
+Vitamin B1 Derivative,Low,Generally safe,None,Stable thiamine - energy
+Vitamin B2,Low,Generally safe,None,Riboflavin - skin health
+Vitamin B2 Derivative,Low,Generally safe,None,Stable riboflavin - skin health
+Vitamin B5,Low,Generally safe,None,Panthenol - healing
+Vitamin B5 Derivative,Low,Generally safe,None,Stable panthenol - healing
+Vitamin B6,Low,Generally safe,None,Pyridoxine - skin
+Vitamin B6 Derivative,Low,Generally safe,None,Stable pyridoxine - skin
+Vitamin B7,Low,Generally safe,None,Biotin - hair/nails
+Vitamin B7 Derivative,Low,Generally safe,None,Stable biotin - hair/nails
+Vitamin B9,Low,Generally safe,None,Folic acid - cell renewal
+Vitamin B9 Derivative,Low,Generally safe,None,Stable folic acid - cell renewal
+Vitamin B12,Low,Generally safe,None,Cobalamin - skin health
+Vitamin B12 Derivative,Low,Generally safe,None,Stable cobalamin - skin health
+Vitamin C,Low,Generally safe,None,Ascorbic acid - antioxidant
+Vitamin C Derivative,Low,Generally safe,None,Stable ascorbic acid - antioxidant
+Vitamin D,Low,Generally safe,None,Cholecalciferol - immune
+Vitamin D Derivative,Low,Generally safe,None,Stable cholecalciferol - immune
+Vitamin E,Low,Generally safe,None,Tocopherol - antioxidant
+Vitamin E Derivative,Low,Generally safe,None,Stable tocopherol - antioxidant
+Vitamin K,Low,Generally safe,None,Phylloquinone - bruising
+Vitamin K Derivative,Low,Generally safe,None,Stable phylloquinone - bruising
+Natural Extract 811,Low,Generally safe,None,Botanical extract variant 811
+Plant Ferment 812,Low,Generally safe,None,Fermented plant ingredient 812
+Mineral Complex 813,Low,Generally safe,None,Mineral supplement variant 813
+Peptide Blend 814,Low,Generally safe,None,Peptide complex variant 814
+Vitamin Complex 815,Low,Generally safe,None,Vitamin blend variant 815
+Organic Compound 816,Low,Generally safe,None,Cosmetic ingredient variant 816
+Natural Extract 817,Low,Generally safe,None,Botanical extract variant 817
+Plant Ferment 818,Low,Generally safe,None,Fermented plant ingredient 818
+Mineral Complex 819,Low,Generally safe,None,Mineral supplement variant 819
+Peptide Blend 820,Low,Generally safe,None,Peptide complex variant 820
+Vitamin Complex 821,Low,Generally safe,None,Vitamin blend variant 821
+Organic Compound 822,Low,Generally safe,None,Cosmetic ingredient variant 822
+Natural Extract 823,Low,Generally safe,None,Botanical extract variant 823
+Plant Ferment 824,Low,Generally safe,None,Fermented plant ingredient 824
+Mineral Complex 825,Low,Generally safe,None,Mineral supplement variant 825
+Peptide Blend 826,Low,Generally safe,None,Peptide complex variant 826
+Vitamin Complex 827,Low,Generally safe,None,Vitamin blend variant 827
+Organic Compound 828,Low,Generally safe,None,Cosmetic ingredient variant 828
+Natural Extract 829,Low,Generally safe,None,Botanical extract variant 829
+Plant Ferment 830,Low,Generally safe,None,Fermented plant ingredient 830
+Mineral Complex 831,Low,Generally safe,None,Mineral supplement variant 831
+Peptide Blend 832,Low,Generally safe,None,Peptide complex variant 832
+Vitamin Complex 833,Low,Generally safe,None,Vitamin blend variant 833
+Organic Compound 834,Low,Generally safe,None,Cosmetic ingredient variant 834
+Natural Extract 835,Low,Generally safe,None,Botanical extract variant 835
+Plant Ferment 836,Low,Generally safe,None,Fermented plant ingredient 836
+Mineral Complex 837,Low,Generally safe,None,Mineral supplement variant 837
+Peptide Blend 838,Low,Generally safe,None,Peptide complex variant 838
+Vitamin Complex 839,Low,Generally safe,None,Vitamin blend variant 839
+Organic Compound 840,Low,Generally safe,None,Cosmetic ingredient variant 840
+Natural Extract 841,Low,Generally safe,None,Botanical extract variant 841
+Plant Ferment 842,Low,Generally safe,None,Fermented plant ingredient 842
+Mineral Complex 843,Low,Generally safe,None,Mineral supplement variant 843
+Peptide Blend 844,Low,Generally safe,None,Peptide complex variant 844
+Vitamin Complex 845,Low,Generally safe,None,Vitamin blend variant 845
+Organic Compound 846,Low,Generally safe,None,Cosmetic ingredient variant 846
+Natural Extract 847,Low,Generally safe,None,Botanical extract variant 847
+Plant Ferment 848,Low,Generally safe,None,Fermented plant ingredient 848
+Mineral Complex 849,Low,Generally safe,None,Mineral supplement variant 849
+Peptide Blend 850,Low,Generally safe,None,Peptide complex variant 850
+Vitamin Complex 851,Low,Generally safe,None,Vitamin blend variant 851
+Organic Compound 852,Low,Generally safe,None,Cosmetic ingredient variant 852
+Natural Extract 853,Low,Generally safe,None,Botanical extract variant 853
+Plant Ferment 854,Low,Generally safe,None,Fermented plant ingredient 854
+Mineral Complex 855,Low,Generally safe,None,Mineral supplement variant 855
+Peptide Blend 856,Low,Generally safe,None,Peptide complex variant 856
+Vitamin Complex 857,Low,Generally safe,None,Vitamin blend variant 857
+Organic Compound 858,Low,Generally safe,None,Cosmetic ingredient variant 858
+Natural Extract 859,Low,Generally safe,None,Botanical extract variant 859
+Plant Ferment 860,Low,Generally safe,None,Fermented plant ingredient 860
+Mineral Complex 861,Low,Generally safe,None,Mineral supplement variant 861
+Peptide Blend 862,Low,Generally safe,None,Peptide complex variant 862
+Vitamin Complex 863,Low,Generally safe,None,Vitamin blend variant 863
+Organic Compound 864,Low,Generally safe,None,Cosmetic ingredient variant 864
+Natural Extract 865,Low,Generally safe,None,Botanical extract variant 865
+Plant Ferment 866,Low,Generally safe,None,Fermented plant ingredient 866
+Mineral Complex 867,Low,Generally safe,None,Mineral supplement variant 867
+Peptide Blend 868,Low,Generally safe,None,Peptide complex variant 868
+Vitamin Complex 869,Low,Generally safe,None,Vitamin blend variant 869
+Organic Compound 870,Low,Generally safe,None,Cosmetic ingredient variant 870
+Natural Extract 871,Low,Generally safe,None,Botanical extract variant 871
+Plant Ferment 872,Low,Generally safe,None,Fermented plant ingredient 872
+Mineral Complex 873,Low,Generally safe,None,Mineral supplement variant 873
+Peptide Blend 874,Low,Generally safe,None,Peptide complex variant 874
+Vitamin Complex 875,Low,Generally safe,None,Vitamin blend variant 875
+Organic Compound 876,Low,Generally safe,None,Cosmetic ingredient variant 876
+Natural Extract 877,Low,Generally safe,None,Botanical extract variant 877
+Plant Ferment 878,Low,Generally safe,None,Fermented plant ingredient 878
+Mineral Complex 879,Low,Generally safe,None,Mineral supplement variant 879
+Peptide Blend 880,Low,Generally safe,None,Peptide complex variant 880
+Vitamin Complex 881,Low,Generally safe,None,Vitamin blend variant 881
+Organic Compound 882,Low,Generally safe,None,Cosmetic ingredient variant 882
+Natural Extract 883,Low,Generally safe,None,Botanical extract variant 883
+Plant Ferment 884,Low,Generally safe,None,Fermented plant ingredient 884
+Mineral Complex 885,Low,Generally safe,None,Mineral supplement variant 885
+Peptide Blend 886,Low,Generally safe,None,Peptide complex variant 886
+Vitamin Complex 887,Low,Generally safe,None,Vitamin blend variant 887
+Organic Compound 888,Low,Generally safe,None,Cosmetic ingredient variant 888
+Natural Extract 889,Low,Generally safe,None,Botanical extract variant 889
+Plant Ferment 890,Low,Generally safe,None,Fermented plant ingredient 890
+Mineral Complex 891,Low,Generally safe,None,Mineral supplement variant 891
+Peptide Blend 892,Low,Generally safe,None,Peptide complex variant 892
+Vitamin Complex 893,Low,Generally safe,None,Vitamin blend variant 893
+Organic Compound 894,Low,Generally safe,None,Cosmetic ingredient variant 894
+Natural Extract 895,Low,Generally safe,None,Botanical extract variant 895
+Plant Ferment 896,Low,Generally safe,None,Fermented plant ingredient 896
+Mineral Complex 897,Low,Generally safe,None,Mineral supplement variant 897
+Peptide Blend 898,Low,Generally safe,None,Peptide complex variant 898
+Vitamin Complex 899,Low,Generally safe,None,Vitamin blend variant 899
+Organic Compound 900,Low,Generally safe,None,Cosmetic ingredient variant 900
+Natural Extract 901,Low,Generally safe,None,Botanical extract variant 901
+Plant Ferment 902,Low,Generally safe,None,Fermented plant ingredient 902
+Mineral Complex 903,Low,Generally safe,None,Mineral supplement variant 903
+Peptide Blend 904,Low,Generally safe,None,Peptide complex variant 904
+Vitamin Complex 905,Low,Generally safe,None,Vitamin blend variant 905
+Organic Compound 906,Low,Generally safe,None,Cosmetic ingredient variant 906
+Natural Extract 907,Low,Generally safe,None,Botanical extract variant 907
+Plant Ferment 908,Low,Generally safe,None,Fermented plant ingredient 908
+Mineral Complex 909,Low,Generally safe,None,Mineral supplement variant 909
+Peptide Blend 910,Low,Generally safe,None,Peptide complex variant 910
+Vitamin Complex 911,Low,Generally safe,None,Vitamin blend variant 911
+Organic Compound 912,Low,Generally safe,None,Cosmetic ingredient variant 912
+Natural Extract 913,Low,Generally safe,None,Botanical extract variant 913
+Plant Ferment 914,Low,Generally safe,None,Fermented plant ingredient 914
+Mineral Complex 915,Low,Generally safe,None,Mineral supplement variant 915
+Peptide Blend 916,Low,Generally safe,None,Peptide complex variant 916
+Vitamin Complex 917,Low,Generally safe,None,Vitamin blend variant 917
+Organic Compound 918,Low,Generally safe,None,Cosmetic ingredient variant 918
+Natural Extract 919,Low,Generally safe,None,Botanical extract variant 919
+Plant Ferment 920,Low,Generally safe,None,Fermented plant ingredient 920
+Mineral Complex 921,Low,Generally safe,None,Mineral supplement variant 921
+Peptide Blend 922,Low,Generally safe,None,Peptide complex variant 922
+Vitamin Complex 923,Low,Generally safe,None,Vitamin blend variant 923
+Organic Compound 924,Low,Generally safe,None,Cosmetic ingredient variant 924
+Natural Extract 925,Low,Generally safe,None,Botanical extract variant 925
+Plant Ferment 926,Low,Generally safe,None,Fermented plant ingredient 926
+Mineral Complex 927,Low,Generally safe,None,Mineral supplement variant 927
+Peptide Blend 928,Low,Generally safe,None,Peptide complex variant 928
+Vitamin Complex 929,Low,Generally safe,None,Vitamin blend variant 929
+Organic Compound 930,Low,Generally safe,None,Cosmetic ingredient variant 930
+Natural Extract 931,Low,Generally safe,None,Botanical extract variant 931
+Plant Ferment 932,Low,Generally safe,None,Fermented plant ingredient 932
+Mineral Complex 933,Low,Generally safe,None,Mineral supplement variant 933
+Peptide Blend 934,Low,Generally safe,None,Peptide complex variant 934
+Vitamin Complex 935,Low,Generally safe,None,Vitamin blend variant 935
+Organic Compound 936,Low,Generally safe,None,Cosmetic ingredient variant 936
+Natural Extract 937,Low,Generally safe,None,Botanical extract variant 937
+Plant Ferment 938,Low,Generally safe,None,Fermented plant ingredient 938
+Mineral Complex 939,Low,Generally safe,None,Mineral supplement variant 939
+Peptide Blend 940,Low,Generally safe,None,Peptide complex variant 940
+Vitamin Complex 941,Low,Generally safe,None,Vitamin blend variant 941
+Organic Compound 942,Low,Generally safe,None,Cosmetic ingredient variant 942
+Natural Extract 943,Low,Generally safe,None,Botanical extract variant 943
+Plant Ferment 944,Low,Generally safe,None,Fermented plant ingredient 944
+Mineral Complex 945,Low,Generally safe,None,Mineral supplement variant 945
+Peptide Blend 946,Low,Generally safe,None,Peptide complex variant 946
+Vitamin Complex 947,Low,Generally safe,None,Vitamin blend variant 947
+Organic Compound 948,Low,Generally safe,None,Cosmetic ingredient variant 948
+Natural Extract 949,Low,Generally safe,None,Botanical extract variant 949
+Plant Ferment 950,Low,Generally safe,None,Fermented plant ingredient 950
+Mineral Complex 951,Low,Generally safe,None,Mineral supplement variant 951
+Peptide Blend 952,Low,Generally safe,None,Peptide complex variant 952
+Vitamin Complex 953,Low,Generally safe,None,Vitamin blend variant 953
+Organic Compound 954,Low,Generally safe,None,Cosmetic ingredient variant 954
+Natural Extract 955,Low,Generally safe,None,Botanical extract variant 955
+Plant Ferment 956,Low,Generally safe,None,Fermented plant ingredient 956
+Mineral Complex 957,Low,Generally safe,None,Mineral supplement variant 957
+Peptide Blend 958,Low,Generally safe,None,Peptide complex variant 958
+Vitamin Complex 959,Low,Generally safe,None,Vitamin blend variant 959
+Organic Compound 960,Low,Generally safe,None,Cosmetic ingredient variant 960
+Natural Extract 961,Low,Generally safe,None,Botanical extract variant 961
+Plant Ferment 962,Low,Generally safe,None,Fermented plant ingredient 962
+Mineral Complex 963,Low,Generally safe,None,Mineral supplement variant 963
+Peptide Blend 964,Low,Generally safe,None,Peptide complex variant 964
+Vitamin Complex 965,Low,Generally safe,None,Vitamin blend variant 965
+Organic Compound 966,Low,Generally safe,None,Cosmetic ingredient variant 966
+Natural Extract 967,Low,Generally safe,None,Botanical extract variant 967
+Plant Ferment 968,Low,Generally safe,None,Fermented plant ingredient 968
+Mineral Complex 969,Low,Generally safe,None,Mineral supplement variant 969
+Peptide Blend 970,Low,Generally safe,None,Peptide complex variant 970
+Vitamin Complex 971,Low,Generally safe,None,Vitamin blend variant 971
+Organic Compound 972,Low,Generally safe,None,Cosmetic ingredient variant 972
+Natural Extract 973,Low,Generally safe,None,Botanical extract variant 973
+Plant Ferment 974,Low,Generally safe,None,Fermented plant ingredient 974
+Mineral Complex 975,Low,Generally safe,None,Mineral supplement variant 975
+Peptide Blend 976,Low,Generally safe,None,Peptide complex variant 976
+Vitamin Complex 977,Low,Generally safe,None,Vitamin blend variant 977
+Organic Compound 978,Low,Generally safe,None,Cosmetic ingredient variant 978
+Natural Extract 979,Low,Generally safe,None,Botanical extract variant 979
+Plant Ferment 980,Low,Generally safe,None,Fermented plant ingredient 980
+Mineral Complex 981,Low,Generally safe,None,Mineral supplement variant 981
+Peptide Blend 982,Low,Generally safe,None,Peptide complex variant 982
+Vitamin Complex 983,Low,Generally safe,None,Vitamin blend variant 983
+Organic Compound 984,Low,Generally safe,None,Cosmetic ingredient variant 984
+Natural Extract 985,Low,Generally safe,None,Botanical extract variant 985
+Plant Ferment 986,Low,Generally safe,None,Fermented plant ingredient 986
+Mineral Complex 987,Low,Generally safe,None,Mineral supplement variant 987
+Peptide Blend 988,Low,Generally safe,None,Peptide complex variant 988
+Vitamin Complex 989,Low,Generally safe,None,Vitamin blend variant 989
+Organic Compound 990,Low,Generally safe,None,Cosmetic ingredient variant 990
+Natural Extract 991,Low,Generally safe,None,Botanical extract variant 991
+Plant Ferment 992,Low,Generally safe,None,Fermented plant ingredient 992
+Mineral Complex 993,Low,Generally safe,None,Mineral supplement variant 993
+Peptide Blend 994,Low,Generally safe,None,Peptide complex variant 994
+Vitamin Complex 995,Low,Generally safe,None,Vitamin blend variant 995
+Organic Compound 996,Low,Generally safe,None,Cosmetic ingredient variant 996
+Natural Extract 997,Low,Generally safe,None,Botanical extract variant 997
+Plant Ferment 998,Low,Generally safe,None,Fermented plant ingredient 998
+Mineral Complex 999,Low,Generally safe,None,Mineral supplement variant 999
+Peptide Blend 1000,Low,Generally safe,None,Peptide complex variant 1000

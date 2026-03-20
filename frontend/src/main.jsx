@@ -4,7 +4,7 @@ import App from "./App";
 import "./index.css";
 
 // Initialize theme before rendering to prevent flash
-const savedTheme = localStorage.getItem('nutridetect-theme') || 'light';
+const savedTheme = localStorage.getItem('bioguard-theme') || 'light';
 if (savedTheme === 'dark') {
   document.documentElement.classList.add('dark');
 } else {

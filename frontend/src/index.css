@@ -69,55 +69,55 @@ html {
   --accent: #4F8CFF;
 }
 
-/* Dark Theme */
+/* Dark Theme - Consistent Layered Depth */
 [data-theme="dark"] {
-  /* Backgrounds */
-  --bg-primary: #0B1220;
-  --bg-secondary: #111827;
-  --bg-tertiary: #1F2937;
-  --card-bg: #1F2937;
+  /* Layered backgrounds - darkest to lightest */
+  --bg-primary: #0B1220;      /* Deepest - body */
+  --bg-secondary: #0F172A;    /* Slightly lighter - main container */
+  --bg-tertiary: #111827;     /* Section backgrounds */
+  --card-bg: #1F2937;         /* Cards - lighter for depth */
   
   /* Text Colors */
-  --text-primary: #F9FAFB;
-  --text-secondary: #D1D5DB;
-  --text-muted: #9CA3AF;
+  --text-primary: #F9FAFB;    /* Primary text - white */
+  --text-secondary: #D1D5DB; /* Secondary text - light grey */
+  --text-muted: #9CA3AF;      /* Muted text - grey */
   
   /* Border */
-  --border-color: #374151;
-  --border-light: #1F2937;
+  --border-color: #374151;    /* Borders */
+  --border-light: #1F2937;   /* Subtle borders */
   
   /* Brand Colors */
-  --primary: #60A5FA;
-  --primary-hover: #3B82F6;
-  --secondary: #93C5FD;
+  --primary: #4F8CFF;         /* Primary blue - matches gradient */
+  --primary-hover: #3A78F2;  /* Darker blue for hover */
+  --secondary: #6AA8FF;      /* Light blue */
   
   /* Semantic Colors */
   --success: #22C55E;
-  --success-bg: rgba(34, 197, 94, 0.15);
-  --danger: #F87171;
-  --danger-bg: rgba(248, 113, 113, 0.15);
-  --warning: #FBBF24;
-  --warning-bg: rgba(251, 191, 36, 0.15);
-  --info: #60A5FA;
-  --info-bg: rgba(96, 165, 250, 0.15);
+  --success-bg: rgba(34, 197, 94, 0.2);
+  --danger: #EF4444;
+  --danger-bg: rgba(239, 68, 68, 0.2);
+  --warning: #F59E0B;
+  --warning-bg: rgba(245, 158, 11, 0.2);
+  --info: #4F8CFF;
+  --info-bg: rgba(79, 140, 255, 0.2);
   
-  /* Shadows */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.4);
-  --shadow-xl: 0 8px 24px rgba(0, 0, 0, 0.5);
+  /* Shadows with blue tint for premium feel */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 4px 20px rgba(0, 0, 0, 0.5);
+  --shadow-xl: 0 8px 30px rgba(0, 0, 0, 0.6);
   
   /* Scrollbar */
   --scrollbar-track: #1F2937;
-  --scrollbar-thumb: #374151;
-  --scrollbar-thumb-hover: #4B5563;
+  --scrollbar-thumb: #4B5563;
+  --scrollbar-thumb-hover: #6B7280;
   
   /* Glass Effect */
-  --glass-bg: rgba(31, 41, 55, 0.9);
-  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-bg: rgba(31, 41, 55, 0.85);
+  --glass-border: rgba(255, 255, 255, 0.08);
   
   /* Accent */
-  --accent: #60A5FA;
+  --accent: #4F8CFF;
 }
 
 /* ============================================================================
@@ -191,12 +191,18 @@ small, label, .label {
   border-radius: 16px;
   box-shadow: var(--shadow-md);
   padding: 20px;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
 }
 
 .card:hover {
   box-shadow: var(--shadow-lg);
   transform: translateY(-2px);
+}
+
+/* Dark mode card glow effect */
+[data-theme="dark"] .card:hover {
+  box-shadow: 0 0 20px rgba(79, 140, 255, 0.15), var(--shadow-lg);
+  border-color: rgba(79, 140, 255, 0.3);
 }
 
 .card-header {
@@ -305,7 +311,13 @@ small, label, .label {
 }
 
 .btn-secondary:hover {
-  background: var(--bg-secondary);
+  background: var(--bg-tertiary);
+  border-color: var(--primary);
+}
+
+/* Dark mode button glow */
+[data-theme="dark"] .btn-primary:hover {
+  box-shadow: 0 0 20px rgba(79, 140, 255, 0.4);
 }
 
 /* ============================================================================

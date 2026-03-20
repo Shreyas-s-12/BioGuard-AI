@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { getApiUrl } from '../services/apiConfig';
 
 function CameraOCR({ onScanComplete, onClose }) {
   const [loading, setLoading] = useState(false);
@@ -22,7 +23,7 @@ function CameraOCR({ onScanComplete, onClose }) {
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await fetch('http://127.0.0.1:8000/ocr', {
+      const response = await fetch(`${getApiUrl()}/ocr`, {
         method: 'POST',
         body: formData
       });

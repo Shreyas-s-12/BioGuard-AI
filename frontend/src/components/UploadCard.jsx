@@ -41,7 +41,7 @@ function UploadCard({ onUpload, loading }) {
   return (
     <div className="bg-slate-900/60 backdrop-blur-xl border border-slate-800 rounded-xl p-4 hover:shadow-[0_0_30px_rgba(34,211,238,0.3)] hover:border-cyan-400 transition-all duration-300">
       <h2 className="text-lg font-semibold mb-3 flex items-center">
-        <span className="w-7 h-7 bg-nutri-primary/20 rounded-lg flex items-center justify-center mr-2">
+        <span className="w-7 h-7 bg-bioguard-primary/20 rounded-lg flex items-center justify-center mr-2">
           📷
         </span>
         Upload Food Label
@@ -62,7 +62,7 @@ function UploadCard({ onUpload, loading }) {
         ) : preview ? (
           <div className="flex flex-col items-center">
             <img src={preview} alt="Preview" className="max-h-32 rounded-lg mb-3" />
-            <p className="text-nutri-primary font-medium text-sm">✓ Image uploaded!</p>
+            <p className="text-bioguard-primary font-medium text-sm">✓ Image uploaded!</p>
           </div>
         ) : (
           <>
@@ -73,7 +73,7 @@ function UploadCard({ onUpload, loading }) {
             </div>
             <p className="text-base font-medium mb-1">Drop your food label image here</p>
             <p className="text-slate-400 text-xs mb-3">or click to browse</p>
-            <label className="inline-flex items-center px-4 py-2 bg-nutri-primary hover:bg-nutri-primary/80 text-white rounded-lg cursor-pointer transition">
+            <label className="inline-flex items-center px-4 py-2 bg-bioguard-primary hover:bg-bioguard-primary/80 text-white rounded-lg cursor-pointer transition">
               <span>Select Image</span>
               <input 
                 type="file" 

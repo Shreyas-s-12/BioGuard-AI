@@ -1,4 +1,4 @@
-package com.nutridetect.app;
+package com.bioguard.ai;
 
 import com.getcapacitor.BridgeActivity;
 

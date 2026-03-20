@@ -5,13 +5,13 @@ const ThemeContext = createContext();
 export function ThemeProvider({ children }) {
   const [theme, setTheme] = useState(() => {
     // Check localStorage first, default to 'light' for white theme
-    const savedTheme = localStorage.getItem('nutridetect-theme');
+    const savedTheme = localStorage.getItem('bioguard-theme');
     return savedTheme || 'light';
   });
 
   useEffect(() => {
     // Save to localStorage
-    localStorage.setItem('nutridetect-theme', theme);
+    localStorage.setItem('bioguard-theme', theme);
     
     // Apply theme using data-theme attribute for CSS variables
     document.documentElement.setAttribute('data-theme', theme);

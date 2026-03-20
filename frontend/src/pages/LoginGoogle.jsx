@@ -8,10 +8,10 @@ export default function LoginGoogle() {
   const navigate = useNavigate();
   const { login, isAuthenticated, isLoading } = useAuth();
 
-  // If already logged in, redirect to home
+  // If already logged in, redirect to select-mode
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
-      navigate("/home");
+      navigate("/select-mode");
     }
   }, [isAuthenticated, isLoading, navigate]);
 
@@ -25,9 +25,14 @@ export default function LoginGoogle() {
   }
 
   const handleGoogleLogin = async () => {
+    const currentOrigin = window.location.origin;
+    console.log("Current Origin:", currentOrigin);
+    
     try {
       const result = await signInWithPopup(auth, provider);
       const firebaseUser = result.user;
+
+      console.log("Auth success:", firebaseUser);
 
       login({
         name: firebaseUser.displayName || "User",
@@ -37,9 +42,11 @@ export default function LoginGoogle() {
         method: "google"
       });
 
-      navigate("/home");
+      navigate("/select-mode");
     } catch (error) {
       console.error("Google login error:", error);
+      console.error("Error code:", error.code);
+      console.error("Error message:", error.message);
       
       // Handle specific Firebase auth errors
       if (error.code === "auth/popup-closed-by-user") {
@@ -50,8 +57,12 @@ export default function LoginGoogle() {
         alert("An account already exists with a different sign-in method. Please use the original method.");
       } else if (error.code === "auth/auth-domain-config-error") {
         alert("Firebase auth domain configuration error. Please check Firebase console.");
+      } else if (error.code === "auth/unauthorized-domain") {
+        alert("This domain is not authorized in Firebase. Please add " + currentOrigin + " to authorized domains in Firebase Console → Authentication → Settings.");
+      } else if (error.code && error.code.includes("redirect_uri")) {
+        alert("Redirect URI mismatch. Please check:\n\n1. Firebase Console → Authentication → Settings → Authorized domains\n2. Google Cloud Console → Credentials\n\nCurrent domain: " + currentOrigin);
       } else {
-        alert("Google login failed. Please try again.");
+        alert("Google login failed: " + error.message);
       }
     }
   };
@@ -69,7 +80,7 @@ export default function LoginGoogle() {
           <span className="text-white text-2xl">🛡</span>
         </div>
         <h1 className="text-3xl font-bold text-cyan-400">
-          NutriDetect AI
+          BioGuard AI
         </h1>
         <p className="text-gray-400 text-sm">
           Smart Food Safety Platform

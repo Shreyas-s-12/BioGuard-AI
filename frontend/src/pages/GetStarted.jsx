@@ -39,7 +39,7 @@ export default function GetStarted() {
               </div>
               <div>
                 <h1 className="text-2xl font-bold bg-gradient-to-r from-cyan-500 to-purple-500 bg-clip-text text-transparent">
-                  NutriDetect AI
+                  BioGuard AI
                 </h1>
                 <p className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>AI-powered food safety analysis</p>
               </div>

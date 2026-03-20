@@ -37,7 +37,7 @@ function ChemicalModal({ chemical, onClose }) {
         {/* Header */}
         <div className="sticky top-0 bg-slate-900/70 backdrop-blur-xl border-b border-slate-800 p-6 flex items-start justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-white">{chemical.chemical_name}</h2>
+            <h2 className="text-2xl font-bold text-white">{chemical.chemical_name || chemical.name}</h2>
             {chemical.e_number && (
               <span className="inline-block mt-2 px-3 py-1 bg-slate-800 rounded-lg text-sm text-slate-400 font-mono">
                 E{chemical.e_number}
@@ -59,7 +59,7 @@ function ChemicalModal({ chemical, onClose }) {
           {/* Risk Level */}
           <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/10">
             <span className="text-slate-400">Risk Level</span>
-            <RiskBadge level={chemical.risk_level} />
+            <RiskBadge level={chemical.risk || chemical.risk_level || "Unknown"} />
           </div>
 
           {/* Category */}
@@ -67,6 +67,36 @@ function ChemicalModal({ chemical, onClose }) {
             <div>
               <h3 className="text-sm font-medium text-slate-400 mb-2">Category</h3>
               <p className="text-white">{chemical.category}</p>
+            </div>
+          )}
+
+          {/* Effects (Personal Care) */}
+          {chemical.effects && (
+            <div>
+              <h3 className="text-sm font-medium text-red-400 mb-2 flex items-center">
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                Effects
+              </h3>
+              <p className="text-slate-300 bg-red-500/10 p-4 rounded-xl border border-red-500/20">
+                {chemical.effects}
+              </p>
+            </div>
+          )}
+
+          {/* Avoid For (Personal Care) */}
+          {chemical.avoid_for && (
+            <div>
+              <h3 className="text-sm font-medium text-amber-400 mb-2 flex items-center">
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                </svg>
+                Avoid For
+              </h3>
+              <p className="text-slate-300 bg-amber-500/10 p-4 rounded-xl border border-amber-500/20">
+                {chemical.avoid_for}
+              </p>
             </div>
           )}
 

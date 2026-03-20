@@ -2,15 +2,18 @@ import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDtud--Il1AHe4YunLbuQvtV2pIdJK5s3w",
-  authDomain: "nutridetect-ai.firebaseapp.com",
-  projectId: "nutridetect-ai",
-  storageBucket: "nutridetect-ai.firebasestorage.app",
-  messagingSenderId: "805117385406",
-  appId: "1:805117385406:android:3beef4fca54d00ab7adcef"
+  apiKey: "AIzaSyDtmCipNxvvWNo5d9SPz36VdYK0lytlhDc",
+  authDomain: "bioguard-ai-48e68.firebaseapp.com",
+  projectId: "bioguard-ai-48e68",
+  appId: "1:578375610460:web:2e226375e6ed87ec103699"
 };
 
 const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 
-export const auth = getAuth(app);
-export const provider = new GoogleAuthProvider();
+const provider = new GoogleAuthProvider();
+provider.setCustomParameters({
+  prompt: "select_account"
+});
+
+export { auth, provider };

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- =================================================================
+         NUTRIDETECT AI - DARK THEME COLOR PALETTE
+         Automatically used when device is in dark mode
+    ================================================================= -->
+    
+    <!-- Primary Colors - Teal/Green for health/wellness -->
+    <color name="colorPrimary">#4DB6AC</color>
+    <color name="colorPrimaryDark">#00897B</color>
+    <color name="colorPrimaryLight">#80CBC4</color>
+    <color name="colorAccent">#26A69A</color>
+    
+    <!-- Secondary/Accent Colors -->
+    <color name="colorSecondary">#B388FF</color>
+    <color name="colorSecondaryDark">#7C4DFF</color>
+    
+    <!-- Background Colors -->
+    <color name="colorBackground">#121212</color>
+    <color name="colorBackgroundSecondary">#1E1E1E</color>
+    <color name="colorSurface">#1E1E1E</color>
+    <color name="colorCard">#2D2D2D</color>
+    
+    <!-- Text Colors -->
+    <color name="colorTextPrimary">#FFFFFF</color>
+    <color name="colorTextSecondary">#B3B3B3</color>
+    <color name="colorTextOnPrimary">#000000</color>
+    <color name="colorTextHint">#757575</color>
+    
+    <!-- Status Colors -->
+    <color name="colorSuccess">#81C784</color>
+    <color name="colorWarning">#FFB74D</color>
+    <color name="colorError">#E57373</color>
+    <color name="colorInfo">#64B5F6</color>
+    
+    <!-- Risk Level Colors -->
+    <color name="riskLow">#81C784</color>
+    <color name="riskMedium">#FFB74D</color>
+    <color name="riskHigh">#E57373</color>
+    
+    <!-- Divider and Border Colors -->
+    <color name="colorDivider">#424242</color>
+    <color name="colorBorder">#616161</color>
+    
+    <!-- Splash Screen Background -->
+    <color name="splashBackground">#00695C</color>
+    
+    <!-- Icon Background -->
+    <color name="ic_launcher_background">#1E1E1E</color>
+</resources>

@@ -531,6 +531,13 @@ Ingredients: Carbonated Water, Citric Acid, Natural Flavors, Aspartame, Potassiu
     setInputText(ingredients);
     setShowBarcodeScanner(false);
     setShowCameraOCR(false);
+    
+    // Automatically trigger analysis after setting input
+    if (ingredients && ingredients.trim()) {
+      setTimeout(() => {
+        handleAnalyze();
+      }, 100);
+    }
   };
 
   return (

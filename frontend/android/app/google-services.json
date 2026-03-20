@@ -1,15 +1,15 @@
 {
   "project_info": {
     "project_number": "805117385406",
-    "project_id": "nutridetect-ai",
-    "storage_bucket": "nutridetect-ai.firebasestorage.app"
+    "project_id": "bioguard-ai",
+    "storage_bucket": "bioguard-ai.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
         "mobilesdk_app_id": "1:805117385406:android:3beef4fca54d00ab7adcef",
         "android_client_info": {
-          "package_name": "com.nutridetect.ai"
+          "package_name": "com.bioguard.ai"
         }
       },
       "oauth_client": [

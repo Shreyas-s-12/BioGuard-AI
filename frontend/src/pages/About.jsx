@@ -9,7 +9,7 @@ function About() {
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold mb-4">
             <span className="bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-              About NutriDetect AI
+              About BioGuard AI
             </span>
           </h1>
           <p className="text-slate-400 text-lg">
@@ -17,7 +17,7 @@ function About() {
           </p>
         </div>
 
-        {/* What is NutriDetect AI */}
+        {/* What is BioGuard AI */}
         <section className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 mb-8">
           <h2 className="text-2xl font-bold mb-4 flex items-center">
             <div className="w-10 h-10 bg-cyan-500/20 rounded-xl flex items-center justify-center mr-3">
@@ -25,11 +25,11 @@ function About() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
               </svg>
             </div>
-            What is NutriDetect AI?
+            What is BioGuard AI?
           </h2>
           <div className="text-slate-300 space-y-4">
             <p>
-              NutriDetect AI is an intelligent food safety platform that helps consumers make 
+              BioGuard AI is an intelligent food safety platform that helps consumers make 
               informed decisions about the food they eat. Using advanced artificial intelligence 
               and machine learning algorithms, we analyze food labels to identify harmful 
               additives, hidden sugars, and nutritional concerns.

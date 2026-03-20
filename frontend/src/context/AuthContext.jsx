@@ -9,7 +9,7 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
 
-    const storedUser = localStorage.getItem("nutri_user");
+    const storedUser = localStorage.getItem("bioguard_user");
 
     if (storedUser) {
       setUser(JSON.parse(storedUser));
@@ -21,14 +21,14 @@ export function AuthProvider({ children }) {
 
   const login = (userData) => {
 
-    localStorage.setItem("nutri_user", JSON.stringify(userData));
+    localStorage.setItem("bioguard_user", JSON.stringify(userData));
 
     setUser(userData);
   };
 
   const logout = () => {
 
-    localStorage.removeItem("nutri_user");
+    localStorage.removeItem("bioguard_user");
 
     setUser(null);
   };

@@ -1,5 +1,5 @@
 """
-NutriDetect AI - Backend API
+BioGuard AI - Backend API
 AI-powered Food Ingredient Risk Detection Platform
 """
 
@@ -160,7 +160,7 @@ with open(CONFIG_PATH, 'r') as f:
     CONFIG = yaml.safe_load(f)
 
 app = FastAPI(
-    title="NutriDetect AI API",
+    title="BioGuard AI API",
     description="AI-powered Food Ingredient Risk Detection Platform",
     version="3.0.0"
 )
@@ -2657,7 +2657,7 @@ async def global_exception_handler(request, exc):
 async def root():
     """Root endpoint"""
     return {
-        "name": "NutriDetect AI API",
+        "name": "BioGuard AI API",
         "version": "3.0.0",
         "description": "Smart Food Safety & Nutrition Risk Analysis Platform",
         "status": "running"
@@ -3067,7 +3067,7 @@ async def chat_query(request: ChatRequest):
     
     # STEP 6: Fallback response
     return {
-        "answer": "I could not find that chemical in the NutriDetect database. Try searching using an E-number (e.g., E621) or additive name.",
+        "answer": "I could not find that chemical in the BioGuard database. Try searching using an E-number (e.g., E621) or additive name.",
         "type": "not_found"
     }
 
@@ -3257,6 +3257,331 @@ async def perform_ocr(file: UploadFile = File(...)):
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"OCR processing failed: {str(e)}")
+
+
+# =============================================================================
+# PERSONAL CARE CHEMICALS - Data Loading
+# =============================================================================
+PERSONAL_CARE_DATA = []
+PERSONAL_CARE_CSV_PATH = Path(__file__).parent / "data" / "personal_care_chemicals.csv"
+
+def load_personal_care_csv():
+    """Load personal care chemicals from CSV file."""
+    global PERSONAL_CARE_DATA
+    chemicals = []
+    
+    try:
+        with open(PERSONAL_CARE_CSV_PATH, 'r', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                chemical = {
+                    'name': row.get('name', '').strip(),
+                    'risk': row.get('risk', '').strip(),
+                    'effects': row.get('effects', '').strip(),
+                    'avoid_for': row.get('avoid_for', '').strip(),
+                    'description': row.get('description', '').strip()
+                }
+                chemicals.append(chemical)
+        
+        PERSONAL_CARE_DATA = chemicals
+        print(f"DEBUG: Loaded personal care chemicals: {len(chemicals)}")
+    except Exception as e:
+        print(f"ERROR: Failed to load personal care chemicals CSV: {e}")
+        PERSONAL_CARE_DATA = []
+
+# Load personal care chemicals on module import
+load_personal_care_csv()
+
+
+# =============================================================================
+# PERSONAL CARE MODELS
+# =============================================================================
+
+class PersonalCareAnalysisRequest(BaseModel):
+    """Request model for personal care product analysis."""
+    ingredients: str
+    product_type: Optional[str] = ""
+    skin_type: Optional[str] = ""
+    hair_type: Optional[str] = ""
+
+
+class PersonalCareChatRequest(BaseModel):
+    """Request model for personal care chatbot."""
+    question: str
+
+
+# =============================================================================
+# PERSONAL CARE ENDPOINTS
+# =============================================================================
+
+@app.get("/personal-care-chemicals")
+async def get_personal_care_chemicals(
+    search: Optional[str] = Query(None, description="Search term"),
+    risk_level: Optional[str] = Query(None, description="Filter by risk level"),
+    limit: int = Query(100, description="Maximum results")
+):
+    """Get personal care chemicals database with optional filtering."""
+    results = PERSONAL_CARE_DATA
+    
+    # Filter by search term
+    if search:
+        search_lower = search.lower()
+        results = [c for c in results if search_lower in c['name'].lower()]
+    
+    # Filter by risk level
+    if risk_level:
+        results = [c for c in results if c['risk'].lower() == risk_level.lower()]
+    
+    # Limit results
+    results = results[:limit]
+    
+    return {
+        "chemicals": results,
+        "total": len(results)
+    }
+
+
+def analyze_personal_care_chemicals(ingredients: str, skin_type: str = "", hair_type: str = ""):
+    """
+    Analyze personal care product ingredients.
+    
+    Returns detected chemicals with risk assessment and recommendations.
+    """
+    detected_chemicals = []
+    all_effects = set()
+    recommendations = []
+    
+    # Normalize ingredients for searching
+    ingredients_lower = ingredients.lower()
+    
+    # Search each chemical in the ingredients
+    for chemical in PERSONAL_CARE_DATA:
+        chemical_name = chemical['name'].lower()
+        # Check if chemical name or alias is in ingredients
+        if chemical_name in ingredients_lower:
+            detected_chemicals.append({
+                'name': chemical['name'],
+                'risk': chemical['risk'],
+                'effects': chemical['effects'],
+                'avoid_for': chemical['avoid_for'],
+                'description': chemical['description']
+            })
+            
+            # Collect effects
+            if chemical['effects']:
+                for effect in chemical['effects'].split(','):
+                    all_effects.add(effect.strip())
+    
+    # Determine overall risk level
+    risk_level = "Low"
+    if any(c['risk'] == 'High' for c in detected_chemicals):
+        risk_level = "High"
+    elif any(c['risk'] == 'Moderate' for c in detected_chemicals):
+        risk_level = "Moderate"
+    
+    # Determine suitability based on skin/hair type
+    suitability = "Suitable for your profile"
+    user_profile_items = []
+    if skin_type:
+        user_profile_items.append(skin_type.lower())
+    if hair_type:
+        user_profile_items.append(hair_type.lower())
+    
+    for chemical in detected_chemicals:
+        avoid_for = chemical.get('avoid_for', '').lower()
+        if avoid_for and avoid_for != 'all':
+            for profile_item in user_profile_items:
+                if profile_item in avoid_for or profile_item.replace(' ', '') in avoid_for.replace(' ', ''):
+                    suitability = f"Not suitable for {skin_type or hair_type} (contains {chemical['name']})"
+                    break
+    
+    # Generate recommendations based on detected chemicals
+    for chemical in detected_chemicals:
+        name = chemical['name']
+        if name.upper() in ['SLS', 'SODIUM LAURYL SULFATE']:
+            recommendations.append("Consider using sulfate-free products to reduce skin irritation")
+        elif name.upper() in ['SLES', 'SODIUM LAURETH SULFATE']:
+            recommendations.append("Look for products without SLES for gentler cleansing")
+        elif name.upper() in ['PARABENS']:
+            recommendations.append("Choose paraben-free products to avoid potential hormone disruption")
+        elif name.upper() in ['PHTHALATES']:
+            recommendations.append("Avoid products with phthalates - look for 'phthalate-free' labels")
+        elif name.upper() in ['FORMALDEHYDE']:
+            recommendations.append("Avoid formaldehyde-releasing preservatives")
+        elif name.upper() in ['TRICLOSAN']:
+            recommendations.append("Triclosan is linked to antibiotic resistance - consider alternatives")
+        elif name.upper() in ['SYNTHETIC FRAGRANCES']:
+            recommendations.append("Look for fragrance-free or naturally scented products")
+        elif name.upper() in ['OXYBENZONE', 'OCTINOXATE']:
+            recommendations.append("Consider mineral-based sunscreens for reef-safe protection")
+        elif name.upper() in ['HYDROQUINONE']:
+            recommendations.append("Avoid hydroquinone - consider vitamin C or niacinamide for brightening")
+        elif name.upper() in ['MERCURY', 'ARSENIC', 'LEAD']:
+            recommendations.append("Avoid products with toxic heavy metals - these are dangerous")
+    
+    # If no chemicals found, add positive message
+    if not detected_chemicals:
+        recommendations.append("No harmful chemicals detected - product appears safe!")
+    
+    return {
+        'detected_chemicals': detected_chemicals,
+        'risk_level': risk_level,
+        'effects': list(all_effects),
+        'suitability': suitability,
+        'recommendations': recommendations
+    }
+
+
+@app.post("/analyze-personal-care")
+async def analyze_personal_care(request: PersonalCareAnalysisRequest):
+    """
+    Analyze personal care product ingredients.
+    
+    Accepts JSON:
+    {
+      "ingredients": "water, glycerin, SLS, paraben...",
+      "product_type": "skincare",
+      "skin_type": "sensitive",
+      "hair_type": ""
+    }
+    
+    Returns:
+    {
+      "detected_chemicals": [...],
+      "risk_level": "High/Moderate/Low",
+      "effects": [...],
+      "suitability": "...",
+      "recommendations": [...]
+    }
+    """
+    print("="*60)
+    print("ANALYZE PERSONAL CARE ENDPOINT CALLED")
+    print(f"  Ingredients: {request.ingredients[:100] if request.ingredients else 'None'}...")
+    print(f"  Product Type: {request.product_type}")
+    print(f"  Skin Type: {request.skin_type}")
+    print(f"  Hair Type: {request.hair_type}")
+    
+    # Validate input
+    if not request.ingredients or not request.ingredients.strip():
+        return {
+            "detected_chemicals": [],
+            "risk_level": "Low",
+            "effects": [],
+            "suitability": "No ingredients provided for analysis",
+            "recommendations": ["Please provide ingredients to analyze"]
+        }
+    
+    try:
+        result = analyze_personal_care_chemicals(
+            request.ingredients,
+            skin_type=request.skin_type,
+            hair_type=request.hair_type
+        )
+        
+        print(f"  Risk Level: {result['risk_level']}")
+        print(f"  Detected Chemicals: {len(result['detected_chemicals'])}")
+        print("="*60)
+        
+        return result
+    
+    except Exception as e:
+        print(f"ERROR in analyze_personal_care: {e}")
+        return {
+            "detected_chemicals": [],
+            "risk_level": "Unknown",
+            "effects": [],
+            "suitability": "Analysis failed",
+            "recommendations": ["No data available"]
+        }
+
+
+def generate_personal_care_chat_response(question: str) -> dict:
+    """Generate response for personal care chatbot queries."""
+    question_lower = question.lower()
+    
+    # Search for chemicals in the question
+    found_chemicals = []
+    for chemical in PERSONAL_CARE_DATA:
+        if chemical['name'].lower() in question_lower:
+            found_chemicals.append({
+                'name': chemical['name'],
+                'risk_level': chemical['risk'],
+                'effects': chemical['effects'],
+                'avoid_for': chemical['avoid_for']
+            })
+    
+    # If we found chemicals, provide detailed response
+    if found_chemicals:
+        if len(found_chemicals) == 1:
+            chem = found_chemicals[0]
+            answer = f"**{chem['name']}** is classified as **{chem['risk_level']} risk**. "
+            if chem['effects']:
+                answer += f"Potential effects: {chem['effects']}. "
+            if chem['avoid_for'] and chem['avoid_for'] != 'All':
+                answer += f"People with {chem['avoid_for']} should avoid this ingredient."
+            return {
+                'answer': answer,
+                'type': 'single',
+                'name': chem['name'],
+                'risk_level': chem['risk_level'],
+                'effects': chem['effects'],
+                'avoid_for': chem['avoid_for']
+            }
+        else:
+            answer = f"I found {len(found_chemicals)} chemicals in your question:\n\n"
+            for chem in found_chemicals:
+                answer += f"• **{chem['name']}** ({chem['risk_level']} risk)\n"
+            return {
+                'answer': answer,
+                'type': 'list',
+                'chemicals': found_chemicals
+            }
+    
+    # General questions about personal care
+    if any(word in question_lower for word in ['safe', 'harmful', 'dangerous', 'toxic']):
+        answer = "For personal care products, here are some ingredients to be aware of:\n\n"
+        """High Risk: SLS, Formaldehyde, Phthalates, Hydroquinone, Mercury, Lead\n"""
+        """Moderate Risk: Parabens, Triclosan, Synthetic Fragrances, BHT\n\n"""
+        """For sensitive skin, avoid: SLS, Synthetic Fragrances, Parabens\n"""
+        """For hair care, be cautious with: SLS, SLES, Silicones (if avoiding buildup)"""
+        return {'answer': answer, 'type': 'general'}
+    
+    if any(word in question_lower for word in ['paraben', 'sulfonate', 'fragrance']):
+        # Provide general info about these common ingredients
+        answers = {
+            'paraben': "Parabens are preservatives that can disrupt hormones. They absorb through skin and have been found in breast tissue. Many people prefer paraben-free products.",
+            'sulfonate': "Sulfates (like SLS) are cleansing agents that create foam but can irritate sensitive skin. They strip natural oils from skin and hair.",
+            'fragrance': "Synthetic fragrances are a leading cause of skin allergies. They can cause dermatitis, headaches, and respiratory issues. Fragrance-free is often safer."
+        }
+        for key, ans in answers.items():
+            if key in question_lower:
+                return {'answer': ans, 'type': 'general'}
+    
+    # Default response
+    return {
+        'answer': "I can help you understand personal care product ingredients. Ask me about specific chemicals like SLS, parabens, or fragrance, or ask if certain ingredients are safe.",
+        'type': 'general'
+    }
+
+
+@app.post("/chat-personal-care")
+async def chat_personal_care(request: PersonalCareChatRequest):
+    """Personal care chatbot endpoint."""
+    print("="*60)
+    print("CHAT PERSONAL CARE ENDPOINT CALLED")
+    print(f"  Question: {request.question}")
+    
+    try:
+        result = generate_personal_care_chat_response(request.question)
+        print(f"  Response Type: {result.get('type')}")
+        print("="*60)
+        return result
+    except Exception as e:
+        print(f"ERROR in chat_personal_care: {e}")
+        return {
+            'answer': "Sorry, I encountered an error. Please try again.",
+            'type': 'error'
+        }
 
 
 if __name__ == "__main__":

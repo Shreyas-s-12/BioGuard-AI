@@ -7,7 +7,7 @@ import { useTheme } from "../context/ThemeContext";
 
 export default function Login() {
   const navigate = useNavigate();
-  const { login, isAuthenticated, isLoading } = useAuth();
+  const { login, user, isAuthenticated, isLoading } = useAuth();
   const { theme } = useTheme();
   const isDark = theme === 'dark';
 
@@ -16,8 +16,58 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  const handleLogout = () => {
+    localStorage.removeItem('bioguard_user');
+    window.location.reload();
+  };
+
   if (!isLoading && isAuthenticated) {
-    return <Navigate to="/home" replace />;
+    return (
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+        className={`relative min-h-screen overflow-hidden px-4 transition-colors duration-300 flex flex-col items-center justify-center ${
+          isDark ? 'bg-[#050b1a]' : 'bg-slate-50'
+        }`}
+      >
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className={`text-center p-8 rounded-3xl border ${
+            isDark 
+              ? 'bg-slate-900/80 border-white/15' 
+              : 'bg-white border-slate-200'
+          }`}
+        >
+          <h2 className={`text-2xl font-bold mb-4 ${isDark ? 'text-white' : 'text-slate-800'}`}>
+            You're already logged in
+          </h2>
+          <p className={`mb-6 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+            Welcome back, {user?.name || 'User'}!
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <button
+              onClick={() => navigate("/select-mode")}
+              className="px-6 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-purple-500 text-white font-semibold"
+            >
+              Continue to App
+            </button>
+            <button
+              onClick={handleLogout}
+              className={`px-6 py-3 rounded-xl font-semibold transition-colors ${
+                isDark 
+                  ? 'bg-white/10 text-slate-300 hover:bg-white/20' 
+                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+              }`}
+            >
+              Logout
+            </button>
+          </div>
+        </motion.div>
+      </motion.div>
+    );
   }
 
   const handleGmailLogin = () => {
@@ -32,7 +82,7 @@ export default function Login() {
       method: "gmail",
     });
 
-    navigate("/home");
+    navigate("/select-mode");
   };
 
   return (
@@ -105,7 +155,7 @@ export default function Login() {
               isDark ? 'text-white' : 'text-slate-900'
             }`}
           >
-            NutriDetect AI
+            BioGuard AI
             <span className="block bg-gradient-to-r from-cyan-500 via-sky-500 to-fuchsia-500 bg-clip-text text-transparent">
               Smarter Labels. Safer Choices.
             </span>

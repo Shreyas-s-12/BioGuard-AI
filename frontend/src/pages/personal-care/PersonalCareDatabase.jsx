@@ -1,39 +1,37 @@
 import { useState, useEffect, useMemo } from 'react';
-import Layout from '../components/Layout';
-import ChemicalCard from '../components/ChemicalCard';
-import ChemicalModal from '../components/ChemicalModal';
-import { getChemicals } from '../services/api';
-import { useTheme } from '../context/ThemeContext';
+import ChemicalCard from '../../components/ChemicalCard';
+import ChemicalModal from '../../components/ChemicalModal';
+import { getPersonalCareChemicals } from '../../services/api';
+import { useTheme } from '../../context/ThemeContext';
 
-function Chemicals() {
+export default function PersonalCareDatabase() {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
+
   const [chemicals, setChemicals] = useState([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterRisk, setFilterRisk] = useState('all');
+  const [search, setSearch] = useState('');
+  const [riskFilter, setRiskFilter] = useState('all');
   const [filterCategory, setFilterCategory] = useState('all');
   const [selectedChemical, setSelectedChemical] = useState(null);
 
-  // Fetch chemicals when filters change
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       fetchChemicals();
     }, 300);
     return () => clearTimeout(timeoutId);
-  }, [searchTerm, filterRisk, filterCategory]);
+  }, [search, riskFilter, filterCategory]);
 
   const fetchChemicals = async () => {
     setLoading(true);
     try {
-      const data = await getChemicals(searchTerm, filterRisk, filterCategory, 100);
+      const data = await getPersonalCareChemicals(search, riskFilter, 100);
       setChemicals(data.chemicals || []);
-      setTotal(data.total || 0);
+      setTotal(data.total || data.chemicals?.length || 0);
     } catch (err) {
-      console.error('Failed to load chemicals:', err);
+      console.error('Error fetching chemicals:', err);
       setChemicals([]);
-      setTotal(0);
     } finally {
       setLoading(false);
     }
@@ -45,13 +43,13 @@ function Chemicals() {
   // Calculate high-risk count
   const highRiskCount = useMemo(() => {
     return chemicals.filter(c => 
-      c.risk_level?.toLowerCase() === 'high' || 
-      c.risk_level?.toLowerCase() === 'high risk'
+      c.risk?.toLowerCase() === 'high' || 
+      c.risk_level?.toLowerCase() === 'high'
     ).length;
   }, [chemicals]);
 
   return (
-    <Layout>
+    <div>
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center mb-2">
@@ -60,43 +58,43 @@ function Chemicals() {
         </div>
         <h1 className="text-4xl font-bold mb-3">
           <span className={`${isDark ? 'text-white' : 'text-slate-900'}`}>
-            Chemical Database
+            Personal Care Database
           </span>
         </h1>
         <p className={`${isDark ? 'text-slate-400' : 'text-slate-600'} text-lg mb-6`}>
-          Explore {total || '1,000+'} food additives and their health effects
+          Explore {total || '500+'} cosmetic and personal care ingredients
         </p>
 
-        {/* Overview Stats */}
+        {/* Overview Stats - IDENTICAL to Chemicals.jsx */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <div className={`p-4 rounded-xl border ${
             isDark ? 'bg-slate-900/80 border-slate-800' : 'bg-white border-slate-200'
           }`}>
             <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>Total</p>
-            <p className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>{total || '1,250'}</p>
+            <p className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>{total || '520'}</p>
           </div>
           <div className={`p-4 rounded-xl border ${
             isDark ? 'bg-slate-900/80 border-slate-800' : 'bg-white border-slate-200'
           }`}>
             <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>High Risk</p>
-            <p className="text-2xl font-bold text-red-500">{highRiskCount || '48'}</p>
+            <p className="text-2xl font-bold text-red-500">{highRiskCount || '32'}</p>
           </div>
           <div className={`p-4 rounded-xl border ${
             isDark ? 'bg-slate-900/80 border-slate-800' : 'bg-white border-slate-200'
           }`}>
             <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>Moderate</p>
-            <p className="text-2xl font-bold text-yellow-500">120</p>
+            <p className="text-2xl font-bold text-yellow-500">85</p>
           </div>
           <div className={`p-4 rounded-xl border ${
             isDark ? 'bg-slate-900/80 border-slate-800' : 'bg-white border-slate-200'
           }`}>
             <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>Low Risk</p>
-            <p className="text-2xl font-bold text-green-500">1,082</p>
+            <p className="text-2xl font-bold text-green-500">403</p>
           </div>
         </div>
       </div>
 
-      {/* Filters */}
+      {/* Filters - IDENTICAL layout to Chemicals.jsx */}
       <div className={`border rounded-2xl p-5 mb-6 ${
         isDark 
           ? 'bg-slate-900/80 border-slate-800' 
@@ -112,9 +110,9 @@ function Chemicals() {
               </svg>
               <input
                 type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search by name, E-number, or chemical..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search by name or ingredient..."
                 className={`w-full pl-10 pr-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition ${
                   isDark 
                     ? 'bg-slate-800 border-slate-700 text-white placeholder-slate-500' 
@@ -124,12 +122,12 @@ function Chemicals() {
             </div>
           </div>
 
-          {/* Risk Level Filter */}
+          {/* Risk Level Filter - IDENTICAL to Chemicals.jsx */}
           <div>
             <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>Risk Level</label>
             <select
-              value={filterRisk}
-              onChange={(e) => setFilterRisk(e.target.value)}
+              value={riskFilter}
+              onChange={(e) => setRiskFilter(e.target.value)}
               className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition ${
                 isDark 
                   ? 'bg-slate-800 border-slate-700 text-white' 
@@ -140,11 +138,10 @@ function Chemicals() {
               <option value="high">High Risk</option>
               <option value="moderate">Moderate</option>
               <option value="low">Low Risk</option>
-              <option value="minimal">Minimal Risk</option>
             </select>
           </div>
 
-          {/* Category Filter */}
+          {/* Category Filter - IDENTICAL to Chemicals.jsx */}
           <div>
             <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>Category</label>
             <select
@@ -165,14 +162,14 @@ function Chemicals() {
         </div>
       </div>
 
-      {/* Results Count */}
+      {/* Results Count - IDENTICAL to Chemicals.jsx */}
       <div className="mb-4 flex items-center justify-between">
         <span className={isDark ? 'text-slate-400' : 'text-slate-600'}>
           Showing <span className={`font-medium ${isDark ? 'text-white' : 'text-slate-900'}`}>{chemicals.length}</span> of <span className={`font-medium ${isDark ? 'text-white' : 'text-slate-900'}`}>{total}</span> chemicals
         </span>
       </div>
 
-      {/* Loading State */}
+      {/* Loading State - IDENTICAL to Chemicals.jsx */}
       {loading && (
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
@@ -182,7 +179,7 @@ function Chemicals() {
         </div>
       )}
 
-      {/* Chemical Cards Grid */}
+      {/* Chemical Cards Grid - IDENTICAL to Chemicals.jsx */}
       {!loading && (
         <>
           {chemicals.length > 0 ? (
@@ -211,15 +208,13 @@ function Chemicals() {
         </>
       )}
 
-      {/* Chemical Modal */}
+      {/* Chemical Modal - IDENTICAL to Chemicals.jsx */}
       {selectedChemical && (
         <ChemicalModal 
           chemical={selectedChemical} 
           onClose={() => setSelectedChemical(null)} 
         />
       )}
-    </Layout>
+    </div>
   );
 }
-
-export default Chemicals;

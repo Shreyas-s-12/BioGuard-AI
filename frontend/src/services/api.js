@@ -133,4 +133,36 @@ export const getChemicals = async (search = '', riskLevel = '', category = '', l
   return response.data;
 };
 
+// ============================================================================
+// PERSONAL CARE API FUNCTIONS
+// ============================================================================
+
+/**
+ * Analyze personal care product ingredients
+ */
+export const analyzePersonalCare = async (ingredients, productType = '', skinType = '', hairType = '') => {
+  const response = await api.post('/analyze-personal-care', {
+    ingredients,
+    product_type: productType,
+    skin_type: skinType,
+    hair_type: hairType
+  });
+
+  return response.data;
+};
+
+/**
+ * Get personal care chemicals database
+ */
+export const getPersonalCareChemicals = async (search = '', riskLevel = '', limit = 100) => {
+  const params = new URLSearchParams();
+  
+  if (search) params.append('search', search);
+  if (riskLevel) params.append('risk_level', riskLevel);
+  params.append('limit', limit.toString());
+  
+  const response = await api.get(`/personal-care-chemicals?${params.toString()}`);
+  return response.data;
+};
+
 export default api;

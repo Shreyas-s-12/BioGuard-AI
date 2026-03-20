@@ -33,7 +33,7 @@ function IngredientInput({ onAnalyze, loading, hasImage = false }) {
   return (
     <div className="glass rounded-xl p-4">
       <h2 className="text-lg font-semibold mb-3 flex items-center">
-        <span className="w-7 h-7 bg-nutri-secondary/20 rounded-lg flex items-center justify-center mr-2">
+        <span className="w-7 h-7 bg-bioguard-secondary/20 rounded-lg flex items-center justify-center mr-2">
           📝
         </span>
         Manual Input
@@ -48,7 +48,7 @@ function IngredientInput({ onAnalyze, loading, hasImage = false }) {
             value={ingredients}
             onChange={(e) => setIngredients(e.target.value)}
             placeholder="e.g., water, sugar, sodium benzoate..."
-            className="w-full px-3 py-2 bg-slate-800/50 border border-slate-600 rounded-lg focus:border-nutri-primary focus:ring-1 focus:ring-nutri-primary outline-none transition resize-none text-sm"
+            className="w-full px-3 py-2 bg-slate-800/50 border border-slate-600 rounded-lg focus:border-bioguard-primary focus:ring-1 focus:ring-bioguard-primary outline-none transition resize-none text-sm"
             rows={2}
           />
         </div>
@@ -64,7 +64,7 @@ function IngredientInput({ onAnalyze, loading, hasImage = false }) {
                 value={nutrition[field.key]}
                 onChange={(e) => handleNutritionChange(field.key, e.target.value)}
                 placeholder="0"
-                className="w-full px-3 py-2 bg-slate-800/50 border border-slate-600 rounded-lg focus:border-nutri-secondary focus:ring-1 focus:ring-nutri-secondary outline-none text-sm"
+                className="w-full px-3 py-2 bg-slate-800/50 border border-slate-600 rounded-lg focus:border-bioguard-secondary focus:ring-1 focus:ring-bioguard-secondary outline-none text-sm"
               />
             </div>
           ))}
@@ -73,7 +73,7 @@ function IngredientInput({ onAnalyze, loading, hasImage = false }) {
         <button
           type="submit"
           disabled={!canSubmit}
-          className="w-full py-2 bg-gradient-to-r from-nutri-primary to-nutri-secondary hover:from-nutri-primary/80 hover:to-nutri-secondary/80 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition flex items-center justify-center text-sm"
+          className="w-full py-2 bg-gradient-to-r from-bioguard-primary to-bioguard-secondary hover:from-bioguard-primary/80 hover:to-bioguard-secondary/80 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition flex items-center justify-center text-sm"
         >
           {loading ? (
             <>

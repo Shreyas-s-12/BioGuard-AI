@@ -7,27 +7,40 @@ function Layout({ children, hideSidebar = false }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { theme } = useTheme();
 
-  const bgGradient = theme === 'dark'
-    ? 'bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800'
-    : 'bg-gradient-to-br from-white via-slate-50 to-white';
+  // Unified dark theme with layered backgrounds
+  const darkBgClass = 'bg-[#0B1220]';
+  const lightBgClass = 'bg-white';
 
   if (hideSidebar) {
     return (
-      <div className={`min-h-screen ${bgGradient} overflow-y-auto transition-colors duration-300`}>
+      <div 
+        className={`min-h-screen ${theme === 'dark' ? darkBgClass : lightBgClass} overflow-y-auto transition-colors duration-300`}
+        data-theme={theme}
+      >
         <div className="fixed top-4 right-4 z-50">
           <ThemeToggle />
         </div>
+        {/* Background gradient effect for dark mode */}
+        {theme === 'dark' && (
+          <div className="fixed inset-0 overflow-hidden pointer-events-none">
+            <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl" />
+            <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl" />
+          </div>
+        )}
         {children}
       </div>
     );
   }
 
   return (
-    <div className={`min-h-screen ${bgGradient} overflow-y-auto transition-colors duration-300`}>
-      {/* Background Effects - Dark mode only */}
+    <div 
+      className={`min-h-screen ${theme === 'dark' ? darkBgClass : lightBgClass} overflow-y-auto transition-colors duration-300`}
+      data-theme={theme}
+    >
+      {/* Background gradient effect for dark mode */}
       {theme === 'dark' && (
         <div className="fixed inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-0 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl" />
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl" />
           <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl" />
         </div>
       )}
