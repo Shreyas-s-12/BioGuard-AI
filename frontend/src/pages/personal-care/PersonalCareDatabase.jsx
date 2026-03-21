@@ -15,6 +15,13 @@ export default function PersonalCareDatabase() {
   const [riskFilter, setRiskFilter] = useState('all');
   const [filterCategory, setFilterCategory] = useState('all');
   const [selectedChemical, setSelectedChemical] = useState(null);
+  const [dbStats, setDbStats] = useState({ high: 0, moderate: 0, low: 0, total: 0 });
+  const [allCategories, setAllCategories] = useState([]);
+
+  // Fetch stats and all categories on mount
+  useEffect(() => {
+    fetchDbStats();
+  }, []);
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -26,7 +33,8 @@ export default function PersonalCareDatabase() {
   const fetchChemicals = async () => {
     setLoading(true);
     try {
-      const data = await getPersonalCareChemicals(search, riskFilter, 100);
+      const categoryFilter = filterCategory === 'all' ? '' : filterCategory;
+      const data = await getPersonalCareChemicals(search, riskFilter, categoryFilter, 100);
       setChemicals(data.chemicals || []);
       setTotal(data.total || data.chemicals?.length || 0);
     } catch (err) {
@@ -37,59 +45,89 @@ export default function PersonalCareDatabase() {
     }
   };
 
-  // Get unique categories from current results
-  const categories = [...new Set(chemicals.map(c => c.category).filter(Boolean))];
+  const fetchDbStats = async () => {
+    try {
+      // Fetch all chemicals to get stats
+      const highData = await getPersonalCareChemicals('', 'high', '', 200);
+      const moderateData = await getPersonalCareChemicals('', 'moderate', '', 400);
+      const lowData = await getPersonalCareChemicals('', 'low', '', 1500);
+      const allData = await getPersonalCareChemicals('', '', '', 2000);
+      
+      // Get unique categories from all chemicals
+      const cats = [...new Set(allData.chemicals?.map(c => c.category).filter(Boolean) || [])];
+      setAllCategories(cats.sort());
+      
+      setDbStats({
+        high: highData.total || 0,
+        moderate: moderateData.total || 0,
+        low: lowData.total || 0,
+        total: allData.total || 0
+      });
+    } catch (err) {
+      console.error('Error fetching db stats:', err);
+    }
+  };
 
-  // Calculate high-risk count
-  const highRiskCount = useMemo(() => {
-    return chemicals.filter(c => 
-      c.risk?.toLowerCase() === 'high' || 
-      c.risk_level?.toLowerCase() === 'high'
-    ).length;
+  // Sort chemicals alphabetically by name
+  const sortedChemicals = useMemo(() => {
+    return [...chemicals].sort((a, b) => {
+      const nameA = (a.name || a.chemical_name || '').toLowerCase();
+      const nameB = (b.name || b.chemical_name || '').toLowerCase();
+      return nameA.localeCompare(nameB);
+    });
   }, [chemicals]);
+
+  // Get unique categories from all results
+  const categories = allCategories.length > 0 ? allCategories : [...new Set(chemicals.map(c => c.category).filter(Boolean))];
+
+  // Use dbStats for counts or fallback to chemicals filtered count
+  const highRiskCount = dbStats.high || chemicals.filter(c => 
+    c.risk?.toLowerCase() === 'high' || 
+    c.risk_level?.toLowerCase() === 'high'
+  ).length;
 
   return (
     <div>
-      {/* Header */}
-      <div className="mb-8">
+      {/* Standardized Page Header */}
+      <div className="page-header mb-8">
         <div className="flex items-center mb-2">
           <span className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>
           <span className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>Database Active</span>
         </div>
-        <h1 className="text-4xl font-bold mb-3">
+        <h1 className="page-title text-4xl">
           <span className={`${isDark ? 'text-white' : 'text-slate-900'}`}>
             Personal Care Database
           </span>
         </h1>
-        <p className={`${isDark ? 'text-slate-400' : 'text-slate-600'} text-lg mb-6`}>
-          Explore {total || '500+'} cosmetic and personal care ingredients
+        <p className="page-subtitle mb-6">
+          Explore {dbStats.total > 0 ? dbStats.total : '1600+'} cosmetic and personal care ingredients across {allCategories.length > 0 ? allCategories.length : '35'} categories
         </p>
 
-        {/* Overview Stats - IDENTICAL to Chemicals.jsx */}
+        {/* Overview Stats - Updated with actual database stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <div className={`p-4 rounded-xl border ${
             isDark ? 'bg-slate-900/80 border-slate-800' : 'bg-white border-slate-200'
           }`}>
             <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>Total</p>
-            <p className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>{total || '520'}</p>
+            <p className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>{dbStats.total || total || '1600+'}</p>
           </div>
           <div className={`p-4 rounded-xl border ${
             isDark ? 'bg-slate-900/80 border-slate-800' : 'bg-white border-slate-200'
           }`}>
             <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>High Risk</p>
-            <p className="text-2xl font-bold text-red-500">{highRiskCount || '32'}</p>
+            <p className="text-2xl font-bold text-red-500">{dbStats.high || highRiskCount || '150+'}</p>
           </div>
           <div className={`p-4 rounded-xl border ${
             isDark ? 'bg-slate-900/80 border-slate-800' : 'bg-white border-slate-200'
           }`}>
             <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>Moderate</p>
-            <p className="text-2xl font-bold text-yellow-500">85</p>
+            <p className="text-2xl font-bold text-yellow-500">{dbStats.moderate || '300+'}</p>
           </div>
           <div className={`p-4 rounded-xl border ${
             isDark ? 'bg-slate-900/80 border-slate-800' : 'bg-white border-slate-200'
           }`}>
             <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>Low Risk</p>
-            <p className="text-2xl font-bold text-green-500">403</p>
+            <p className="text-2xl font-bold text-green-500">{dbStats.low || '1000+'}</p>
           </div>
         </div>
       </div>
@@ -165,7 +203,7 @@ export default function PersonalCareDatabase() {
       {/* Results Count - IDENTICAL to Chemicals.jsx */}
       <div className="mb-4 flex items-center justify-between">
         <span className={isDark ? 'text-slate-400' : 'text-slate-600'}>
-          Showing <span className={`font-medium ${isDark ? 'text-white' : 'text-slate-900'}`}>{chemicals.length}</span> of <span className={`font-medium ${isDark ? 'text-white' : 'text-slate-900'}`}>{total}</span> chemicals
+          Showing <span className={`font-medium ${isDark ? 'text-white' : 'text-slate-900'}`}>{sortedChemicals.length}</span> of <span className={`font-medium ${isDark ? 'text-white' : 'text-slate-900'}`}>{total}</span> chemicals
         </span>
       </div>
 
@@ -184,7 +222,7 @@ export default function PersonalCareDatabase() {
         <>
           {chemicals.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-              {chemicals.map((chemical, idx) => (
+              {sortedChemicals.map((chemical, idx) => (
                 <ChemicalCard 
                   key={idx}
                   chemical={chemical} 

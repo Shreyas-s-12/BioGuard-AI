@@ -39,6 +39,15 @@ function Chemicals() {
     }
   };
 
+  // Sort chemicals alphabetically by name
+  const sortedChemicals = useMemo(() => {
+    return [...chemicals].sort((a, b) => {
+      const nameA = (a.chemical_name || a.name || '').toLowerCase();
+      const nameB = (b.chemical_name || b.name || '').toLowerCase();
+      return nameA.localeCompare(nameB);
+    });
+  }, [chemicals]);
+
   // Get unique categories from current results
   const categories = [...new Set(chemicals.map(c => c.category).filter(Boolean))];
 
@@ -52,18 +61,18 @@ function Chemicals() {
 
   return (
     <Layout>
-      {/* Header */}
-      <div className="mb-8">
+      {/* Standardized Page Header */}
+      <div className="page-header mb-8">
         <div className="flex items-center mb-2">
           <span className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>
           <span className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>Database Active</span>
         </div>
-        <h1 className="text-4xl font-bold mb-3">
+        <h1 className="page-title text-4xl">
           <span className={`${isDark ? 'text-white' : 'text-slate-900'}`}>
             Chemical Database
           </span>
         </h1>
-        <p className={`${isDark ? 'text-slate-400' : 'text-slate-600'} text-lg mb-6`}>
+        <p className="page-subtitle mb-6">
           Explore {total || '1,000+'} food additives and their health effects
         </p>
 
@@ -168,7 +177,7 @@ function Chemicals() {
       {/* Results Count */}
       <div className="mb-4 flex items-center justify-between">
         <span className={isDark ? 'text-slate-400' : 'text-slate-600'}>
-          Showing <span className={`font-medium ${isDark ? 'text-white' : 'text-slate-900'}`}>{chemicals.length}</span> of <span className={`font-medium ${isDark ? 'text-white' : 'text-slate-900'}`}>{total}</span> chemicals
+          Showing <span className={`font-medium ${isDark ? 'text-white' : 'text-slate-900'}`}>{sortedChemicals.length}</span> of <span className={`font-medium ${isDark ? 'text-white' : 'text-slate-900'}`}>{total}</span> chemicals
         </span>
       </div>
 
@@ -187,7 +196,7 @@ function Chemicals() {
         <>
           {chemicals.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-              {chemicals.map((chemical, idx) => (
+              {sortedChemicals.map((chemical, idx) => (
                 <ChemicalCard 
                   key={idx}
                   chemical={chemical} 

@@ -27,7 +27,10 @@ function Layout({ children, hideSidebar = false }) {
             <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl" />
           </div>
         )}
-        {children}
+        {/* Add top padding to account for fixed navbar */}
+        <div className="pt-20">
+          {children}
+        </div>
       </div>
     );
   }
@@ -49,7 +52,7 @@ function Layout({ children, hideSidebar = false }) {
       
       {/* Main Content */}
       <main className={`transition-all duration-300 ${sidebarCollapsed ? 'ml-20' : 'ml-64'}`}>
-        <div className="p-8 min-h-screen">
+        <div className="p-6 pt-20 min-h-screen">
           <div className="fixed top-4 right-8 z-50">
             <ThemeToggle />
           </div>

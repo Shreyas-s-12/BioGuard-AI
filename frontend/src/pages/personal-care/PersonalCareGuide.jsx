@@ -92,24 +92,24 @@ export default function PersonalCareGuide() {
 
   return (
     <div className="max-w-4xl mx-auto">
-        {/* Header */}
+        {/* Standardized Page Header */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="text-center mb-10"
+          className="page-header"
         >
           <div className="inline-flex items-center px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-full text-purple-400 text-sm mb-4">
             <span className="w-2 h-2 bg-purple-400 rounded-full mr-2 animate-pulse"></span>
             Safety Guide
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
+          <h1 className="page-title text-4xl md:text-5xl">
             Personal Care{' '}
             <span className="bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">
               Safety Guide
             </span>
           </h1>
-          <p className={`text-lg ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+          <p className="page-subtitle text-lg">
             Learn how to identify harmful ingredients and make safer choices
           </p>
         </motion.div>

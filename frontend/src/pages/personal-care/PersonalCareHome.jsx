@@ -10,18 +10,21 @@ export default function PersonalCareHome() {
   return (
     <>
       {/* Content Container */}
-      <div className="p-6 pt-8 max-w-6xl mx-auto">
+      <div className="p-6 max-w-6xl mx-auto">
           
-          {/* Small Title */}
+          {/* Standardized Page Header */}
           <motion.div 
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className="mb-8"
+            className="page-header mb-8"
           >
-            <h2 className="text-xl font-semibold text-purple-500">
+            <h2 className="page-title text-xl font-semibold text-purple-500">
               Personal Care Analysis
             </h2>
+            <p className="page-subtitle">
+              Analyze your cosmetics and skincare products for harmful chemicals
+            </p>
           </motion.div>
 
           {/* Daily Exposure Score */}

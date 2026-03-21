@@ -80,18 +80,18 @@ function CompareFoods() {
   return (
     <Layout>
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-10">
+        {/* Standardized Page Header */}
+        <div className="page-header">
           <div className="inline-flex items-center px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-full text-purple-400 text-sm mb-4">
             <span className="w-2 h-2 bg-purple-400 rounded-full mr-2 animate-pulse"></span>
             Food Comparison Tool
           </div>
-          <h1 className="text-4xl font-bold mb-3">
+          <h1 className="page-title text-4xl">
             <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">
               Compare Foods
             </span>
           </h1>
-          <p className="text-slate-400 text-lg">
+          <p className="page-subtitle">
             Compare two foods side by side to make healthier choices
           </p>
         </div>

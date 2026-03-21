@@ -1,8 +1,7 @@
-import { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useTheme } from '../../context/ThemeContext';
 import { analyzePersonalCare } from '../../services/api';
+import BarcodeScanner from '../../components/BarcodeScanner';
 import CameraOCR from '../../components/CameraOCR';
 import { savePersonalCareRisk } from '../../components/ExposureScore';
 
@@ -39,9 +38,6 @@ const HAIR_TYPES = [
 ];
 
 export default function PersonalCareAnalyze() {
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
-
   const [loading, setLoading] = useState(false);
   const [inputText, setInputText] = useState('');
   const [productType, setProductType] = useState('');
@@ -49,17 +45,26 @@ export default function PersonalCareAnalyze() {
   const [hairType, setHairType] = useState('');
   const [error, setError] = useState(null);
   const [results, setResults] = useState(null);
+  const [showBarcodeScanner, setShowBarcodeScanner] = useState(false);
   const [showCameraOCR, setShowCameraOCR] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const textareaRef = useRef(null);
+  const lastAnalyzeAtRef = useRef(0);
 
   const handleAnalyze = async () => {
+    const now = Date.now();
+    if (now - lastAnalyzeAtRef.current < 500) {
+      return;
+    }
+    lastAnalyzeAtRef.current = now;
+
     if (!inputText.trim()) {
-      alert('Please enter ingredients to analyze');
+      setError('Please enter ingredients to analyze');
       return;
     }
 
     if (!productType) {
-      alert('Please select a product type');
+      setError('Please select a product type');
       return;
     }
 
@@ -73,15 +78,9 @@ export default function PersonalCareAnalyze() {
         skinType,
         hairType
       );
-      setResults(data);
-      
-      // Save personal care risks to localStorage
+
       if (data && data.detected_chemicals) {
         const riskLevel = String(data.risk_level || '').toLowerCase().trim();
-        let totalScore = 0;
-        if (riskLevel === 'moderate') totalScore = 2;
-        else if (riskLevel === 'high') totalScore = 3;
-        else totalScore = 1;
         
         data.detected_chemicals.forEach((chemical) => {
           const chemRiskLevel = String(chemical.risk_level || '').toLowerCase().trim();
@@ -97,20 +96,41 @@ export default function PersonalCareAnalyze() {
           });
         });
       }
+
+      setResults(data);
+      
+      const historyItem = {
+        ...data,
+        productType,
+        date: new Date().toISOString()
+      };
+      const existingHistoryRaw = localStorage.getItem('personalCareHistory');
+      let existingHistory = [];
+      try {
+        const parsed = JSON.parse(existingHistoryRaw || '[]');
+        existingHistory = Array.isArray(parsed) ? parsed : [];
+      } catch (_parseErr) {
+        existingHistory = [];
+      }
+      existingHistory.push(historyItem);
+      localStorage.setItem('personalCareHistory', JSON.stringify(existingHistory));
     } catch (err) {
       console.error('Analysis error:', err);
-      setError('Failed to analyze. Please try again.');
+      setError(
+        err.response?.data?.detail ||
+        err.message ||
+        'Failed to analyze. Please try again with valid ingredients.'
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  // Voice recognition handler
   const startVoiceRecognition = () => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     
     if (!SpeechRecognition) {
-      alert("Voice input is not supported in this browser. Please use Chrome, Edge, or Safari.");
+      alert("Voice input is not supported in this browser.");
       return;
     }
     
@@ -120,38 +140,49 @@ export default function PersonalCareAnalyze() {
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
     
-    // Request microphone permission first
     navigator.mediaDevices.getUserMedia({ audio: true })
-      .then(() => {
-        recognition.start();
-      })
-      .catch(() => {
-        alert("Microphone access required. Please allow microphone permission and try again.");
-      });
+      .then(() => recognition.start())
+      .catch(() => alert("Microphone access required."));
     
     recognition.onresult = (event) => {
       const transcript = event.results[0][0].transcript;
       setInputText((prev) => prev + (prev ? '\n' : '') + transcript);
     };
     
-    recognition.onerror = (event) => {
-      console.error('Voice recognition error:', event.error);
-      
-      if (event.error === 'not-allowed') {
-        alert("Microphone permission denied. Please allow microphone access in your browser settings.");
-      } else if (event.error === 'network') {
-        alert("Voice recognition network error. Please check your internet connection and try again.");
-      } else if (event.error === 'no-speech') {
-        // No speech detected - silently ignore
-        console.log('No speech detected');
-      } else {
-        alert(`Voice recognition error: ${event.error}`);
-      }
-    };
-    
-    recognition.onend = () => {
-      console.log('Voice recognition stopped');
-    };
+    recognition.onerror = (event) => console.error('Voice recognition error:', event.error);
+    recognition.onend = () => console.log('Voice recognition stopped');
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const text = e.dataTransfer.getData('text/plain');
+    if (text) {
+      setInputText((prev) => prev + (prev ? '\n\n' : '') + text);
+    }
+  };
+
+  const loadExample = () => {
+    setInputText('Water, Glycerin, Sodium Lauryl Sulfate, Cocamidopropyl Betaine, Parabens, Fragrance, Sodium Chloride, Citric Acid, Aloe Barbadensis Leaf Juice');
+  };
+
+  const handleScanComplete = (ingredients) => {
+    setInputText(ingredients);
+    setShowBarcodeScanner(false);
+    setShowCameraOCR(false);
+    if (ingredients && ingredients.trim() && productType) {
+      setTimeout(() => handleAnalyze(), 100);
+    }
   };
 
   const handleOCRResult = (extractedText) => {
@@ -178,355 +209,219 @@ export default function PersonalCareAnalyze() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-full text-purple-400 text-sm mb-4">
-            <span className="w-2 h-2 bg-purple-400 rounded-full mr-2 animate-pulse"></span>
-            AI-Powered Analysis
-          </div>
-          <h1 className="text-4xl font-bold mb-3">
-            <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-rose-400 bg-clip-text text-transparent">
-              Analyze Personal Care
-            </span>
-          </h1>
-          <p className="text-slate-400 text-lg">
-            Paste product ingredients to detect harmful chemicals and skin compatibility
-          </p>
+    <div className="max-w-4xl mx-auto p-4">
+      {/* Standardized Page Header */}
+      <div className="page-header">
+        <div className="inline-flex items-center px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-full text-purple-400 text-sm mb-4">
+          <span className="w-2 h-2 bg-purple-400 rounded-full mr-2 animate-pulse"></span>
+          AI-Powered Analysis
         </div>
-
-        {/* Input Section */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className={`rounded-2xl p-6 mb-6 ${
-            isDark 
-              ? 'bg-slate-900/60 border border-slate-800' 
-              : 'bg-white border border-slate-200'
-          } backdrop-blur-xl shadow-xl`}
-        >
-          {/* Product Type Selection */}
-          <div className="mb-6">
-            <label className={`block text-sm font-semibold mb-3 ${
-              isDark ? 'text-white' : 'text-slate-700'
-            }`}>
-              Product Type *
-            </label>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {PRODUCT_TYPES.map((type) => (
-                <button
-                  key={type.value}
-                  onClick={() => setProductType(type.value)}
-                  className={`p-3 rounded-xl border transition-all ${
-                    productType === type.value
-                      ? 'bg-purple-500/20 border-purple-500 text-purple-400'
-                      : isDark
-                        ? 'bg-slate-800/50 border-slate-700 text-slate-400 hover:border-slate-600'
-                        : 'bg-slate-100 border-slate-200 text-slate-600 hover:border-slate-300'
-                  }`}
-                >
-                  <span className="text-xl block mb-1">{type.icon}</span>
-                  <span className="text-sm">{type.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Personalization Options */}
-          <div className="grid md:grid-cols-2 gap-6 mb-6">
-            {/* Skin Type */}
-            <div>
-              <label className={`block text-sm font-semibold mb-3 ${
-                isDark ? 'text-white' : 'text-slate-700'
-              }`}>
-                Your Skin Type (optional)
-              </label>
-              <select
-                value={skinType}
-                onChange={(e) => setSkinType(e.target.value)}
-                className={`w-full p-3 rounded-xl border ${
-                  isDark 
-                    ? 'bg-slate-800/50 border-slate-700 text-white' 
-                    : 'bg-slate-100 border-slate-200 text-slate-700'
-                } focus:outline-none focus:border-purple-500/50`}
-              >
-                <option value="">Select skin type</option>
-                {SKIN_TYPES.map((type) => (
-                  <option key={type.value} value={type.value}>{type.label}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Hair Type */}
-            <div>
-              <label className={`block text-sm font-semibold mb-3 ${
-                isDark ? 'text-white' : 'text-slate-700'
-              }`}>
-                Your Hair Type (optional)
-              </label>
-              <select
-                value={hairType}
-                onChange={(e) => setHairType(e.target.value)}
-                className={`w-full p-3 rounded-xl border ${
-                  isDark 
-                    ? 'bg-slate-800/50 border-slate-700 text-white' 
-                    : 'bg-slate-100 border-slate-200 text-slate-700'
-                } focus:outline-none focus:border-purple-500/50`}
-              >
-                <option value="">Select hair type</option>
-                {HAIR_TYPES.map((type) => (
-                  <option key={type.value} value={type.value}>{type.label}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* Ingredients Input */}
-          <div className="mb-4">
-            <div className="flex justify-between items-center mb-3">
-              <label className={`text-sm font-semibold ${
-                isDark ? 'text-white' : 'text-slate-700'
-              }`}>
-                Ingredients *
-              </label>
-              <div className="flex items-center gap-3">
-                {/* Voice Input Button */}
-                <button
-                  onClick={startVoiceRecognition}
-                  className="text-sm text-purple-400 hover:text-purple-300 flex items-center gap-1"
-                  title="Click to use voice input"
-                >
-                  🎤 Voice Input
-                </button>
-                {/* Scan Label Button */}
-                <button
-                  onClick={() => setShowCameraOCR(true)}
-                  className="text-sm text-purple-400 hover:text-purple-300 flex items-center gap-1"
-                >
-                  📷 Scan Label
-                </button>
-              </div>
-            </div>
-            <textarea
-              ref={textareaRef}
-              value={inputText}
-              onChange={(e) => setInputText(e.target.value.slice(0, MAX_INPUT_CHARS))}
-              placeholder="Enter ingredients list (e.g., Water, Glycerin, SLS, Parabens, Fragrance...)"
-              className={`w-full h-40 p-4 rounded-xl border resize-none ${
-                isDark 
-                  ? 'bg-slate-800/50 border-slate-700 text-white placeholder-slate-500' 
-                  : 'bg-slate-100 border-slate-200 text-slate-700 placeholder-slate-400'
-              } focus:outline-none focus:border-purple-500/50`}
-            />
-            <div className="text-right text-xs mt-1 text-slate-500">
-              {inputText.length}/{MAX_INPUT_CHARS}
-            </div>
-          </div>
-
-          {/* Analyze Button */}
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={handleAnalyze}
-            disabled={loading}
-            className={`w-full py-4 rounded-xl font-semibold text-lg ${
-              loading
-                ? 'bg-slate-600 cursor-not-allowed'
-                : 'bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90'
-            } text-white shadow-lg`}
-          >
-            {loading ? 'Analyzing...' : 'Analyze Ingredients'}
-          </motion.button>
-
-          {error && (
-            <p className="text-red-400 text-center mt-4">{error}</p>
-          )}
-        </motion.div>
-
-        {/* Camera OCR Modal */}
-        <AnimatePresence>
-          {showCameraOCR && (
-            <CameraOCR
-              onClose={() => setShowCameraOCR(false)}
-              onResult={handleOCRResult}
-            />
-          )}
-        </AnimatePresence>
-
-        {/* Results Section */}
-        <AnimatePresence>
-          {results && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="space-y-6"
-            >
-              {/* Risk Level */}
-              <div className={`rounded-2xl p-6 border ${getRiskBg(results.risk_level)}`}>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className={`text-lg font-semibold mb-1 ${
-                      isDark ? 'text-white' : 'text-slate-800'
-                    }`}>
-                      Overall Risk Level
-                    </h3>
-                    <p className={`text-4xl font-bold ${getRiskColor(results.risk_level)}`}>
-                      {results.risk_level || 'Unknown'}
-                    </p>
-                  </div>
-                  <div className="text-6xl">
-                    {results.risk_level === 'High' ? '⚠️' : results.risk_level === 'Moderate' ? '⚡' : '✅'}
-                  </div>
-                </div>
-              </div>
-
-              {/* Suitability */}
-              {results.suitability && (
-                <div className={`rounded-2xl p-6 ${
-                  isDark 
-                    ? 'bg-slate-900/60 border border-slate-800' 
-                    : 'bg-white border border-slate-200'
-                } backdrop-blur-xl`}>
-                  <h3 className={`text-lg font-semibold mb-3 ${
-                    isDark ? 'text-white' : 'text-slate-800'
-                  }`}>
-                    Compatibility
-                  </h3>
-                  <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl ${
-                    results.suitability.includes('Not suitable')
-                      ? 'bg-red-500/20 text-red-400'
-                      : 'bg-green-500/20 text-green-400'
-                  }`}>
-                    <span className="text-xl">
-                      {results.suitability.includes('Not suitable') ? '⚠️' : '✅'}
-                    </span>
-                    <span className="font-medium">{results.suitability}</span>
-                  </div>
-                </div>
-              )}
-
-              {/* Detected Chemicals */}
-              {results.detected_chemicals && results.detected_chemicals.length > 0 && (
-                <div className={`rounded-2xl p-6 ${
-                  isDark 
-                    ? 'bg-slate-900/60 border border-slate-800' 
-                    : 'bg-white border border-slate-200'
-                } backdrop-blur-xl`}>
-                  <h3 className={`text-lg font-semibold mb-4 ${
-                    isDark ? 'text-white' : 'text-slate-800'
-                  }`}>
-                    Detected Chemicals ({results.detected_chemicals.length})
-                  </h3>
-                  <div className="space-y-3">
-                    {results.detected_chemicals.map((chemical, idx) => (
-                      <div key={idx} className={`p-4 rounded-xl ${
-                        isDark ? 'bg-slate-800/50' : 'bg-slate-100'
-                      }`}>
-                        <div className="flex justify-between items-start mb-2">
-                          <span className={`font-semibold ${
-                            isDark ? 'text-white' : 'text-slate-800'
-                          }`}>
-                            {chemical.name}
-                          </span>
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            chemical.risk === 'High' 
-                              ? 'bg-red-500/20 text-red-400'
-                              : chemical.risk === 'Moderate'
-                                ? 'bg-yellow-500/20 text-yellow-400'
-                                : 'bg-green-500/20 text-green-400'
-                          }`}>
-                            {chemical.risk}
-                          </span>
-                        </div>
-                        {chemical.effects && (
-                          <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-                            {chemical.effects}
-                          </p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Effects */}
-              {results.effects && results.effects.length > 0 && (
-                <div className={`rounded-2xl p-6 ${
-                  isDark 
-                    ? 'bg-slate-900/60 border border-slate-800' 
-                    : 'bg-white border border-slate-200'
-                } backdrop-blur-xl`}>
-                  <h3 className={`text-lg font-semibold mb-3 ${
-                    isDark ? 'text-white' : 'text-slate-800'
-                  }`}>
-                    Potential Effects
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {results.effects.map((effect, idx) => (
-                      <span key={idx} className={`px-3 py-1 rounded-full text-sm ${
-                        isDark 
-                          ? 'bg-slate-800 text-slate-300' 
-                          : 'bg-slate-200 text-slate-700'
-                      }`}>
-                        {effect}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Recommendations */}
-              {results.recommendations && results.recommendations.length > 0 && (
-                <div className={`rounded-2xl p-6 ${
-                  isDark 
-                    ? 'bg-slate-900/60 border border-slate-800' 
-                    : 'bg-white border border-slate-200'
-                } backdrop-blur-xl`}>
-                  <h3 className={`text-lg font-semibold mb-3 ${
-                    isDark ? 'text-white' : 'text-slate-800'
-                  }`}>
-                    Recommendations
-                  </h3>
-                  <ul className="space-y-2">
-                    {results.recommendations.map((rec, idx) => (
-                      <li key={idx} className={`flex items-start gap-2 ${
-                        isDark ? 'text-slate-300' : 'text-slate-700'
-                      }`}>
-                        <span className="text-purple-400">💡</span>
-                        <span>{rec}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {/* No chemicals found */}
-              {(!results.detected_chemicals || results.detected_chemicals.length === 0) && (
-                <div className={`rounded-2xl p-6 ${
-                  isDark 
-                    ? 'bg-green-900/20 border border-green-500/30' 
-                    : 'bg-green-50 border border-green-200'
-                }`}>
-                  <div className="flex items-center gap-3">
-                    <span className="text-4xl">✅</span>
-                    <div>
-                      <h3 className={`font-semibold ${
-                        isDark ? 'text-green-400' : 'text-green-700'
-                      }`}>
-                        No Harmful Chemicals Detected
-                      </h3>
-                      <p className={isDark ? 'text-slate-400' : 'text-slate-600'}>
-                        This product appears to be safe based on our database.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <h1 className="page-title text-4xl">
+          <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-rose-400 bg-clip-text text-transparent">
+            Analyze Personal Care
+          </span>
+        </h1>
+        <p className="page-subtitle">
+          Paste product ingredients to detect harmful chemicals and skin compatibility
+        </p>
       </div>
+
+      {error && (
+        <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 flex items-center">
+          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          {error}
+        </div>
+      )}
+
+      {/* Product Type Selection */}
+      <div className="mb-6">
+        <label className="block text-sm font-semibold text-white mb-3">
+          Product Type *
+        </label>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {PRODUCT_TYPES.map((type) => (
+            <button
+              key={type.value}
+              onClick={() => setProductType(type.value)}
+              className={`p-3 rounded-xl border transition-all ${
+                productType === type.value
+                  ? 'bg-purple-500/20 border-purple-500 text-purple-400'
+                  : 'bg-slate-800/50 border-slate-700 text-slate-400 hover:border-slate-600'
+              }`}
+            >
+              <span className="text-xl block mb-1">{type.icon}</span>
+              <span className="text-sm">{type.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Skin and Hair Type */}
+      <div className="mb-6 grid md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-semibold text-white mb-2">Your Skin Type (optional)</label>
+          <select
+            value={skinType}
+            onChange={(e) => setSkinType(e.target.value)}
+            className="w-full p-3 rounded-xl border bg-slate-800/50 border-slate-700 text-white focus:outline-none focus:border-purple-500"
+          >
+            <option value="">Select skin type</option>
+            {SKIN_TYPES.map((type) => (
+              <option key={type.value} value={type.value}>{type.label}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-semibold text-white mb-2">Your Hair Type (optional)</label>
+          <select
+            value={hairType}
+            onChange={(e) => setHairType(e.target.value)}
+            className="w-full p-3 rounded-xl border bg-slate-800/50 border-slate-700 text-white focus:outline-none focus:border-purple-500"
+          >
+            <option value="">Select hair type</option>
+            {HAIR_TYPES.map((type) => (
+              <option key={type.value} value={type.value}>{type.label}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {/* Action Buttons */}
+      <div className="flex flex-wrap gap-2 mb-4">
+        <button
+          onClick={startVoiceRecognition}
+          className="flex items-center px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-white rounded-lg transition-colors text-sm font-medium"
+        >
+          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+          </svg>
+          Voice Input
+        </button>
+
+        <button
+          onClick={() => setShowBarcodeScanner(true)}
+          className="flex items-center px-4 py-2 bg-green-500 hover:bg-green-400 text-white rounded-lg transition-colors text-sm font-medium"
+        >
+          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+          </svg>
+          Scan Barcode
+        </button>
+
+        <button
+          onClick={() => setShowCameraOCR(true)}
+          className="flex items-center px-4 py-2 bg-purple-500 hover:bg-purple-400 text-white rounded-lg transition-colors text-sm font-medium"
+        >
+          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+          </svg>
+          Scan Label
+        </button>
+      </div>
+
+      {/* Text Area */}
+      <div 
+        className={`relative border-2 border-dashed rounded-2xl transition-all duration-300 mb-4 ${
+          isDragging ? 'border-purple-500 bg-purple-500/10' : 'border-white/10 hover:border-white/20'
+        }`}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+      >
+        <textarea
+          ref={textareaRef}
+          value={inputText}
+          onChange={(e) => setInputText(e.target.value.slice(0, MAX_INPUT_CHARS))}
+          placeholder="Paste Ingredients here..."
+          className="w-full h-48 bg-transparent border-0 p-4 text-white placeholder-slate-500 focus:outline-none resize-none font-mono text-sm"
+        />
+        
+        {isDragging && (
+          <div className="absolute inset-0 flex items-center justify-center bg-purple-500/20 rounded-2xl">
+            <p className="text-purple-400 font-medium">Drop to add text</p>
+          </div>
+        )}
+      </div>
+
+      <div className="flex justify-between items-center mb-6">
+        <span className="text-sm text-slate-500">Supports drag & drop</span>
+        <button onClick={loadExample} className="text-purple-400 hover:text-purple-300 text-sm">
+          Load Example
+        </button>
+      </div>
+
+      {/* Analyze Button */}
+      <button
+        onClick={handleAnalyze}
+        disabled={loading || !inputText.trim()}
+        className={`w-full py-4 rounded-xl font-semibold text-lg text-white transition-all ${
+          loading || !inputText.trim()
+            ? 'bg-slate-600 cursor-not-allowed'
+            : 'bg-gradient-to-r from-purple-500 via-pink-500 to-rose-500 hover:opacity-90'
+        }`}
+      >
+        {loading ? 'Analyzing...' : 'Analyze Personal Care'}
+      </button>
+
+      {/* Results Section */}
+      <AnimatePresence>
+        {results && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mt-8 space-y-4"
+          >
+            <div className={`rounded-2xl p-6 border ${getRiskBg(results.risk_level)}`}>
+              <h3 className="text-lg font-semibold text-white mb-2">Overall Risk Level</h3>
+              <p className={`text-4xl font-bold ${getRiskColor(results.risk_level)}`}>
+                {results.risk_level || 'Unknown'}
+              </p>
+            </div>
+
+            {results.detected_chemicals && results.detected_chemicals.length > 0 && (
+              <div className="rounded-2xl p-6 bg-slate-800/50 border border-slate-700">
+                <h3 className="text-lg font-semibold text-white mb-4">
+                  Detected Chemicals ({results.detected_chemicals.length})
+                </h3>
+                <div className="space-y-3">
+                  {results.detected_chemicals.map((chemical, idx) => (
+                    <div key={idx} className="p-3 rounded-xl bg-slate-900/50">
+                      <div className="flex justify-between items-center">
+                        <span className="font-semibold text-white">{chemical.name}</span>
+                        <span className={`px-2 py-1 rounded-full text-xs ${
+                          chemical.risk === 'High' ? 'bg-red-500/20 text-red-400' :
+                          chemical.risk === 'Moderate' ? 'bg-yellow-500/20 text-yellow-400' :
+                          'bg-green-500/20 text-green-400'
+                        }`}>
+                          {chemical.risk}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Barcode Scanner Modal */}
+      {showBarcodeScanner && (
+        <BarcodeScanner
+          onScanComplete={handleScanComplete}
+          onClose={() => setShowBarcodeScanner(false)}
+        />
+      )}
+
+      {/* Camera OCR Modal */}
+      {showCameraOCR && (
+        <CameraOCR
+          onScanComplete={handleOCRResult}
+          onClose={() => setShowCameraOCR(false)}
+        />
+      )}
+    </div>
   );
 }

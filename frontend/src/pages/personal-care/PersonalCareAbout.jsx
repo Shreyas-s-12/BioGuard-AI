@@ -50,41 +50,18 @@ export default function PersonalCareAbout() {
 
   return (
     <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-full text-purple-400 text-sm mb-4">
-            <span className="w-2 h-2 bg-purple-400 rounded-full mr-2 animate-pulse"></span>
-            About Us
-          </div>
-          <h1 className="text-4xl font-bold mb-3">
-            <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-rose-400 bg-clip-text text-transparent">
-              Personal Care Analysis
-            </span>
-          </h1>
-          <p className="text-slate-400 text-lg">
-            Advanced AI-powered analysis for your cosmetics and skincare products
-          </p>
-        </div>
-        {/* Header */}
+        {/* Standardized Page Header */}
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="text-center mb-12"
+          className="page-header"
         >
-          <button
-            onClick={() => navigate('/personal-care')}
-            className={`inline-flex items-center gap-2 mb-6 px-4 py-2 rounded-lg transition-colors ${
-              isDark ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
-            }`}
-          >
-            ← Back to Personal Care
-          </button>
-          
-          <div className="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-4xl mb-6 shadow-lg">
-            ℹ️
+          <div className="inline-flex items-center px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-full text-purple-400 text-sm mb-4">
+            <span className="w-2 h-2 bg-purple-400 rounded-full mr-2 animate-pulse"></span>
+            About Us
           </div>
-          <h1 className={`text-4xl md:text-5xl font-bold mb-4 ${
+          <h1 className={`page-title text-4xl md:text-5xl ${
             isDark ? 'text-white' : 'text-slate-800'
           }`}>
             About{' '}
@@ -92,7 +69,7 @@ export default function PersonalCareAbout() {
               Personal Care
             </span>
           </h1>
-          <p className={`text-lg max-w-2xl mx-auto ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+          <p className="page-subtitle text-lg">
             Learn about our personal care product analysis platform and how it helps you make safer choices.
           </p>
         </motion.div>

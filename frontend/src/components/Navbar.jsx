@@ -47,6 +47,7 @@ function Navbar() {
   const personalCareLinks = [
     { path: "/personal-care", label: "Home", icon: "🏠" },
     { path: "/personal-care/analyze", label: "Analyze", icon: "🔬" },
+    { path: "/personal-care/compare", label: "Compare", icon: "⚖️" },
     { path: "/personal-care/database", label: "Database", icon: "🧬" },
     { path: "/personal-care/guide", label: "Guide", icon: "📖" },
     { path: "/personal-care/about", label: "About", icon: "ℹ️" },
@@ -83,11 +84,11 @@ function Navbar() {
 
   return (
     <header className={`sticky top-0 z-50 backdrop-blur-xl ${headerBg} border-b transition-colors duration-300`}>
-      <div className="max-w-[96rem] mx-auto px-6 lg:px-8 py-4 flex items-center justify-between gap-6">
-        <div className="flex items-center gap-3">
-          <Link to="/home" className="flex items-center justify-center hover:scale-105 transition duration-300">
+      <div className="max-w-[96rem] mx-auto px-6 lg:px-8 py-3 flex items-center justify-between gap-6 h-[70px]">
+        <div className="flex items-center gap-4">
+          <Link to="/home" className="flex items-center justify-center hover:scale-105 transition duration-300 flex-shrink-0">
             <div className={`p-[2px] rounded-xl bg-gradient-to-r ${isPersonalCare ? 'from-pink-500 to-purple-500' : 'from-cyan-500 to-purple-500'}`}>
-              <div className="bg-slate-900 rounded-xl p-2 flex items-center justify-center">
+              <div className="bg-slate-900 rounded-xl p-1.5 flex items-center justify-center">
                 {!logoFailed ? (
                   <motion.img
                     whileHover={{ scale: 1.1 }}
@@ -95,12 +96,12 @@ function Navbar() {
                     src={logo}
                     alt="BioGuard Logo"
                     onError={() => setLogoFailed(true)}
-                    className="w-10 h-10 object-contain drop-shadow-[0_0_12px_rgba(34,211,238,0.8)]"
+                    className="w-8 h-8 object-contain drop-shadow-[0_0_12px_rgba(34,211,238,0.8)]"
                   />
                 ) : (
                   <motion.span 
                     whileHover={{ scale: 1.1 }}
-                    className="text-2xl" 
+                    className="text-xl" 
                     aria-hidden="true"
                   >🛡️</motion.span>
                 )}
@@ -108,7 +109,7 @@ function Navbar() {
             </div>
           </Link>
           {/* Dynamic Page Title */}
-          <div className={`hidden md:flex text-sm ${titleColor} ml-2 font-medium`}>
+          <div className={`hidden md:flex text-sm ${titleColor} font-medium border-l border-slate-700 pl-4`}>
             {pageTitle}
           </div>
         </div>

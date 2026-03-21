@@ -5,14 +5,14 @@ function About() {
   return (
     <Layout>
       <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4">
+        {/* Standardized Page Header */}
+        <div className="page-header">
+          <h1 className="page-title text-4xl">
             <span className="bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
               About BioGuard AI
             </span>
           </h1>
-          <p className="text-slate-400 text-lg">
+          <p className="page-subtitle">
             Empowering consumers with food safety intelligence
           </p>
         </div>
